@@ -39,7 +39,7 @@ Das angekündigte Datum, bis zu dem Mitglieder ihren Auftrag eintragen sollen. N
 _Avoid_: Deadline, Stichtag, Termin
 
 **Auftrag**:
-Die Auswahl eines Mitglieds in einer Bestellrunde. Jedes Mitglied hat pro Bestellrunde höchstens einen Auftrag. Solange die Runde offen ist, darf ein Admin jeden Auftrag ändern oder für ein Mitglied anlegen. Die Summe folgt immer den aktuellen Artikelpreisen.
+Die Auswahl eines Mitglieds in einer Bestellrunde. Jedes Mitglied hat pro Bestellrunde höchstens einen Auftrag. Solange die Runde offen ist, darf ein Admin jeden Auftrag ändern oder für ein Mitglied anlegen. Solange die Bestellrunde offen ist, folgt die Summe den aktuellen Preisen; beim Abschließen werden die Preise in der Runde festgehalten.
 _Avoid_: Warenkorb, Bestellung, Order
 
 **Abgeschickter Auftrag**:
@@ -50,6 +50,14 @@ _Avoid_: bestätigte Bestellung, fertiger Warenkorb
 Die Angabe eines Mitglieds, in einer Bestellrunde nichts zu bestellen. Unterscheidet "will nichts" von "hat noch nichts eingetragen".
 _Avoid_: Absage, leerer Auftrag
 
+**Anmerkung**:
+Ein freier Text, den ein Mitglied seinem Auftrag mitgibt, für alles, was die Auswahl nicht abdeckt. Der Admin sieht ihn in der Übersicht und in der Sammelbestellung.
+_Avoid_: Kommentar, Notiz
+
+**Korrektur**:
+Ein Betrag mit Begründung, den ein Admin auf einen Auftrag aufschlägt oder abzieht, z. B. Rabatt oder Porto. Er ändert die Summe, nicht die Preise.
+_Avoid_: Rabatt (als Oberbegriff), Gutschrift
+
 **Bezahlt**:
 Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Clubkonto eingegangen ist.
 _Avoid_: beglichen, Zahlung
@@ -59,26 +67,34 @@ Die zusammengeführten Aufträge einer abgeschlossenen Bestellrunde, als Liste f
 _Avoid_: Gesamtbestellung, Export
 
 **Position**:
-Eine Zeile in einem Auftrag: ein Artikel in einer Größe, mit je einem Motiv pro Druckstelle, und eine Anzahl.
+Eine Zeile in einem Auftrag: ein Artikel in einer Größe, mit einem Motiv oder Text pro belegter Druckstelle, und eine Anzahl.
 _Avoid_: Artikel (für die Zeile), Item
 
 ## Sortiment
 
 **Artikel**:
-Ein bestellbares Kleidungsstück mit Preis, z. B. Hoodie oder Mütze. Der Preis gilt inklusive Aufdruck, solange nichts anderes festgelegt ist.
-_Avoid_: Produkt, Klamotte
+Ein bestellbares Kleidungsstück mit Preis, optionalem Bild und optionaler Beschreibung, z. B. Hoodie oder Mütze. Jede Farbe ist ein eigener Artikel. Der Preis gilt inklusive Aufdruck, solange kein Aufpreis festgelegt ist. Jeder eingeblendete Artikel steht in jeder Bestellrunde zur Wahl.
+_Avoid_: Produkt, Klamotte, Variante (für Farben)
 
 **Größe**:
-Eine wählbare Größe eines Artikels. Jeder Artikel hat seine eigene Größenliste.
+Eine wählbare Größe eines Artikels, optional mit Aufpreis. Jeder Artikel hat seine eigene Größenliste.
 _Avoid_: Variante
 
 **Druckstelle**:
-Eine Stelle am Artikel, die bedruckt werden kann, z. B. vorne oder hinten. Kann Pflicht oder optional sein.
+Eine Stelle an einem bestimmten Artikel, die bedruckt werden kann, z. B. vorne oder hinten. Der Admin legt sie pro Artikel an. Eine Druckstelle bietet entweder eine Auswahl an Motiven oder ein Textfeld, in das das Mitglied einen eigenen Text schreibt, z. B. seinen Spitznamen. An einer Pflicht-Druckstelle muss etwas gewählt oder geschrieben werden, eine optionale darf leer bleiben. Ein Aufpreis wird fällig, sobald sie belegt ist.
 _Avoid_: Position (für die Stelle), Platzierung
 
 **Motiv**:
-Ein Aufdruck, der an einer Druckstelle gewählt werden kann, z. B. "Hahna Allgäu" oder "Brotherhood".
+Ein Aufdruck mit Namen und Bild, z. B. "Hahna Allgäu" oder "Brotherhood". Motive bilden eine gemeinsame Liste für alle Artikel.
 _Avoid_: Aufdruck-Variante, Logo, Design
+
+**Aufpreis**:
+Ein Betrag, der zum Artikelpreis hinzukommt, wenn eine bestimmte Größe gewählt oder eine bestimmte Druckstelle belegt wird. Standard ist kein Aufpreis.
+_Avoid_: Zuschlag, Extra
+
+**Ausgeblendet**:
+Ein Artikel, eine Größe, Druckstelle oder ein Motiv, das niemand mehr neu wählen kann. In bestehenden Aufträgen bleibt es stehen und ist als nicht mehr verfügbar markiert. Löschen geht nur, solange es nie bestellt wurde.
+_Avoid_: gelöscht, deaktiviert, archiviert
 
 ## Club-Leben
 
