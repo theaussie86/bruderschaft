@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYP - Screens und Navigation</title>
+<!--
+  PROTOTYP, WEGWERFCODE. Nicht in main mergen.
+  Frage (Wayfinder-Ticket "Screens und Navigation"): Welche Screens braucht die App
+  und wie navigiert man zwischen ihnen, getrennt für Mitglied und Admin, mobil zuerst?
+  Drei Navigations-Varianten über ?variant=A|B|C, Inhalte der Screens sind in allen gleich.
+  Rolle oben rechts umschalten (Gast / Mitglied / Admin). Alles im Speicher, Reload = Reset.
+-->
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.4 -apple-system,system-ui,sans-serif;background:#d9d6cf;color:#1d1d1b}
+  .stage{display:flex;gap:24px;justify-content:center;align-items:flex-start;padding:16px 16px 90px}
+  .phone{width:390px;height:780px;background:#faf8f4;border:10px solid #222;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .side{width:300px;font-size:13px}
+  .side h3{margin:8px 0 4px}
+  .side pre{background:#fff;padding:8px;border-radius:6px;white-space:pre-wrap;font-size:11px;max-height:280px;overflow:auto}
+  .side .scr{display:block;width:100%;text-align:left;border:0;background:none;padding:2px 4px;cursor:pointer;font-size:12px;border-radius:4px}
+  .side .scr:hover{background:#fff}
+  .side .scr.on{background:#1d1d1b;color:#fff}
+  header.top{background:#1d1d1b;color:#faf8f4;padding:12px 14px;display:flex;align-items:center;gap:10px;min-height:52px}
+  header.top b{flex:1;font-size:16px}
+  header.top button{background:none;border:0;color:inherit;font-size:20px;cursor:pointer;padding:0 4px}
+  main{flex:1;overflow:auto;padding:14px}
+  nav.tabs{display:flex;border-top:1px solid #ddd;background:#fff}
+  nav.tabs button{flex:1;border:0;background:none;padding:8px 2px 10px;font-size:11px;cursor:pointer;color:#777}
+  nav.tabs button .i{display:block;font-size:19px}
+  nav.tabs button.on{color:#1d1d1b;font-weight:600}
+  nav.subtabs{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;background:#efece5;border-bottom:1px solid #ddd}
+  nav.subtabs button{border:1px solid #bbb;background:#fff;border-radius:16px;padding:4px 10px;font-size:12px;white-space:nowrap;cursor:pointer}
+  nav.subtabs button.on{background:#1d1d1b;color:#fff;border-color:#1d1d1b}
+  .drawer{position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:5}
+  .drawer .panel{background:#faf8f4;width:78%;height:100%;padding:18px 0}
+  .drawer .panel button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 20px;font-size:15px;cursor:pointer}
+  .drawer .panel button.on{background:#e8e3d8;font-weight:600}
+  .drawer .panel hr{border:0;border-top:1px solid #ddd;margin:8px 0}
+  .drawer .panel small{display:block;padding:6px 20px;color:#888;text-transform:uppercase;font-size:10px;letter-spacing:.06em}
+  h2{margin:4px 0 10px;font-size:20px}
+  h4{margin:16px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#777}
+  .card{background:#fff;border:1px solid #e3dfd6;border-radius:12px;padding:12px;margin-bottom:10px}
+  .card.click{cursor:pointer}
+  .card.click:hover{border-color:#1d1d1b}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eee}
+  .row:last-child{border-bottom:0}
+  .row.click{cursor:pointer}
+  .muted{color:#888;font-size:13px}
+  .btn{display:inline-block;border:0;background:#1d1d1b;color:#fff;border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer;margin:4px 4px 4px 0}
+  .btn.sec{background:#fff;color:#1d1d1b;border:1px solid #1d1d1b}
+  .btn.warn{background:#a33}
+  .btn.full{display:block;width:100%;margin:8px 0}
+  .pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;background:#eee}
+  .pill.ok{background:#d6ecd2}.pill.wip{background:#fbe7b5}.pill.no{background:#f2d0d0}.pill.grey{background:#e6e6e6;color:#666}
+  .warnbox{background:#fff4d6;border:1px solid #e8c45a;border-radius:10px;padding:10px;font-size:13px;margin:8px 0}
+  .hint{font-size:12px;color:#8a5a00}
+  input,select,textarea{width:100%;padding:9px;border:1px solid #ccc;border-radius:8px;font:inherit;margin:3px 0 10px;background:#fff}
+  label{font-size:12px;color:#555}
+  .modal{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:6}
+  .modal .sheet{background:#faf8f4;width:100%;border-radius:18px 18px 0 0;padding:16px;max-height:85%;overflow:auto}
+  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .thumbs div{aspect-ratio:1;background:#cfc8b8;border-radius:4px}
+  .switcher{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#ff2d75;color:#fff;border-radius:30px;padding:8px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:99;font:600 13px system-ui}
+  .switcher button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:20px;padding:4px 10px;cursor:pointer;font:inherit}
+  .switcher button.on{background:#fff;color:#ff2d75}
+  .switcher .sep{width:1px;height:18px;background:rgba(255,255,255,.5)}
+  .banner{background:#ff2d75;color:#fff;text-align:center;font:600 11px system-ui;padding:3px}
+</style>
+</head>
+<body>
+<div class="banner">PROTOTYP - Wegwerfcode. Fragt nur: welche Screens, welche Navigation?</div>
+<div class="stage">
+  <div class="phone" id="phone"></div>
+  <div class="side" id="side"></div>
+</div>
+<div class="switcher" id="switcher"></div>
+
+<script>
+// ---------- Mock-Daten (fiktiv, keine echten Namen/Preise) ----------
+const MEMBERS = [
+  {name:'Andi', state:'fertig', paid:true},
+  {name:'Basti', state:'in Arbeit', paid:false},
+  {name:'Chris', state:'nichts eingetragen', paid:false},
+  {name:'Dani', state:'Verzicht', paid:false},
+  {name:'Erik', state:'fertig', paid:false, note:true},
+  {name:'Flo', state:'fertig', paid:false, unavailable:true},
+  {name:'Gregor', state:'in Arbeit', paid:false, left:true},
+];
+const ARTICLES = [
+  {name:'Hoodie schwarz', price:'45,00', sizes:['S','M','L','XL','XXL (+3,00)'], spots:[{n:'vorne',type:'Motiv',req:true,motifs:['Clublogo']},{n:'hinten',type:'Motiv',req:false,motifs:['Schriftzug','Clublogo groß']},{n:'Ärmel',type:'Text',req:false}]},
+  {name:'Hoodie grau', price:'45,00', sizes:['S','M','L','XL'], spots:[{n:'vorne',type:'Motiv',req:true,motifs:['Clublogo']}]},
+  {name:'T-Shirt', price:'20,00', sizes:['S','M','L','XL'], spots:[{n:'vorne',type:'Motiv',req:true,motifs:['Clublogo','Schriftzug']}]},
+  {name:'Mütze', price:'18,00', sizes:['Einheitsgröße'], spots:[{n:'vorne',type:'Motiv',req:true,motifs:['Clublogo']}], hidden:true},
+];
+const EVENTS = [
+  {t:'Stammtisch', art:'Stammtisch', d:'Fr 20.11. 19:00', ort:'Vereinsheim'},
+  {t:'Jahreshauptversammlung', art:'Sitzung', d:'Sa 05.12. 18:00', ort:'Gasthof'},
+  {t:'Weihnachtsfeier', art:'Veranstaltung', d:'Sa 19.12. 18:00', ort:'Vereinsheim'},
+  {t:'Ausfahrt Frühjahr', art:'Veranstaltung', d:'Sa 17.04.', ort:'Treffpunkt Parkplatz', cancelled:true},
+];
+const PAST = [
+  {t:'Sommerfest', d:'12.07.2026', pics:24},
+  {t:'Herbstausfahrt', d:'03.10.2026', pics:9},
+  {t:'Weihnachtsfeier', d:'20.12.2025', pics:0},
+];
+const PROTOCOLS = [
+  {t:'Sitzung Oktober', d:'08.10.2026', files:1},
+  {t:'Jahreshauptversammlung', d:'06.12.2025', files:3},
+];
+
+// ---------- Zustand ----------
+const S = {
+  role:'mitglied',              // gast | mitglied | admin
+  round:'offen',                // offen | abgeschlossen | keine
+  orderState:'in Arbeit',       // nichts eingetragen | in Arbeit | fertig | Verzicht
+  positions:[{a:'Hoodie schwarz',s:'L',spots:'vorne: Clublogo, hinten: Schriftzug',n:1,sum:'45,00'}],
+  screen:null, stack:[], drawer:false, modal:null, adminMode:false,
+};
+const variant = () => new URLSearchParams(location.search).get('variant') || 'A';
+
+// ---------- Screen-Katalog: id -> {title, area, render} ----------
+const SCREENS = {
+  // öffentlich
+  'pub.home':   {t:'Club', area:'Öffentlich', r:()=>`
+    <div class="card"><h2>Willkommen beim Club</h2><p class="muted">Kurzer Text über den Club, den der Admin pflegt. Ein Bild.</p></div>
+    <button class="btn full" onclick="go('pub.login')">Anmelden (für Mitglieder)</button>
+    <p class="muted" style="text-align:center"><a href="#" onclick="go('pub.impressum')">Impressum</a> · <a href="#" onclick="go('pub.datenschutz')">Datenschutz</a></p>`},
+  'pub.login':  {t:'Anmelden', area:'Öffentlich', r:()=>`
+    <label>E-Mail</label><input><label>Passwort</label><input type="password">
+    <button class="btn full" onclick="S.role='mitglied';reset()">Anmelden</button>
+    <a href="#" onclick="go('pub.forgot')">Passwort vergessen?</a>`},
+  'pub.forgot': {t:'Passwort vergessen', area:'Öffentlich', r:()=>`
+    <p>Wir schicken dir einen Link zum Setzen eines neuen Passworts.</p><label>E-Mail</label><input>
+    <button class="btn full">Link schicken</button>`},
+  'pub.setpw':  {t:'Passwort setzen', area:'Öffentlich', r:()=>`
+    <p class="muted">Ziel des Einladungslinks (7 Tage gültig) und von "Passwort vergessen".</p>
+    <label>Neues Passwort</label><input type="password"><label>Wiederholen</label><input type="password">
+    <button class="btn full" onclick="S.role='mitglied';reset()">Passwort setzen und loslegen</button>`},
+  'pub.impressum':{t:'Impressum', area:'Öffentlich', r:()=>`<p class="muted">Statische Seite. Verantwortlich: Admin des Clubs.</p>`},
+  'pub.datenschutz':{t:'Datenschutz', area:'Öffentlich', r:()=>`<p class="muted">Statische Seite.</p>`},
+
+  // Mitglied: Bestellen
+  'm.round':    {t:'Bestellrunde', area:'Mitglied', r:renderRound},
+  'm.article':  {t:'Artikel wählen', area:'Mitglied', r:()=>`
+    ${ARTICLES.filter(a=>!a.hidden).map(a=>`<div class="card click" onclick="go('m.configure',{a:'${a.name}'})"><b>${a.name}</b><div class="muted">ab ${a.price} € · ${a.sizes.length} Größen</div></div>`).join('')}`},
+  'm.configure':{t:'Position', area:'Mitglied', r:(p)=>{ const a=ARTICLES.find(x=>x.name===(p&&p.a))||ARTICLES[0]; return `
+    <div class="card"><b>${a.name}</b> · ${a.price} €<div class="muted">Bild und Beschreibung, falls gepflegt</div></div>
+    <label>Größe</label><select>${a.sizes.map(s=>`<option>${s}</option>`)}</select>
+    ${a.spots.map(sp=>`<label>Druckstelle ${sp.n}${sp.req?' (Pflicht)':' (optional)'}</label>${sp.type==='Text'?'<input placeholder="Text, z. B. Spitzname">':`<select>${sp.req?'':'<option>- leer -</option>'}${sp.motifs.map(m=>`<option>${m}</option>`)}</select>`}`).join('')}
+    <label>Anzahl</label><input type="number" value="1">
+    <button class="btn full" onclick="S.positions.push({a:'${a.name}',s:'M',spots:'vorne: Clublogo',n:1,sum:'${a.price}'});S.orderState='in Arbeit';back()">In den Auftrag</button>`}},
+  'm.history':  {t:'Frühere Runden', area:'Mitglied', r:()=>`
+    <p class="muted">Eigene Aufträge abgeschlossener Runden, nur lesend.</p>
+    <div class="card click" onclick="go('m.pastorder')"><b>Frühjahr 2026</b><div class="muted">2 Positionen · 65,00 € · <span class="pill ok">bezahlt</span></div></div>`},
+  'm.pastorder':{t:'Frühjahr 2026', area:'Mitglied', r:()=>`
+    <div class="card"><div class="row"><span>T-Shirt M · vorne: Clublogo</span><span>20,00</span></div><div class="row"><span>Hoodie schwarz L · vorne: Clublogo</span><span>45,00</span></div><div class="row"><b>Summe</b><b>65,00 €</b></div></div><span class="pill ok">bezahlt</span>`},
+
+  // Mitglied: Kalender
+  'm.calendar': {t:'Kalender', area:'Mitglied', r:()=>`
+    ${EVENTS.map((e,i)=>`<div class="card click" onclick="go('m.event',{i:${i}})"><div class="muted">${e.d} · ${e.art}</div><b style="${e.cancelled?'text-decoration:line-through':''}">${e.t}</b> ${e.cancelled?'<span class="pill no">abgesagt</span>':''}<div class="muted">${e.ort}</div></div>`).join('')}
+    <button class="btn sec full" onclick="openModal('ical')">Kalender abonnieren</button>
+    ${isAdmin()?`<button class="btn full" onclick="go('a.eventedit')">+ Termin anlegen</button>`:''}`},
+  'm.event':    {t:'Termin', area:'Mitglied', r:(p)=>{const e=EVENTS[(p&&p.i)||0]; return `
+    <div class="muted">${e.art}</div><h2>${e.t}</h2><p>${e.d}<br>${e.ort}</p><p class="muted">Infotext zum Termin.</p>
+    ${e.art==='Sitzung'?`<div class="card click" onclick="go('m.protocol')">Protokoll ansehen</div>`:''}
+    ${isAdmin()?`<h4>Admin</h4><button class="btn sec" onclick="go('a.eventedit')">Bearbeiten</button><button class="btn sec">Kopieren</button><button class="btn sec">Absagen</button>${e.art==='Sitzung'?`<button class="btn sec" onclick="go('a.protocolupload')">Protokoll hochladen</button>`:''}`:''}`}},
+
+  // Mitglied: Archiv & Protokolle
+  'm.archive':  {t:'Archiv', area:'Mitglied', r:()=>`
+    ${PAST.map(p=>`<div class="card click" onclick="go('m.gallery',{t:'${p.t}'})"><b>${p.t}</b><div class="muted">${p.d} · ${p.pics} Bilder</div></div>`).join('')}
+    ${isAdmin()?`<button class="btn sec full" onclick="go('a.eventedit')">+ Vergangene Veranstaltung nachtragen</button>`:''}`},
+  'm.gallery':  {t:'Galerie', area:'Mitglied', r:(p)=>`
+    <h2>${(p&&p.t)||'Sommerfest'}</h2><button class="btn full">Bilder hochladen</button>
+    <div class="thumbs">${Array(9).fill('<div></div>').join('')}</div>
+    <p class="muted">Tippen = Vollbild. Eigene Bilder löschbar${isAdmin()?', als Admin alle':''}.</p>`},
+  'm.protocols':{t:'Protokolle', area:'Mitglied', r:()=>`
+    ${PROTOCOLS.map(p=>`<div class="card click" onclick="go('m.protocol')"><b>${p.t}</b><div class="muted">${p.d} · ${p.files} Datei(en)</div></div>`).join('')}`},
+  'm.protocol': {t:'Protokoll', area:'Mitglied', r:()=>`
+    <h2>Sitzung Oktober</h2><div class="card">📄 protokoll.pdf</div><div class="card">🖼 seite2.jpg</div>
+    ${isAdmin()?`<button class="btn sec" onclick="go('a.protocolupload')">Dateien ändern</button>`:''}`},
+  'm.profile':  {t:'Profil', area:'Mitglied', r:()=>`
+    <div class="card"><label>Name</label><div>Andi</div><label>E-Mail</label><div>andi@beispiel.de</div><p class="muted">Ändern nur über den Admin.</p></div>
+    <button class="btn sec full">Passwort ändern</button>
+    <button class="btn sec full" onclick="openModal('ical')">Kalender-Abo-Link kopieren</button>
+    <button class="btn sec full" onclick="S.role='gast';reset()">Abmelden</button>`},
+
+  // Admin
+  'a.overview': {t:'Übersicht Runde', area:'Admin', r:renderOverview},
+  'a.memberorder':{t:'Auftrag von Basti', area:'Admin', r:()=>`
+    <p class="muted">Admin bearbeitet den Auftrag eines Mitglieds (Runde offen).</p>
+    <div class="card"><div class="row"><span>T-Shirt L · vorne: Schriftzug</span><span>20,00</span></div><div class="row"><b>Summe</b><b>20,00 €</b></div></div>
+    <button class="btn sec" onclick="go('m.article')">+ Position</button>
+    <label>Korrektur (Betrag + Begründung)</label><input placeholder="-5,00 Restposten">
+    <label>Bezahlt</label><select><option>nein</option><option>ja</option></select>
+    <button class="btn">Speichern</button>`},
+  'a.rounds':   {t:'Bestellrunden', area:'Admin', r:()=>`
+    ${S.round!=='offen'?`<button class="btn full" onclick="openModal('newround')">+ Neue Bestellrunde</button>`:''}
+    <div class="card click" onclick="go('a.overview')"><b>Herbst 2026</b> <span class="pill ${S.round==='offen'?'wip':'grey'}">${S.round==='offen'?'offen':'abgeschlossen'}</span></div>
+    <div class="card click" onclick="go('a.closedround')"><b>Frühjahr 2026</b> <span class="pill grey">abgeschlossen</span></div>`},
+  'a.closedround':{t:'Frühjahr 2026', area:'Admin', r:()=>`
+    <span class="pill grey">abgeschlossen</span> <span class="muted">Preise festgehalten</span>
+    <h4>Sammelbestellung</h4><button class="btn">PDF</button><button class="btn">Excel</button>
+    <h4>Mitglieder</h4>${MEMBERS.slice(0,4).map(m=>`<div class="row"><span>${m.name}</span><span class="pill ${m.paid?'ok':'no'}">${m.paid?'bezahlt':'offen'}</span></div>`).join('')}
+    <button class="btn sec full" ${S.round==='offen'?'disabled title="Eine andere Runde ist offen"':''}>Wieder öffnen</button>`},
+  'a.catalog':  {t:'Sortiment', area:'Admin', r:()=>`
+    <div class="muted">Reihenfolge per Ziehen. Ausgeblendete ausgegraut.</div>
+    ${ARTICLES.map(a=>`<div class="row click" onclick="go('a.articleedit',{a:'${a.name}'})"><span>☰ ${a.name} ${a.hidden?'<span class="pill grey">ausgeblendet</span>':''}</span><span class="muted">${a.price} ›</span></div>`).join('')}
+    <button class="btn full" onclick="go('a.articleedit')">+ Artikel</button>
+    <button class="btn sec full" onclick="go('a.motifs')">Motive verwalten</button>`},
+  'a.articleedit':{t:'Artikel bearbeiten', area:'Admin', r:(p)=>{const a=ARTICLES.find(x=>x.name===(p&&p.a))||ARTICLES[0]; return `
+    <label>Name</label><input value="${a.name}"><label>Preis (inkl. Aufdruck)</label><input value="${a.price}">
+    <label>Bild, Beschreibung</label><input placeholder="optional">
+    <h4>Größen</h4>${a.sizes.map(s=>`<div class="row"><span>☰ ${s}</span><span class="muted">Aufpreis · ausblenden</span></div>`).join('')}<button class="btn sec">+ Größe</button>
+    <h4>Druckstellen</h4>${a.spots.map(s=>`<div class="card"><b>${s.n}</b> · ${s.type==='Text'?'Textfeld':'Motivauswahl'} · ${s.req?'Pflicht':'optional'}<div class="muted">${s.motifs?'Erlaubt: '+s.motifs.join(', '):'Freitext'} · Aufpreis 0,00</div></div>`).join('')}<button class="btn sec">+ Druckstelle</button>
+    <h4>Aktionen</h4><button class="btn sec">Kopieren (z. B. andere Farbe)</button><button class="btn sec">Ausblenden</button>`}},
+  'a.motifs':   {t:'Motive', area:'Admin', r:()=>`
+    ${['Clublogo','Schriftzug','Clublogo groß'].map(m=>`<div class="row"><span>☰ 🖼 ${m}</span><span class="muted">ausblenden</span></div>`).join('')}<button class="btn full">+ Motiv</button>`},
+  'a.eventedit':{t:'Termin', area:'Admin', r:()=>`
+    <label>Titel</label><input><label>Art</label><select><option>Stammtisch</option><option>Sitzung</option><option>Veranstaltung</option></select>
+    <label>Beginn</label><input type="datetime-local"><label><input type="checkbox" style="width:auto"> ganztägig</label>
+    <label>Ende (optional)</label><input type="datetime-local"><label>Ort</label><input><label>Infotext</label><textarea></textarea>
+    <button class="btn full">Speichern</button>`},
+  'a.protocolupload':{t:'Protokoll hochladen', area:'Admin', r:()=>`
+    <p class="muted">PDF oder Fotos, mehrere Dateien möglich.</p><button class="btn full">Dateien wählen</button>`},
+  'a.members':  {t:'Mitglieder', area:'Admin', r:()=>`
+    <button class="btn full" onclick="go('a.memberedit',{neu:1})">+ Mitglied einladen</button>
+    ${MEMBERS.map((m,i)=>`<div class="row click" onclick="go('a.memberedit')"><span>${m.name}${i===0?' <span class="pill">Admin</span>':''}</span><span class="pill ${m.left?'grey':i===2?'wip':'ok'}">${m.left?'gesperrt':i===2?'eingeladen':'aktiv'}</span></div>`).join('')}`},
+  'a.memberedit':{t:'Mitglied', area:'Admin', r:(p)=> p&&p.neu ? `
+    <label>Name</label><input><label>E-Mail</label><input><button class="btn full">Einladung schicken</button>` : `
+    <label>Name</label><input value="Chris"><label>E-Mail</label><input value="chris@beispiel.de">
+    <span class="pill wip">eingeladen</span>
+    <button class="btn sec full">Erneut einladen</button><button class="btn sec full">Admin-Recht geben</button>
+    <button class="btn sec full">Sperren (Austritt)</button><button class="btn warn full">Daten löschen (DSGVO)</button>`},
+  'a.settings': {t:'Einstellungen', area:'Admin', r:()=>`
+    <label>Zahlungshinweis (Bank, Verwendungszweck)</label><textarea>IBAN ..., Verwendungszweck: Name + Runde</textarea>
+    <label>Text öffentliche Startseite</label><textarea>Über den Club ...</textarea>
+    <h4>Kalender-Abo</h4><button class="btn sec">Neuen geheimen Link erzeugen</button>
+    <p class="muted">Impressum und Datenschutz: statisch, nicht hier.</p>`},
+};
+
+function renderRound(){
+  if(S.round==='keine') return `<div class="card"><h2>Gerade keine Bestellrunde</h2><p class="muted">Sobald der Admin eine eröffnet, kannst du hier bestellen.</p></div>
+    <div class="card click" onclick="go('m.history')">Frühere Runden ›</div>`;
+  const sum = S.positions.reduce((t,p)=>t+parseFloat(p.sum.replace(',','.'))*p.n,0).toFixed(2).replace('.',',');
+  if(S.round==='abgeschlossen') return `<div class="muted">Herbst 2026 · abgeschlossen</div><h2>Dein Auftrag</h2>
+    <div class="card">${S.positions.map(p=>`<div class="row"><span>${p.n}× ${p.a} ${p.s}<div class="muted">${p.spots}</div></span><span>${p.sum}</span></div>`).join('')}<div class="row"><b>Summe</b><b>${sum} €</b></div></div>
+    <span class="pill no">noch nicht bezahlt</span>
+    <div class="card" style="margin-top:10px"><b>Zahlungshinweis</b><div class="muted">IBAN ..., Verwendungszweck: Name + Herbst 2026</div></div>
+    <div class="card click" onclick="go('m.history')">Frühere Runden ›</div>`;
+  return `<div class="muted">Herbst 2026 · Bestelldatum 30.11.</div><h2>Dein Auftrag <span class="pill ${S.orderState==='fertig'||S.orderState==='Verzicht'?'ok':'wip'}">${S.orderState}</span></h2>
+    ${S.orderState==='Verzicht'?`<div class="card">Du bestellst diesmal nichts.</div><button class="btn sec" onclick="S.orderState='in Arbeit';render()">Doch bestellen</button>`:`
+    <div class="card">${S.positions.length?S.positions.map((p,i)=>`<div class="row"><span>${p.n}× ${p.a} ${p.s}<div class="muted">${p.spots}</div></span><span>${p.sum} ${S.orderState!=='fertig'?`<a href="#" onclick="S.positions.splice(${i},1);render()">✕</a>`:''}</span></div>`).join(''):'<div class="muted">Noch nichts drin.</div>'}
+      <div class="row"><b>Summe</b><b>${sum} €</b></div></div>
+    ${S.orderState==='fertig'?`<button class="btn sec full" onclick="S.orderState='in Arbeit';render()">Wieder öffnen</button>`:`
+    <button class="btn sec full" onclick="go('m.article')">+ Position hinzufügen</button>
+    <label>Anmerkung</label><textarea placeholder="z. B. Hoodie bitte etwas länger"></textarea><div class="hint">Der Drucker sieht diesen Text.</div>
+    <button class="btn full" onclick="S.orderState='fertig';render()">Bin fertig</button>
+    <button class="btn sec full" onclick="S.orderState='Verzicht';render()">Diesmal nichts</button>`}`}
+    ${isAdmin()&&variant()!=='C'?`<div class="card click" style="margin-top:14px;border-color:#1d1d1b" onclick="go('a.overview')"><b>Admin: Übersicht der Runde ›</b><div class="muted">3 von 7 erledigt · 1 bezahlt</div></div>`:''}`;
+}
+function renderOverview(){
+  const pill = s => ({'fertig':'ok','Verzicht':'ok','in Arbeit':'wip','nichts eingetragen':'no'})[s];
+  return `<div class="muted">Herbst 2026 · ${S.round}</div><h2>Übersicht</h2>
+    <div class="card"><div class="row"><span>erledigt (fertig + Verzicht)</span><b>${MEMBERS.filter(m=>m.state==='fertig'||m.state==='Verzicht').length} / ${MEMBERS.length}</b></div><div class="row"><span>bezahlt</span><b>${MEMBERS.filter(m=>m.paid).length}</b></div></div>
+    ${MEMBERS.map(m=>`<div class="row click" onclick="go('a.memberorder')"><span>${m.name} ${m.left?'<span class="pill grey">ausgetreten</span>':''}${m.unavailable?' <span class="pill no">nicht verfügbar</span>':''}${m.note?' 💬':''}</span><span><span class="pill ${pill(m.state)}">${m.state}</span> ${m.state==='fertig'?`<span class="pill ${m.paid?'ok':'grey'}">${m.paid?'€ ✓':'€'}</span>`:''}</span></div>`).join('')}
+    ${S.round==='offen'?`<button class="btn full" onclick="openModal('close')">Runde abschließen</button>`:`
+      <h4>Sammelbestellung</h4><button class="btn">PDF</button><button class="btn">Excel</button>
+      <button class="btn sec full" onclick="S.round='offen';render()">Wieder öffnen</button>`}`;
+}
+
+const MODALS = {
+  close: ()=>`<h2>Runde abschließen?</h2>
+    <div class="warnbox">⚠ 3 Aufträge noch nicht fertig (Basti, Chris, Gregor)</div>
+    <div class="warnbox">⚠ 1 Position nicht mehr verfügbar (Flo: Mütze)</div>
+    <label>Nicht fertige Aufträge</label><select><option>mitnehmen</option><option>weglassen</option></select>
+    <p class="muted">Preise werden beim Abschließen festgehalten.</p>
+    <button class="btn full" onclick="S.round='abgeschlossen';closeModal()">Abschließen</button><button class="btn sec full" onclick="closeModal()">Abbrechen</button>`,
+  newround: ()=>`<h2>Neue Bestellrunde</h2><label>Name</label><input value="Frühjahr 2027"><label>Bestelldatum (nur Ansage)</label><input type="date">
+    <button class="btn full" onclick="S.round='offen';S.orderState='nichts eingetragen';S.positions=[];closeModal()">Eröffnen</button><button class="btn sec full" onclick="closeModal()">Abbrechen</button>`,
+  ical: ()=>`<h2>Kalender abonnieren</h2><input value="https://.../ical/geheim-a8f3..." readonly><button class="btn full" onclick="closeModal()">Link kopieren</button><p class="muted">In Google/Apple-Kalender als Abo einfügen.</p>`,
+};
+
+// ---------- Navigation-Shells (die eigentlichen Varianten) ----------
+const VARIANTS = {
+  A: {name:'Tab-Leiste, Admin inline', home:()=>'m.round', shell(){
+    const tabs=[['m.round','👕','Bestellen'],['m.calendar','📅','Kalender'],['m.archive','🖼','Archiv'],['m.protocols','📄','Protokolle'],[isAdmin()?'x.more':'m.profile',isAdmin()?'⚙':'👤',isAdmin()?'Mehr':'Profil']];
+    return topbar() + `<main>${body()}</main><nav class="tabs">${tabs.map(([id,i,l])=>`<button class="${root()===id?'on':''}" onclick="tab('${id}')"><span class="i">${i}</span>${l}</button>`).join('')}</nav>`;
+  }},
+  B: {name:'Startseite als Hub', home:()=>'x.hub', shell(){
+    return topbar(S.screen!=='x.hub') + `<main>${body()}</main>`;
+  }},
+  C: {name:'Menü + getrennte Verwaltung', home:()=>S.adminMode?'a.overview':'m.round', shell(){
+    const admin = S.adminMode;
+    const sub = admin ? `<nav class="subtabs">${[['a.overview','Runde'],['a.rounds','Runden'],['a.catalog','Sortiment'],['m.calendar','Termine'],['a.members','Mitglieder'],['a.settings','Einstellungen']].map(([id,l])=>`<button class="${root()===id?'on':''}" onclick="tab('${id}')">${l}</button>`).join('')}</nav>` : '';
+    const drawer = S.drawer ? `<div class="drawer" onclick="S.drawer=false;render()"><div class="panel" onclick="event.stopPropagation()">
+      <small>Club</small>${[['m.round','Bestellen'],['m.calendar','Kalender'],['m.archive','Archiv'],['m.protocols','Protokolle'],['m.profile','Profil']].map(([id,l])=>`<button class="${!admin&&root()===id?'on':''}" onclick="S.adminMode=false;S.drawer=false;tab('${id}')">${l}</button>`).join('')}
+      ${isAdmin()?`<hr><button class="${admin?'on':''}" onclick="S.adminMode=true;S.drawer=false;tab('a.overview')">⚙ Verwaltung</button>`:''}</div></div>` : '';
+    return `<header class="top">${S.stack.length?`<button onclick="back()">‹</button>`:`<button onclick="S.drawer=true;render()">☰</button>`}<b>${admin?'Verwaltung · ':''}${title()}</b></header>${sub}<main>${body()}</main>${drawer}`;
+  }},
+};
+
+// Hub-Screen nur für Variante B, Mehr-Screen nur für A
+SCREENS['x.hub'] = {t:'Club', area:'Variante B', r:()=>`
+  <div class="card click" onclick="go('m.round')"><div class="muted">Bestellrunde Herbst 2026 · bis 30.11.</div><b>Dein Auftrag: ${S.round==='offen'?S.orderState:S.round}</b> ›</div>
+  <div class="card click" onclick="go('m.event',{i:0})"><div class="muted">Nächster Termin</div><b>${EVENTS[0].t}</b><div class="muted">${EVENTS[0].d}</div></div>
+  <div class="card click" onclick="go('m.gallery',{t:'Herbstausfahrt'})"><div class="muted">Zuletzt im Archiv</div><b>Herbstausfahrt</b> · 9 Bilder</div>
+  <div class="row click" onclick="go('m.calendar')"><span>📅 Kalender</span>›</div>
+  <div class="row click" onclick="go('m.archive')"><span>🖼 Archiv</span>›</div>
+  <div class="row click" onclick="go('m.protocols')"><span>📄 Protokolle</span>›</div>
+  <div class="row click" onclick="go('m.profile')"><span>👤 Profil</span>›</div>
+  ${isAdmin()?`<h4>Verwaltung</h4>
+  <div class="card click" onclick="go('a.overview')"><b>Übersicht Runde</b><div class="muted">4 offen · 6 nicht bezahlt</div></div>
+  <div class="row click" onclick="go('a.rounds')"><span>Bestellrunden</span>›</div>
+  <div class="row click" onclick="go('a.catalog')"><span>Sortiment</span>›</div>
+  <div class="row click" onclick="go('a.members')"><span>Mitglieder</span>›</div>
+  <div class="row click" onclick="go('a.settings')"><span>Einstellungen</span>›</div>`:''}`};
+SCREENS['x.more'] = {t:'Mehr', area:'Variante A', r:()=>`
+  <div class="row click" onclick="go('m.profile')"><span>👤 Profil</span>›</div>
+  <h4>Verwaltung</h4>
+  <div class="row click" onclick="go('a.rounds')"><span>Bestellrunden</span>›</div>
+  <div class="row click" onclick="go('a.catalog')"><span>Sortiment</span>›</div>
+  <div class="row click" onclick="go('a.members')"><span>Mitglieder</span>›</div>
+  <div class="row click" onclick="go('a.settings')"><span>Einstellungen</span>›</div>`};
+
+// ---------- Helfer ----------
+function isAdmin(){return S.role==='admin'}
+function title(){return (SCREENS[S.screen]||{}).t||''}
+function root(){return S.stack.length?S.stack[0].id:S.screen}
+function body(){return SCREENS[S.screen].r(S.params)}
+function topbar(withBack){const b = withBack ?? S.stack.length>0; return `<header class="top">${b?`<button onclick="back()">‹</button>`:''}<b>${title()}</b></header>`}
+function go(id,params){S.stack.push({id:S.screen,params:S.params});S.screen=id;S.params=params;render();return false}
+function back(){const p=S.stack.pop();if(p){S.screen=p.id;S.params=p.params}render()}
+function tab(id){S.stack=[];S.screen=id;S.params=null;render()}
+function reset(){S.stack=[];S.params=null;S.adminMode=false;S.screen=S.role==='gast'?'pub.home':VARIANTS[variant()].home();render()}
+function openModal(m){S.modal=m;render()}
+function closeModal(){S.modal=null;render()}
+function setVariant(v){const u=new URL(location);u.searchParams.set('variant',v);history.replaceState(null,'',u);reset()}
+function jump(id){S.stack=[];S.screen=id;S.params=null;render()}
+
+function render(){
+  const v=VARIANTS[variant()]||VARIANTS.A;
+  let html;
+  if(S.role==='gast' || S.screen.startsWith('pub.')) html = topbar() + `<main>${body()}</main>`;
+  else html = v.shell();
+  if(S.modal) html += `<div class="modal" onclick="closeModal()"><div class="sheet" onclick="event.stopPropagation()">${MODALS[S.modal]()}</div></div>`;
+  document.getElementById('phone').innerHTML = html;
+
+  // Seitenleiste: Screen-Inventar + Zustand
+  const groups={};
+  for(const [id,s] of Object.entries(SCREENS)){ if(s.area==='Variante A'&&variant()!=='A')continue; if(s.area==='Variante B'&&variant()!=='B')continue; (groups[s.area]=groups[s.area]||[]).push([id,s.t]); }
+  document.getElementById('side').innerHTML = `
+    <h3>Rolle</h3>${['gast','mitglied','admin'].map(r=>`<button class="btn ${S.role===r?'':'sec'}" onclick="S.role='${r}';reset()">${r}</button>`).join('')}
+    <h3>Bestellrunde</h3>${['offen','abgeschlossen','keine'].map(r=>`<button class="btn ${S.round===r?'':'sec'}" onclick="S.round='${r}';render()">${r}</button>`).join('')}
+    <h3>Screen-Inventar (${Object.keys(SCREENS).length})</h3>
+    ${Object.entries(groups).map(([g,l])=>`<b>${g}</b>${l.map(([id,t])=>`<button class="scr ${S.screen===id?'on':''}" onclick="jump('${id}')">${t} <span class="muted">${id}</span></button>`).join('')}`).join('')}
+    <h3>Zustand</h3><pre>${JSON.stringify({variant:variant(),role:S.role,screen:S.screen,stack:S.stack.map(s=>s.id),round:S.round,orderState:S.orderState,positions:S.positions.length,adminMode:S.adminMode},null,1)}</pre>`;
+
+  document.getElementById('switcher').innerHTML = `<button onclick="cycle(-1)">←</button>${Object.entries(VARIANTS).map(([k,x])=>`<button class="${variant()===k?'on':''}" onclick="setVariant('${k}')">${k}</button>`).join('')}<span>${variant()} (${v.name})</span><button onclick="cycle(1)">→</button>`;
+}
+function cycle(d){const k=Object.keys(VARIANTS);setVariant(k[(k.indexOf(variant())+d+k.length)%k.length])}
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,[contenteditable]'))return;if(e.key==='ArrowLeft')cycle(-1);if(e.key==='ArrowRight')cycle(1)});
+reset();
+</script>
+</body>
+</html>
