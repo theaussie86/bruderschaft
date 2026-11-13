@@ -38,6 +38,46 @@ _Avoid_: beglichen, Zahlung
 Die zusammengeführten Aufträge einer geschlossenen Bestellrunde, als Liste für den Drucker.
 _Avoid_: Gesamtbestellung, Export
 
+**Position**:
+Eine Zeile in einem Auftrag: ein Artikel in einer Größe, mit je einem Motiv pro Druckstelle, und eine Anzahl.
+_Avoid_: Artikel (für die Zeile), Item
+
+## Sortiment
+
+**Artikel**:
+Ein bestellbares Kleidungsstück mit Preis, z. B. Hoodie oder Mütze. Der Preis gilt inklusive Aufdruck, solange nichts anderes festgelegt ist.
+_Avoid_: Produkt, Klamotte
+
+**Größe**:
+Eine wählbare Größe eines Artikels. Jeder Artikel hat seine eigene Größenliste.
+_Avoid_: Variante
+
+**Druckstelle**:
+Eine Stelle am Artikel, die bedruckt werden kann, z. B. vorne oder hinten. Kann Pflicht oder optional sein.
+_Avoid_: Position (für die Stelle), Platzierung
+
+**Motiv**:
+Ein Aufdruck, der an einer Druckstelle gewählt werden kann, z. B. "Hahna Allgäu" oder "Brotherhood".
+_Avoid_: Aufdruck-Variante, Logo, Design
+
+## Club-Leben
+
+**Termin**:
+Ein Eintrag im Kalender des Clubs mit Datum, Ort und Infotext. Stammtisch, Sitzung und Veranstaltung sind Arten von Termin.
+_Avoid_: Event, Eintrag
+
+**Veranstaltung**:
+Ein Termin, der nach seinem Datum mit Bildern ins Archiv eingeht.
+_Avoid_: Event, Party
+
+**Sitzung**:
+Ein Termin, an dem ein Protokoll hängt.
+_Avoid_: Meeting, Versammlung
+
+**Protokoll**:
+Die Niederschrift einer Sitzung, als Dokument hochgeladen und nur für Mitglieder sichtbar.
+_Avoid_: Notiz, Mitschrift
+
 **Drucker**:
 Der regionale Textildruck-Betrieb, der die Sammelbestellung bedruckt und liefert.
 _Avoid_: Hersteller, Lieferant
