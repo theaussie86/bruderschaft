@@ -67,20 +67,32 @@ _Avoid_: Aufdruck-Variante, Logo, Design
 ## Club-Leben
 
 **Termin**:
-Ein Eintrag im Kalender des Clubs mit Datum, Ort und Infotext. Stammtisch, Sitzung und Veranstaltung sind Arten von Termin.
-_Avoid_: Event, Eintrag
+Ein Eintrag im Kalender des Clubs mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Sitzung und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
+_Avoid_: Event, Eintrag, Serie
+
+**Abgesagter Termin**:
+Ein Termin, der nicht stattfindet, aber sichtbar bleibt, damit die Absage auch im Kalender-Abo ankommt. Gelöscht werden nur falsch angelegte Termine.
+_Avoid_: gelöschter Termin, ausgefallener Termin
 
 **Veranstaltung**:
-Ein Termin, der nach seinem Datum mit Bildern ins Archiv eingeht.
+Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder dazu hochladen.
 _Avoid_: Event, Party
+
+**Archiv**:
+Die vergangenen Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder. Stammtische und Sitzungen gehören nicht dazu.
+_Avoid_: Galerie, Chronik
 
 **Sitzung**:
 Ein Termin, an dem ein Protokoll hängt.
 _Avoid_: Meeting, Versammlung
 
 **Protokoll**:
-Die Niederschrift einer Sitzung, als Dokument hochgeladen und nur für Mitglieder sichtbar.
+Die Niederschrift einer Sitzung, von einem Admin hochgeladen, für alle Mitglieder lesbar. Eine Sitzung hat höchstens ein Protokoll, das aus mehreren Dateien bestehen kann.
 _Avoid_: Notiz, Mitschrift
+
+**Kalender-Abo**:
+Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen Kalender holen. Ein Admin kann ihn erneuern, dann gilt der alte nicht mehr.
+_Avoid_: Export, Feed
 
 **Drucker**:
 Der regionale Textildruck-Betrieb, der die Sammelbestellung bedruckt und liefert.
