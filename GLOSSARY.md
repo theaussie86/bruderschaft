@@ -51,7 +51,7 @@ Die Angabe eines Mitglieds, in einer Bestellrunde nichts zu bestellen. Untersche
 _Avoid_: Absage, leerer Auftrag
 
 **Anmerkung**:
-Ein freier Text, den ein Mitglied seinem Auftrag mitgibt, für alles, was die Auswahl nicht abdeckt. Der Admin sieht ihn in der Übersicht und in der Sammelbestellung.
+Ein freier Text, den ein Mitglied seinem Auftrag mitgibt, für alles, was die Auswahl nicht abdeckt. Der Admin sieht ihn in der Übersicht, der Drucker in der Sammelbestellung.
 _Avoid_: Kommentar, Notiz
 
 **Korrektur**:
@@ -63,8 +63,12 @@ Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags
 _Avoid_: beglichen, Zahlung
 
 **Sammelbestellung**:
-Die zusammengeführten Aufträge einer abgeschlossenen Bestellrunde, als Liste für den Drucker. Enthält die abgeschickten Aufträge; ob noch nicht abgeschickte mit hineinkommen, entscheidet der Admin beim Abschließen.
+Die zusammengeführten Aufträge einer abgeschlossenen Bestellrunde, als Dokument für den Drucker: Summen pro Artikel, Größe und Belegung der Druckstellen, die Zahl der Drucke pro Motiv, die Textdrucke und eine Liste pro Mitglied mit Anmerkung. Preise und Zahlungsstand stehen nicht darin. Enthält die abgeschickten Aufträge; ob noch nicht abgeschickte mit hineinkommen, entscheidet der Admin beim Abschließen. Nur Admins rufen sie ab und geben sie selbst an den Drucker weiter.
 _Avoid_: Gesamtbestellung, Export
+
+**Textdruck**:
+Eine belegte Text-Druckstelle mit dem Text, den ein Mitglied eingetragen hat, z. B. ein Spitzname. Textdrucke lassen sich nicht aufsummieren und stehen in der Sammelbestellung einzeln.
+_Avoid_: Namensdruck, Beschriftung
 
 **Position**:
 Eine Zeile in einem Auftrag: ein Artikel in einer Größe, mit einem Motiv oder Text pro belegter Druckstelle, und eine Anzahl.
