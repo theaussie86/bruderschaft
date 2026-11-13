@@ -8,9 +8,25 @@ Mitglieder-App eines Clubs mit rund 20 festen Mitgliedern. Kern ist die gemeinsa
 Eine Person, die zum Club gehört und einen Zugang hat. Wird vom Admin angelegt, registriert sich nie selbst.
 _Avoid_: User, Member, Kunde
 
+**Eingeladenes Mitglied**:
+Ein Mitglied, das der Admin angelegt hat und das sein Passwort über den Einladungslink noch nicht gesetzt hat. Der Admin kann die Einladung erneut senden, dann gilt nur noch der neue Link.
+_Avoid_: inaktiv, unbestätigt
+
+**Ausgetretenes Mitglied**:
+Ein Mitglied, das der Admin gesperrt hat. Es kann sich nicht mehr anmelden und taucht in neuen Bestellrunden nicht auf; seine Aufträge und Bilder bleiben mit Namen erhalten. Die Sperre lässt sich aufheben.
+_Avoid_: gelöschtes Mitglied, deaktiviert
+
+**Ehemaliges Mitglied**:
+Die Bezeichnung, unter der Aufträge und Bilder eines ausgetretenen Mitglieds weiterlaufen, nachdem seine Daten auf Wunsch gelöscht wurden. Gelöscht wird ein Mitglied sonst nur, wenn es falsch angelegt wurde und weder Aufträge noch Bilder hat.
+_Avoid_: anonym, Gast
+
 **Admin**:
-Ein Recht, das einzelne Mitglieder zusätzlich haben. Ein Admin ist immer auch Mitglied und bestellt selbst.
+Ein Recht, das einzelne Mitglieder zusätzlich haben. Ein Admin ist immer auch Mitglied und bestellt selbst. Jeder Admin kann das Recht vergeben und entziehen; es bleibt immer mindestens ein Admin.
 _Avoid_: Verwalter, Superuser
+
+**Support-Konto**:
+Der Zugang des Entwicklers, mit denselben Rechten wie ein Admin. Er ist kein Mitglied, bestellt nicht und taucht in keiner Übersicht oder Liste auf.
+_Avoid_: Admin (für den Entwickler), Testkonto
 
 ## Bestellung
 
