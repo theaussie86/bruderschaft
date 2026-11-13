@@ -15,27 +15,31 @@ _Avoid_: Verwalter, Superuser
 ## Bestellung
 
 **Bestellrunde**:
-Ein Sammelzeitraum mit festem Bestelldatum, den ein Admin eröffnet. Es gibt höchstens eine offene Bestellrunde, geschlossene bleiben als Archiv lesbar.
+Ein Sammelzeitraum, den ein Admin eröffnet und von Hand abschließt. Sie ist entweder offen oder abgeschlossen. Es gibt höchstens eine offene Bestellrunde; eine abgeschlossene kann ein Admin wieder öffnen, solange keine andere offen ist. Abgeschlossene bleiben als Archiv lesbar.
 _Avoid_: Sammelbestellung (für den Zeitraum), Bestellung, Termin
 
 **Bestelldatum**:
-Der Stichtag einer Bestellrunde, bis zu dem Mitglieder ihren Auftrag ändern können.
-_Avoid_: Deadline, Termin
+Das angekündigte Datum, bis zu dem Mitglieder ihren Auftrag eintragen sollen. Nur eine Ansage: Die Bestellrunde schließt erst, wenn ein Admin sie abschließt.
+_Avoid_: Deadline, Stichtag, Termin
 
 **Auftrag**:
-Die Auswahl eines Mitglieds in einer Bestellrunde. Jedes Mitglied hat pro Bestellrunde höchstens einen Auftrag.
+Die Auswahl eines Mitglieds in einer Bestellrunde. Jedes Mitglied hat pro Bestellrunde höchstens einen Auftrag. Solange die Runde offen ist, darf ein Admin jeden Auftrag ändern oder für ein Mitglied anlegen. Die Summe folgt immer den aktuellen Artikelpreisen.
 _Avoid_: Warenkorb, Bestellung, Order
 
 **Abgeschickter Auftrag**:
-Ein Auftrag, den das Mitglied mit "bin fertig" abgeschlossen hat. Er trägt eine Auftragsnummer und eine Summe und lässt sich bis zum Bestelldatum wieder öffnen.
+Ein Auftrag, den das Mitglied mit "bin fertig" markiert hat. Er lässt sich wieder öffnen, solange die Bestellrunde offen ist.
 _Avoid_: bestätigte Bestellung, fertiger Warenkorb
+
+**Verzicht**:
+Die Angabe eines Mitglieds, in einer Bestellrunde nichts zu bestellen. Unterscheidet "will nichts" von "hat noch nichts eingetragen".
+_Avoid_: Absage, leerer Auftrag
 
 **Bezahlt**:
 Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Clubkonto eingegangen ist.
 _Avoid_: beglichen, Zahlung
 
 **Sammelbestellung**:
-Die zusammengeführten Aufträge einer geschlossenen Bestellrunde, als Liste für den Drucker.
+Die zusammengeführten Aufträge einer abgeschlossenen Bestellrunde, als Liste für den Drucker. Enthält die abgeschickten Aufträge; ob noch nicht abgeschickte mit hineinkommen, entscheidet der Admin beim Abschließen.
 _Avoid_: Gesamtbestellung, Export
 
 **Position**:
