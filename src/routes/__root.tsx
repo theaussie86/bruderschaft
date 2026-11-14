@@ -12,7 +12,14 @@ export const Route = createRootRoute({
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { title: 'Club-App' },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    // Logo-Dateien kommen wie alle Club-Bilder aus club-assets, nicht aus public
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/club-assets/brand/favicon.ico', sizes: '32x32' },
+      { rel: 'icon', href: '/club-assets/brand/logo-icon.svg', type: 'image/svg+xml' },
+      { rel: 'apple-touch-icon', href: '/club-assets/brand/apple-touch-icon.png' },
+      { rel: 'manifest', href: '/manifest.json' },
+    ],
   }),
   shellComponent: RootDocument,
   component: Outlet,
