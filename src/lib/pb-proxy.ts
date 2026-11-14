@@ -96,7 +96,11 @@ export async function pbProxy(
     })
   }
 
-  return new Response(antwort.body, {
+  // Das fetch von Node (undici) bricht den Body ab, sobald das Response-Objekt
+  // `antwort` eingesammelt wird, außer der Stream ist gesperrt. Ohne pipeThrough
+  // wäre der Body nach einem Garbage-Collector-Lauf schon "gelesen" (Issue #41).
+  // pipeThrough sperrt ihn und reicht weiter als Stream durch.
+  return new Response(antwort.body?.pipeThrough(new TransformStream()), {
     status: antwort.status,
     statusText: antwort.statusText,
     headers: antwortHeader,

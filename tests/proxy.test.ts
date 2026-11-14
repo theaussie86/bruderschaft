@@ -1,3 +1,5 @@
+import { setFlagsFromString } from 'node:v8'
+import { runInNewContext } from 'node:vm'
 import { describe, expect, inject, test } from 'vitest'
 
 import {
@@ -152,3 +154,29 @@ describe('Sperrliste', () => {
     }
   })
 })
+
+describe('Antwort-Body', () => {
+  // Das fetch von Node räumt den Body einer Antwort ab, sobald das
+  // Response-Objekt vom Garbage Collector eingesammelt wird. Der Proxy reicht
+  // nur den Body weiter, das Original fällt weg. Ohne Schutz ist der Body danach
+  // schon "gelesen" (Issue #41).
+  test('bleibt lesbar, auch wenn zwischendurch der Garbage Collector läuft', async () => {
+    const mitglied = await neuesMitglied()
+    const cookie = await anmelden(mitglied)
+
+    const res = await app('/pb/api/collections/mitglieder/records', { cookie })
+    await garbageCollector()
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).items).toHaveLength(1)
+  })
+})
+
+async function garbageCollector() {
+  setFlagsFromString('--expose-gc')
+  const gc = runInNewContext('gc') as () => void
+  for (let i = 0; i < 3; i++) {
+    gc()
+    await new Promise((r) => setTimeout(r, 10))
+  }
+}
