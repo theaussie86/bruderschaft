@@ -1,6 +1,9 @@
 {
+  "id": "/",
   "short_name": "Club-App",
   "name": "Club-App",
+  "description": "Mitglieder-App des Clubs",
+  "lang": "de",
   "icons": [
     {
       "src": "/club-assets/brand/logo-icon.svg",
@@ -24,7 +27,8 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/bestellen",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#0d0c0b",
   "background_color": "#0d0c0b"

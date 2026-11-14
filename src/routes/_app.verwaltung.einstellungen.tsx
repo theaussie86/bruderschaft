@@ -2,16 +2,18 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 import type { Einstellungen } from '@/lib/bestellung'
+import type { Startseite } from '@/lib/startseite'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { ladeEinstellungen } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { aboLink } from '@/lib/kalender-abo'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
+import { ladeStartseite } from '@/lib/startseite'
 
 // Verwaltung > Einstellungen: der Zahlungshinweis, den Mitglieder unter ihrem
-// Auftrag sehen, sobald die Runde abgeschlossen ist, und der Link des
-// Kalender-Abos. Nur Admins ändern beides (ADR 0002).
+// Auftrag sehen, sobald die Runde abgeschlossen ist, der Text der öffentlichen
+// Startseite und der Link des Kalender-Abos. Nur Admins ändern sie (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/einstellungen')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin && !context.mitglied.support)
@@ -106,6 +108,7 @@ function EinstellungenSeite() {
           </Button>
         </form>
       )}
+      <StartseiteText />
       {einstellungen && (
         <KalenderAboErneuern
           token={einstellungen.kalender_token}
@@ -115,6 +118,90 @@ function EinstellungenSeite() {
         />
       )}
     </>
+  )
+}
+
+// Der Text, den Besucher auf der öffentlichen Startseite über dem Login-Link
+// lesen.
+function StartseiteText() {
+  const [startseite, setStartseite] = useState<Startseite | null | undefined>(
+    undefined,
+  )
+  const [text, setText] = useState('')
+  const [meldung, setMeldung] = useState<Meldung>(null)
+  const [laeuft, setLaeuft] = useState(false)
+
+  useEffect(() => {
+    ladeStartseite(createBrowserPocketBase())
+      .then((s) => {
+        setStartseite(s)
+        setText(s?.text ?? '')
+      })
+      .catch((err: unknown) =>
+        setMeldung({
+          text: fehlertext(
+            err,
+            'Der Text der Startseite konnte nicht geladen werden.',
+          ),
+          fehler: true,
+        }),
+      )
+  }, [])
+
+  async function speichern(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!startseite) return
+    setMeldung(null)
+    setLaeuft(true)
+    try {
+      const neu = await createBrowserPocketBase()
+        .collection('startseite')
+        .update<Startseite>(startseite.id, { text })
+      setStartseite(neu)
+      setMeldung({ text: 'Text der Startseite gespeichert.', fehler: false })
+    } catch (err) {
+      setMeldung({
+        text: fehlertext(
+          err,
+          'Der Text der Startseite konnte nicht gespeichert werden.',
+        ),
+        fehler: true,
+      })
+    } finally {
+      setLaeuft(false)
+    }
+  }
+
+  return (
+    <form className="mt-10 space-y-3" onSubmit={speichern}>
+      <label className="block">
+        <span className="eyebrow mb-2 block">
+          Text der öffentlichen Startseite
+        </span>
+        <textarea
+          className="field min-h-32 leading-relaxed"
+          maxLength={2000}
+          value={text}
+          disabled={!startseite}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <span className="text-ash mt-1.5 block text-[13px]">
+          Sieht jeder, der die App aufruft, auch ohne Anmeldung. Keine
+          Mitgliederdaten eintragen.
+        </span>
+      </label>
+      {meldung && (
+        <p
+          role={meldung.fehler ? 'alert' : 'status'}
+          className={`text-sm ${meldung.fehler ? 'text-rust-hi' : 'text-patina'}`}
+        >
+          {meldung.text}
+        </p>
+      )}
+      <Button type="submit" disabled={laeuft || !startseite}>
+        Speichern
+      </Button>
+    </form>
   )
 }
 

@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AbmeldenRouteImport } from './routes/abmelden'
+import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as GeburtstagRouteImport } from './routes/geburtstag'
+import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PasswortSetzenRouteImport } from './routes/passwort-setzen'
 import { Route as PasswortVergessenRouteImport } from './routes/passwort-vergessen'
@@ -47,9 +49,19 @@ const AbmeldenRoute = AbmeldenRouteImport.update({
   path: '/abmelden',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DatenschutzRoute = DatenschutzRouteImport.update({
+  id: '/datenschutz',
+  path: '/datenschutz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GeburtstagRoute = GeburtstagRouteImport.update({
   id: '/geburtstag',
   path: '/geburtstag',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpressumRoute = ImpressumRouteImport.update({
+  id: '/impressum',
+  path: '/impressum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -155,7 +167,9 @@ const ApiSammelbestellungRundeIdFormatRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
+  '/impressum': typeof ImpressumRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -179,7 +193,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
+  '/impressum': typeof ImpressumRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -205,7 +221,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/abmelden': typeof AbmeldenRoute
+  '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
+  '/impressum': typeof ImpressumRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -231,7 +249,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/abmelden'
+    | '/datenschutz'
     | '/geburtstag'
+    | '/impressum'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -255,7 +275,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/abmelden'
+    | '/datenschutz'
     | '/geburtstag'
+    | '/impressum'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -280,7 +302,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/abmelden'
+    | '/datenschutz'
     | '/geburtstag'
+    | '/impressum'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -306,7 +330,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AbmeldenRoute: typeof AbmeldenRoute
+  DatenschutzRoute: typeof DatenschutzRoute
   GeburtstagRoute: typeof GeburtstagRoute
+  ImpressumRoute: typeof ImpressumRoute
   LoginRoute: typeof LoginRoute
   PasswortSetzenRoute: typeof PasswortSetzenRoute
   PasswortVergessenRoute: typeof PasswortVergessenRoute
@@ -340,11 +366,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AbmeldenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/datenschutz': {
+      id: '/datenschutz'
+      path: '/datenschutz'
+      fullPath: '/datenschutz'
+      preLoaderRoute: typeof DatenschutzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/geburtstag': {
       id: '/geburtstag'
       path: '/geburtstag'
       fullPath: '/geburtstag'
       preLoaderRoute: typeof GeburtstagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impressum': {
+      id: '/impressum'
+      path: '/impressum'
+      fullPath: '/impressum'
+      preLoaderRoute: typeof ImpressumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -517,7 +557,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AbmeldenRoute: AbmeldenRoute,
+  DatenschutzRoute: DatenschutzRoute,
   GeburtstagRoute: GeburtstagRoute,
+  ImpressumRoute: ImpressumRoute,
   LoginRoute: LoginRoute,
   PasswortSetzenRoute: PasswortSetzenRoute,
   PasswortVergessenRoute: PasswortVergessenRoute,

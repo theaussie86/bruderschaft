@@ -1,7 +1,21 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
-// Schlichte Seite ohne Tab-Leiste und ohne Sidebar, für Login und Abmelden.
+export function PublicFooter() {
+  return (
+    <footer className="pb-safe text-smoke mt-auto flex justify-center gap-6 py-6 text-sm">
+      <Link to="/impressum" className="hover:text-bone">
+        Impressum
+      </Link>
+      <Link to="/datenschutz" className="hover:text-bone">
+        Datenschutz
+      </Link>
+    </footer>
+  )
+}
+
+// Schlichte Seite ohne Tab-Leiste und ohne Sidebar, für die öffentlichen
+// Seiten wie Login, Impressum und Datenschutz.
 export function PublicPage({
   title,
   children,
@@ -27,6 +41,7 @@ export function PublicPage({
         </h1>
         {children}
       </div>
+      <PublicFooter />
     </div>
   )
 }

@@ -1,37 +1,50 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
+import { PublicFooter } from '@/components/PublicPage'
 import { createPocketBase } from '@/lib/pocketbase'
+import { ladeStartseite } from '@/lib/startseite'
 
-// Platzhalter, bis die ersten Screens stehen. Zeigt, ob die App ihr
-// PocketBase erreicht - der schnellste Beleg nach einem Deploy.
-const getBackendStatus = createServerFn({ method: 'GET' }).handler(async () => {
+// Der Text ist öffentlich lesbar, deshalb ohne Token. Ist PocketBase nicht
+// erreichbar, bleibt die Seite mit Login-Link trotzdem stehen.
+const ladeText = createServerFn({ method: 'GET' }).handler(async () => {
   try {
-    await createPocketBase().health.check()
-    return { ok: true }
+    return (await ladeStartseite(createPocketBase()))?.text ?? ''
   } catch {
-    return { ok: false }
+    return ''
   }
 })
 
 export const Route = createFileRoute('/')({
-  loader: () => getBackendStatus(),
-  component: Home,
+  loader: () => ladeText(),
+  component: Startseite,
 })
 
-function Home() {
-  const { ok } = Route.useLoaderData()
+function Startseite() {
+  const text = Route.useLoaderData()
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-6">
-      <img src="/club-assets/brand/logo-emblem.svg" alt="" className="mx-auto w-48" />
-      <h1 className="font-display text-center text-4xl uppercase">Club-App</h1>
-      <p className="text-ash text-center">Im Aufbau.</p>
-      <p className={`text-center text-sm ${ok ? 'text-patina' : 'text-rust-hi'}`}>
-        Backend {ok ? 'verbunden' : 'nicht erreichbar'}
-      </p>
-      <Link to="/login" className="text-brass text-center font-semibold">
-        Anmelden
-      </Link>
-    </main>
+    <div className="flex min-h-dvh flex-col px-6">
+      <main className="pt-safe mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 pt-8 text-center">
+        <img src="/club-assets/brand/logo-emblem.svg" alt="" className="w-48" />
+        <h1 className="font-display text-5xl leading-[0.9] font-black uppercase">
+          Club-App
+        </h1>
+        {text && (
+          <p className="text-ash max-w-xs text-[16px] leading-relaxed whitespace-pre-line">
+            {text}
+          </p>
+        )}
+        <Link
+          to="/login"
+          className="bg-rust text-bone hover:bg-rust-hi mt-4 flex min-h-14 w-full items-center justify-center rounded-2xl text-[17px] font-semibold transition-colors"
+        >
+          Anmelden
+        </Link>
+        <p className="text-smoke text-sm">
+          Zugänge vergibt der Club. Eine Registrierung gibt es nicht.
+        </p>
+      </main>
+      <PublicFooter />
+    </div>
   )
 }
