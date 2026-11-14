@@ -4,9 +4,9 @@ export const SITZUNGS_COOKIE = 'pb_auth'
 
 // 90 Tage, passend zur Token-Dauer der Collection `mitglieder`. Jede Nutzung
 // verlängert die Sitzung über authRefresh in der Root-Route.
-export const SITZUNG_SEKUNDEN = 90 * 24 * 60 * 60
+const SITZUNG_SEKUNDEN = 90 * 24 * 60 * 60
 
-export const COOKIE_OPTIONEN = {
+const COOKIE_OPTIONEN = {
   path: '/',
   httpOnly: true,
   sameSite: 'lax',

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AbmeldenRouteImport } from './routes/abmelden'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as GeburtstagRouteImport } from './routes/geburtstag'
 import { Route as ImpressumRouteImport } from './routes/impressum'
@@ -47,6 +48,11 @@ const AppRoute = AppRouteImport.update({
 const AbmeldenRoute = AbmeldenRouteImport.update({
   id: '/abmelden',
   path: '/abmelden',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatenschutzRoute = DatenschutzRouteImport.update({
@@ -167,6 +173,7 @@ const ApiSammelbestellungRundeIdFormatRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/cookies': typeof CookiesRoute
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/cookies': typeof CookiesRoute
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/abmelden': typeof AbmeldenRoute
+  '/cookies': typeof CookiesRoute
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/abmelden'
+    | '/cookies'
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/abmelden'
+    | '/cookies'
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/abmelden'
+    | '/cookies'
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AbmeldenRoute: typeof AbmeldenRoute
+  CookiesRoute: typeof CookiesRoute
   DatenschutzRoute: typeof DatenschutzRoute
   GeburtstagRoute: typeof GeburtstagRoute
   ImpressumRoute: typeof ImpressumRoute
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/abmelden'
       fullPath: '/abmelden'
       preLoaderRoute: typeof AbmeldenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/datenschutz': {
@@ -557,6 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AbmeldenRoute: AbmeldenRoute,
+  CookiesRoute: CookiesRoute,
   DatenschutzRoute: DatenschutzRoute,
   GeburtstagRoute: GeburtstagRoute,
   ImpressumRoute: ImpressumRoute,

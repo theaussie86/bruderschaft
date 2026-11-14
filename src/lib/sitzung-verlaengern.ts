@@ -1,6 +1,7 @@
 import PocketBase from 'pocketbase'
 
 import { geburtstagAus } from './geburtstag'
+import { abmeldeCookie, sitzungsCookie, tokenAusCookieHeader } from './sitzung'
 
 export type AngemeldetesMitglied = {
   id: string
@@ -41,5 +42,26 @@ export async function verlaengereSitzung(
     }
   } catch {
     return null
+  }
+}
+
+// Was die Root-Route bei jeder Anfrage mit dem Cookie macht: ohne Sitzung
+// bleibt die Antwort cookiefrei, eine gültige wird verlängert, eine
+// ungültige gelöscht. Öffentliche Seiten setzen damit kein Cookie (Issue #42).
+export async function pruefeSitzung(
+  cookieHeader: string | null,
+  pocketbaseUrl: string,
+): Promise<{
+  mitglied: AngemeldetesMitglied | null
+  setCookie: string | null
+}> {
+  const token = tokenAusCookieHeader(cookieHeader)
+  if (!token) return { mitglied: null, setCookie: null }
+
+  const sitzung = await verlaengereSitzung(token, pocketbaseUrl)
+  if (!sitzung) return { mitglied: null, setCookie: abmeldeCookie() }
+  return {
+    mitglied: sitzung.mitglied,
+    setCookie: sitzungsCookie(sitzung.token),
   }
 }

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { anmelden, neuesMitglied, pocketbaseUrl, superuser } from './helpers'
-import { verlaengereSitzung } from '@/lib/sitzung-verlaengern'
+import { pruefeSitzung, verlaengereSitzung } from '@/lib/sitzung-verlaengern'
 
 function token(cookie: string) {
   return decodeURIComponent(cookie.slice('pb_auth='.length))
@@ -47,5 +47,40 @@ describe('Sitzung verlängern (authRefresh in der Root-Route)', () => {
 
   test('ungültiges Token ergibt keine Sitzung', async () => {
     expect(await verlaengereSitzung('kein-token', pocketbaseUrl)).toBeNull()
+  })
+})
+
+// HTTP-Seam der Root-Route (Issue #42): Welche Set-Cookie-Antwort eine
+// Anfrage bekommt, hängt nur am Cookie-Header.
+describe('Cookie der Root-Route', () => {
+  test('öffentliche Seite ohne Login setzt kein Cookie', async () => {
+    expect(await pruefeSitzung(null, pocketbaseUrl)).toEqual({
+      mitglied: null,
+      setCookie: null,
+    })
+  })
+
+  test('fremde Cookies ohne Sitzung setzen auch kein Cookie', async () => {
+    const antwort = await pruefeSitzung('theme=dunkel; x=1', pocketbaseUrl)
+
+    expect(antwort.setCookie).toBeNull()
+  })
+
+  test('ungültige Sitzung löscht das Cookie', async () => {
+    const antwort = await pruefeSitzung('pb_auth=kein-token', pocketbaseUrl)
+
+    expect(antwort.mitglied).toBeNull()
+    expect(antwort.setCookie).toMatch(/^pb_auth=;.*Max-Age=0/i)
+  })
+
+  test('gültige Sitzung erneuert das Cookie', async () => {
+    const mitglied = await neuesMitglied()
+    const cookie = await anmelden(mitglied)
+
+    const antwort = await pruefeSitzung(cookie, pocketbaseUrl)
+
+    expect(antwort.mitglied?.id).toBe(mitglied.id)
+    expect(antwort.setCookie).toMatch(/^pb_auth=[^;]+;.*Max-Age=7776000/i)
+    expect(antwort.setCookie).toMatch(/HttpOnly/i)
   })
 })

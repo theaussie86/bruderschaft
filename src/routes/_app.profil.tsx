@@ -13,6 +13,7 @@ import { Button } from '@/components/Button'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
 import { KalenderAbo } from '@/components/KalenderAbo'
 import { PageHeader } from '@/components/PageHeader'
+import { RechtlicheLinks } from '@/components/PublicPage'
 import { VERWALTUNG_LINKS } from '@/components/verwaltung'
 import { fehlertext, geburtstagAnzeigen } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -130,6 +131,8 @@ function Profil() {
       >
         <LogOut className="size-4" /> Abmelden
       </Link>
+
+      <RechtlicheLinks className="mt-6" />
     </>
   )
 }
