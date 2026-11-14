@@ -23,7 +23,7 @@ function Home() {
   const { ok } = Route.useLoaderData()
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-6">
-      <img src="/club-assets/logo-dunkel.jpg" alt="" className="mx-auto w-40" />
+      <img src="/club-assets/brand/logo-emblem.svg" alt="" className="mx-auto w-48" />
       <h1 className="font-display text-center text-4xl uppercase">Club-App</h1>
       <p className="text-ash text-center">Im Aufbau.</p>
       <p className={`text-center text-sm ${ok ? 'text-patina' : 'text-rust-hi'}`}>
