@@ -11,7 +11,7 @@ import { fehlertext, geburtstagAnzeigen, geburtstagAus } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag korrigieren,
-// Admin-Recht, Sperre, Mail und Löschen. Die Rechte prüft
+// Admin-Recht, Sperre, Mail, Löschen und DSGVO-Löschung. Die Rechte prüft
 // PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
@@ -27,6 +27,7 @@ type Eintrag = {
   verified: boolean
   admin: boolean
   gesperrt: boolean
+  ehemalig: boolean
   geburtstag: string
 }
 
@@ -163,26 +164,32 @@ function Mitglieder() {
                 <div className="flex items-center gap-2 font-semibold">
                   {m.name}
                   {m.admin && <Markierung ton="brass">Admin</Markierung>}
-                  {m.gesperrt && (
-                    <Markierung ton="neutral">ausgetreten</Markierung>
+                  {m.ehemalig ? (
+                    <Markierung ton="neutral">Daten gelöscht</Markierung>
+                  ) : (
+                    m.gesperrt && (
+                      <Markierung ton="neutral">ausgetreten</Markierung>
+                    )
                   )}
                 </div>
-                {m.email && (
+                {m.email && !m.ehemalig && (
                   <div className="text-ash truncate text-[13px]">{m.email}</div>
                 )}
-                <button
-                  type="button"
-                  className="text-ash hover:text-bone mt-0.5 inline-flex items-center gap-1.5 text-[13px]"
-                  aria-expanded={geburtstagVon === m.id}
-                  onClick={() =>
-                    setGeburtstagVon(geburtstagVon === m.id ? null : m.id)
-                  }
-                >
-                  <Cake className="size-3.5" />
-                  {m.geburtstag
-                    ? geburtstagAnzeigen(m.geburtstag)
-                    : 'Geburtstag fehlt'}
-                </button>
+                {!m.ehemalig && (
+                  <button
+                    type="button"
+                    className="text-ash hover:text-bone mt-0.5 inline-flex items-center gap-1.5 text-[13px]"
+                    aria-expanded={geburtstagVon === m.id}
+                    onClick={() =>
+                      setGeburtstagVon(geburtstagVon === m.id ? null : m.id)
+                    }
+                  >
+                    <Cake className="size-3.5" />
+                    {m.geburtstag
+                      ? geburtstagAnzeigen(m.geburtstag)
+                      : 'Geburtstag fehlt'}
+                  </button>
+                )}
                 {geburtstagVon === m.id && (
                   <div className="mt-3 mb-2">
                     <GeburtstagFormular
@@ -222,7 +229,7 @@ function Mitglieder() {
                     />
                   </div>
                 )}
-                {!m.verified && (
+                {!m.verified && !m.ehemalig && (
                   <button
                     type="button"
                     className="text-brass hover:text-bone mt-0.5 block text-[13px] font-semibold"

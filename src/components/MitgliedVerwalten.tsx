@@ -5,7 +5,7 @@ import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Aktionen eines Admins an einem Mitglied: Admin-Recht, Sperre, Mail,
-// Löschen. Was erlaubt ist (z. B. dass immer ein Admin bleibt), prüft
+// Löschen und DSGVO-Löschung. Was erlaubt ist (z. B. dass immer ein Admin bleibt), prüft
 // PocketBase (ADR 0002); die Seite zeigt nur dessen Meldung.
 export type VerwaltetesMitglied = {
   id: string
@@ -13,6 +13,7 @@ export type VerwaltetesMitglied = {
   email: string
   admin: boolean
   gesperrt: boolean
+  ehemalig: boolean
 }
 
 // PocketBase verweigert das Löschen, solange Aufträge oder Bilder auf das
@@ -31,6 +32,7 @@ export function MitgliedVerwalten({
   const [fehler, setFehler] = useState<string | null>(null)
   const [laeuft, setLaeuft] = useState(false)
   const [loeschenFragen, setLoeschenFragen] = useState(false)
+  const [datenLoeschenFragen, setDatenLoeschenFragen] = useState(false)
 
   async function ausfuehren(
     aktion: () => Promise<unknown>,
@@ -83,6 +85,30 @@ export function MitgliedVerwalten({
     } finally {
       setLaeuft(false)
     }
+  }
+
+  // DSGVO-Löschung über die Hook-Route: anonymisiert an Ort und Stelle,
+  // Aufträge und Bilder laufen als "Ehemaliges Mitglied" weiter.
+  function datenLoeschen() {
+    setDatenLoeschenFragen(false)
+    return ausfuehren(
+      () =>
+        createBrowserPocketBase().send(
+          `/api/club/mitglieder/${encodeURIComponent(mitglied.id)}/daten-loeschen`,
+          { method: 'POST' },
+        ),
+      `Daten von ${mitglied.name} gelöscht. Aufträge und Bilder laufen als "Ehemaliges Mitglied" weiter.`,
+      'Die Daten konnten nicht gelöscht werden.',
+    )
+  }
+
+  if (mitglied.ehemalig) {
+    return (
+      <p className="text-ash text-sm">
+        Die Daten dieses Mitglieds sind gelöscht. Aufträge und Bilder laufen als
+        "Ehemaliges Mitglied" weiter.
+      </p>
+    )
   }
 
   const knopf =
@@ -154,7 +180,39 @@ export function MitgliedVerwalten({
             Löschen
           </button>
         )}
+        {!datenLoeschenFragen && (
+          <button
+            type="button"
+            className={`${knopf} text-rust-hi`}
+            disabled={laeuft}
+            onClick={() => setDatenLoeschenFragen(true)}
+          >
+            Daten löschen (DSGVO)
+          </button>
+        )}
       </div>
+
+      {datenLoeschenFragen && (
+        <div className="border-rust/40 space-y-3 rounded-xl border p-4">
+          <p className="text-sm">
+            Name, Mail und Geburtstag von {mitglied.name} endgültig löschen? Das
+            Konto wird gesperrt, Aufträge und Bilder bleiben als "Ehemaliges
+            Mitglied" erhalten. Das lässt sich nicht rückgängig machen.
+          </p>
+          <div className="flex gap-3">
+            <Button type="button" disabled={laeuft} onClick={datenLoeschen}>
+              Daten endgültig löschen
+            </Button>
+            <button
+              type="button"
+              className="text-ash hover:text-bone px-3 font-semibold"
+              onClick={() => setDatenLoeschenFragen(false)}
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
 
       {loeschenFragen && (
         <div className="border-rust/40 space-y-3 rounded-xl border p-4">
