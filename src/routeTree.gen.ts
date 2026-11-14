@@ -10,53 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as DatenschutzRouteImport } from './routes/datenschutz'
-import { Route as ImpressumRouteImport } from './routes/impressum'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
-import { Route as AppBestellenIndexRouteImport } from './routes/_app.bestellen.index'
-import { Route as AppBestellenFrueherRouteImport } from './routes/_app.bestellen.frueher'
-import { Route as AppBestellenPositionRouteImport } from './routes/_app.bestellen.position'
-import { Route as AppKalenderIndexRouteImport } from './routes/_app.kalender.index'
-import { Route as AppKalenderTerminIdRouteImport } from './routes/_app.kalender.$terminId'
-import { Route as AppKalenderNeuRouteImport } from './routes/_app.kalender.neu'
-import { Route as AppVerwaltungBestellrundenRouteImport } from './routes/_app.verwaltung.bestellrunden'
-import { Route as AppVerwaltungEinstellungenRouteImport } from './routes/_app.verwaltung.einstellungen'
-import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
-import { Route as AppVerwaltungSortimentRouteImport } from './routes/_app.verwaltung.sortiment'
-import { Route as AppBestellenMitgliedMemberIdRouteImport } from './routes/_app.bestellen.mitglied.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DatenschutzRoute = DatenschutzRouteImport.update({
-  id: '/datenschutz',
-  path: '/datenschutz',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ImpressumRoute = ImpressumRouteImport.update({
-  id: '/impressum',
-  path: '/impressum',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppProfilRoute = AppProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
-  getParentRoute: () => AppRoute,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
@@ -68,197 +28,33 @@ const ClubAssetsSplatRoute = ClubAssetsSplatRouteImport.update({
   path: '/club-assets/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppBestellenIndexRoute = AppBestellenIndexRouteImport.update({
-  id: '/bestellen/',
-  path: '/bestellen/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBestellenFrueherRoute = AppBestellenFrueherRouteImport.update({
-  id: '/bestellen/frueher',
-  path: '/bestellen/frueher',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBestellenPositionRoute = AppBestellenPositionRouteImport.update({
-  id: '/bestellen/position',
-  path: '/bestellen/position',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppKalenderIndexRoute = AppKalenderIndexRouteImport.update({
-  id: '/kalender/',
-  path: '/kalender/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppKalenderTerminIdRoute = AppKalenderTerminIdRouteImport.update({
-  id: '/kalender/$terminId',
-  path: '/kalender/$terminId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppKalenderNeuRoute = AppKalenderNeuRouteImport.update({
-  id: '/kalender/neu',
-  path: '/kalender/neu',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppVerwaltungBestellrundenRoute =
-  AppVerwaltungBestellrundenRouteImport.update({
-    id: '/verwaltung/bestellrunden',
-    path: '/verwaltung/bestellrunden',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppVerwaltungEinstellungenRoute =
-  AppVerwaltungEinstellungenRouteImport.update({
-    id: '/verwaltung/einstellungen',
-    path: '/verwaltung/einstellungen',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppVerwaltungMitgliederRoute = AppVerwaltungMitgliederRouteImport.update({
-  id: '/verwaltung/mitglieder',
-  path: '/verwaltung/mitglieder',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppVerwaltungSortimentRoute = AppVerwaltungSortimentRouteImport.update({
-  id: '/verwaltung/sortiment',
-  path: '/verwaltung/sortiment',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBestellenMitgliedMemberIdRoute =
-  AppBestellenMitgliedMemberIdRouteImport.update({
-    id: '/bestellen/mitglied/$memberId',
-    path: '/bestellen/mitglied/$memberId',
-    getParentRoute: () => AppRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
-  '/login': typeof LoginRoute
-  '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
-  '/bestellen/frueher': typeof AppBestellenFrueherRoute
-  '/bestellen/position': typeof AppBestellenPositionRoute
-  '/kalender/$terminId': typeof AppKalenderTerminIdRoute
-  '/kalender/neu': typeof AppKalenderNeuRoute
-  '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
-  '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
-  '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
-  '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
-  '/bestellen/': typeof AppBestellenIndexRoute
-  '/kalender/': typeof AppKalenderIndexRoute
-  '/bestellen/mitglied/$memberId': typeof AppBestellenMitgliedMemberIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
-  '/login': typeof LoginRoute
-  '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
-  '/bestellen/frueher': typeof AppBestellenFrueherRoute
-  '/bestellen/position': typeof AppBestellenPositionRoute
-  '/kalender/$terminId': typeof AppKalenderTerminIdRoute
-  '/kalender/neu': typeof AppKalenderNeuRoute
-  '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
-  '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
-  '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
-  '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
-  '/bestellen': typeof AppBestellenIndexRoute
-  '/kalender': typeof AppKalenderIndexRoute
-  '/bestellen/mitglied/$memberId': typeof AppBestellenMitgliedMemberIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_app': typeof AppRouteWithChildren
-  '/datenschutz': typeof DatenschutzRoute
-  '/impressum': typeof ImpressumRoute
-  '/login': typeof LoginRoute
-  '/_app/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
-  '/_app/bestellen/frueher': typeof AppBestellenFrueherRoute
-  '/_app/bestellen/position': typeof AppBestellenPositionRoute
-  '/_app/kalender/$terminId': typeof AppKalenderTerminIdRoute
-  '/_app/kalender/neu': typeof AppKalenderNeuRoute
-  '/_app/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
-  '/_app/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
-  '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
-  '/_app/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
-  '/_app/bestellen/': typeof AppBestellenIndexRoute
-  '/_app/kalender/': typeof AppKalenderIndexRoute
-  '/_app/bestellen/mitglied/$memberId': typeof AppBestellenMitgliedMemberIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/datenschutz'
-    | '/impressum'
-    | '/login'
-    | '/profil'
-    | '/api/health'
-    | '/club-assets/$'
-    | '/bestellen/frueher'
-    | '/bestellen/position'
-    | '/kalender/$terminId'
-    | '/kalender/neu'
-    | '/verwaltung/bestellrunden'
-    | '/verwaltung/einstellungen'
-    | '/verwaltung/mitglieder'
-    | '/verwaltung/sortiment'
-    | '/bestellen/'
-    | '/kalender/'
-    | '/bestellen/mitglied/$memberId'
+  fullPaths: '/' | '/api/health' | '/club-assets/$'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/datenschutz'
-    | '/impressum'
-    | '/login'
-    | '/profil'
-    | '/api/health'
-    | '/club-assets/$'
-    | '/bestellen/frueher'
-    | '/bestellen/position'
-    | '/kalender/$terminId'
-    | '/kalender/neu'
-    | '/verwaltung/bestellrunden'
-    | '/verwaltung/einstellungen'
-    | '/verwaltung/mitglieder'
-    | '/verwaltung/sortiment'
-    | '/bestellen'
-    | '/kalender'
-    | '/bestellen/mitglied/$memberId'
-  id:
-    | '__root__'
-    | '/'
-    | '/_app'
-    | '/datenschutz'
-    | '/impressum'
-    | '/login'
-    | '/_app/profil'
-    | '/api/health'
-    | '/club-assets/$'
-    | '/_app/bestellen/frueher'
-    | '/_app/bestellen/position'
-    | '/_app/kalender/$terminId'
-    | '/_app/kalender/neu'
-    | '/_app/verwaltung/bestellrunden'
-    | '/_app/verwaltung/einstellungen'
-    | '/_app/verwaltung/mitglieder'
-    | '/_app/verwaltung/sortiment'
-    | '/_app/bestellen/'
-    | '/_app/kalender/'
-    | '/_app/bestellen/mitglied/$memberId'
+  to: '/' | '/api/health' | '/club-assets/$'
+  id: '__root__' | '/' | '/api/health' | '/club-assets/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
-  DatenschutzRoute: typeof DatenschutzRoute
-  ImpressumRoute: typeof ImpressumRoute
-  LoginRoute: typeof LoginRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ClubAssetsSplatRoute: typeof ClubAssetsSplatRoute
 }
@@ -271,41 +67,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/datenschutz': {
-      id: '/datenschutz'
-      path: '/datenschutz'
-      fullPath: '/datenschutz'
-      preLoaderRoute: typeof DatenschutzRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/impressum': {
-      id: '/impressum'
-      path: '/impressum'
-      fullPath: '/impressum'
-      preLoaderRoute: typeof ImpressumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/profil': {
-      id: '/_app/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof AppProfilRouteImport
-      parentRoute: typeof AppRoute
     }
     '/api/health': {
       id: '/api/health'
@@ -321,124 +82,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClubAssetsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/bestellen/': {
-      id: '/_app/bestellen/'
-      path: '/bestellen'
-      fullPath: '/bestellen/'
-      preLoaderRoute: typeof AppBestellenIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/bestellen/frueher': {
-      id: '/_app/bestellen/frueher'
-      path: '/bestellen/frueher'
-      fullPath: '/bestellen/frueher'
-      preLoaderRoute: typeof AppBestellenFrueherRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/bestellen/position': {
-      id: '/_app/bestellen/position'
-      path: '/bestellen/position'
-      fullPath: '/bestellen/position'
-      preLoaderRoute: typeof AppBestellenPositionRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/kalender/': {
-      id: '/_app/kalender/'
-      path: '/kalender'
-      fullPath: '/kalender/'
-      preLoaderRoute: typeof AppKalenderIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/kalender/$terminId': {
-      id: '/_app/kalender/$terminId'
-      path: '/kalender/$terminId'
-      fullPath: '/kalender/$terminId'
-      preLoaderRoute: typeof AppKalenderTerminIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/kalender/neu': {
-      id: '/_app/kalender/neu'
-      path: '/kalender/neu'
-      fullPath: '/kalender/neu'
-      preLoaderRoute: typeof AppKalenderNeuRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/verwaltung/bestellrunden': {
-      id: '/_app/verwaltung/bestellrunden'
-      path: '/verwaltung/bestellrunden'
-      fullPath: '/verwaltung/bestellrunden'
-      preLoaderRoute: typeof AppVerwaltungBestellrundenRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/verwaltung/einstellungen': {
-      id: '/_app/verwaltung/einstellungen'
-      path: '/verwaltung/einstellungen'
-      fullPath: '/verwaltung/einstellungen'
-      preLoaderRoute: typeof AppVerwaltungEinstellungenRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/verwaltung/mitglieder': {
-      id: '/_app/verwaltung/mitglieder'
-      path: '/verwaltung/mitglieder'
-      fullPath: '/verwaltung/mitglieder'
-      preLoaderRoute: typeof AppVerwaltungMitgliederRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/verwaltung/sortiment': {
-      id: '/_app/verwaltung/sortiment'
-      path: '/verwaltung/sortiment'
-      fullPath: '/verwaltung/sortiment'
-      preLoaderRoute: typeof AppVerwaltungSortimentRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/bestellen/mitglied/$memberId': {
-      id: '/_app/bestellen/mitglied/$memberId'
-      path: '/bestellen/mitglied/$memberId'
-      fullPath: '/bestellen/mitglied/$memberId'
-      preLoaderRoute: typeof AppBestellenMitgliedMemberIdRouteImport
-      parentRoute: typeof AppRoute
-    }
   }
 }
 
-interface AppRouteChildren {
-  AppProfilRoute: typeof AppProfilRoute
-  AppBestellenFrueherRoute: typeof AppBestellenFrueherRoute
-  AppBestellenPositionRoute: typeof AppBestellenPositionRoute
-  AppKalenderTerminIdRoute: typeof AppKalenderTerminIdRoute
-  AppKalenderNeuRoute: typeof AppKalenderNeuRoute
-  AppVerwaltungBestellrundenRoute: typeof AppVerwaltungBestellrundenRoute
-  AppVerwaltungEinstellungenRoute: typeof AppVerwaltungEinstellungenRoute
-  AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
-  AppVerwaltungSortimentRoute: typeof AppVerwaltungSortimentRoute
-  AppBestellenIndexRoute: typeof AppBestellenIndexRoute
-  AppKalenderIndexRoute: typeof AppKalenderIndexRoute
-  AppBestellenMitgliedMemberIdRoute: typeof AppBestellenMitgliedMemberIdRoute
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppProfilRoute: AppProfilRoute,
-  AppBestellenFrueherRoute: AppBestellenFrueherRoute,
-  AppBestellenPositionRoute: AppBestellenPositionRoute,
-  AppKalenderTerminIdRoute: AppKalenderTerminIdRoute,
-  AppKalenderNeuRoute: AppKalenderNeuRoute,
-  AppVerwaltungBestellrundenRoute: AppVerwaltungBestellrundenRoute,
-  AppVerwaltungEinstellungenRoute: AppVerwaltungEinstellungenRoute,
-  AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
-  AppVerwaltungSortimentRoute: AppVerwaltungSortimentRoute,
-  AppBestellenIndexRoute: AppBestellenIndexRoute,
-  AppKalenderIndexRoute: AppKalenderIndexRoute,
-  AppBestellenMitgliedMemberIdRoute: AppBestellenMitgliedMemberIdRoute,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
-  DatenschutzRoute: DatenschutzRoute,
-  ImpressumRoute: ImpressumRoute,
-  LoginRoute: LoginRoute,
   ApiHealthRoute: ApiHealthRoute,
   ClubAssetsSplatRoute: ClubAssetsSplatRoute,
 }

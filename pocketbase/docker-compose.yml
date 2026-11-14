@@ -1,0 +1,53 @@
+# Vorlage für die Compose-Anwendung "pocketbase" im Dokploy-Projekt
+# Bruderschaft (Provider: Raw). Dokploy liest nicht aus diesem Repository -
+# wer die Datei ändert, fügt sie dort neu ein und deployt.
+#
+# Update: Image-Tag auf einen neuen sha-* aus GHCR setzen (Package
+# bruderschaft-pocketbase), vorher manuelles Backup im Admin-UI.
+#
+# Admin-UI nur per SSH-Tunnel:
+#   ssh -N -L 8091:127.0.0.1:8091 cwe-dokploy   ->  http://localhost:8091/_/
+
+services:
+  pocketbase:
+    image: ghcr.io/theaussie86/bruderschaft-pocketbase:sha-REPLACE
+    restart: unless-stopped
+    environment:
+      # 32 Zeichen, in Dokploy unter Environment gesetzt, nie im Repo.
+      PB_ENCRYPTION_KEY: ${PB_ENCRYPTION_KEY}
+      # Weiches Speicherlimit (Beispielwert der Doku), die VPS ist geteilt.
+      GOMEMLIMIT: 512MiB
+    volumes:
+      - pb_data:/pb/pb_data
+    ports:
+      # Nur Loopback, für den SSH-Tunnel. 8090 belegt die PocketBase der
+      # wa-website.
+      - "127.0.0.1:8091:8090"
+    networks:
+      dokploy-network:
+        aliases:
+          # Die App erreicht den Dienst unter POCKETBASE_URL=http://bruderschaft-pb:8090
+          - bruderschaft-pb
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pb_data:
+    # Einmalig auf dem Host angelegt: docker volume create bruderschaft-pb-data
+    # external, damit ein Neuanlegen der Anwendung im Panel die Daten nicht
+    # mitnimmt.
+    name: bruderschaft-pb-data
+    external: true
+
+networks:
+  dokploy-network:
+    external: true
