@@ -3,11 +3,16 @@
 
 export type AuftragStatus = 'in_arbeit' | 'fertig' | 'verzicht'
 
+// Artikelpreis plus Aufpreis der Größe und der belegten Druckstellen.
 export function stueckpreis(
   artikel: { preis: number },
   groesse: { aufpreis: number },
+  belegteDruckstellen: Array<{ aufpreis: number }> = [],
 ) {
-  return artikel.preis + groesse.aufpreis
+  return belegteDruckstellen.reduce(
+    (preis, d) => preis + d.aufpreis,
+    artikel.preis + groesse.aufpreis,
+  )
 }
 
 export function auftragsSumme(
@@ -15,10 +20,12 @@ export function auftragsSumme(
     anzahl: number
     artikel: { preis: number }
     groesse: { aufpreis: number }
+    druckstellen?: Array<{ aufpreis: number }>
   }>,
 ) {
   return positionen.reduce(
-    (summe, p) => summe + p.anzahl * stueckpreis(p.artikel, p.groesse),
+    (summe, p) =>
+      summe + p.anzahl * stueckpreis(p.artikel, p.groesse, p.druckstellen),
     0,
   )
 }

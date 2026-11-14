@@ -1,27 +1,18 @@
 import { describe, expect, test } from 'vitest'
 
-import { anmelden, app, json, neuesMitglied, superuser } from './helpers'
+import {
+  anmelden,
+  app,
+  json,
+  neuesMitglied,
+  offeneRunde,
+  superuser,
+} from './helpers'
 import type { TestMitglied } from './helpers'
 
 const RUNDEN = '/pb/api/collections/bestellrunden/records'
 const AUFTRAEGE = '/pb/api/collections/auftraege/records'
 const POSITIONEN = '/pb/api/collections/positionen/records'
-
-// Alle Testdateien teilen sich ein PocketBase, und es gibt höchstens eine
-// offene Bestellrunde. Die Tests nutzen deshalb die offene Runde, die gerade
-// da ist, oder legen sie an.
-async function offeneRunde() {
-  const pb = await superuser()
-  const offen = await pb
-    .collection('bestellrunden')
-    .getFullList({ filter: "status = 'offen'" })
-  if (offen.length > 0) return offen[0]
-  return pb.collection('bestellrunden').create({
-    name: 'Testrunde',
-    bestelldatum: '2026-12-01 12:00:00.000Z',
-    status: 'offen',
-  })
-}
 
 async function abgeschlosseneRunde() {
   const pb = await superuser()
@@ -402,5 +393,255 @@ describe('Position', () => {
     })
 
     expect(res.ok).toBe(false)
+  })
+})
+
+// Belegungen liegen hier und nicht in einer eigenen Datei, weil der erste
+// Test dieser Datei die offene Runde schließt; Tests einer Datei laufen
+// nacheinander.
+describe('Belegung', () => {
+  const BELEGUNGEN = '/pb/api/collections/belegungen/records'
+
+  // Artikel mit Größe, Pflicht-Druckstelle vorne (Motiv, ein Motiv erlaubt,
+  // Aufpreis 2 €) und optionaler Text-Druckstelle hinten (Aufpreis 5 €).
+  async function bedruckbarerArtikel() {
+    const pb = await superuser()
+    const { artikel, groesse } = await artikelMitGroesse()
+    const erlaubt = await pb.collection('motive').create({ name: 'Erlaubt' })
+    const fremd = await pb.collection('motive').create({ name: 'Fremd' })
+    const vorne = await pb.collection('druckstellen').create({
+      artikel: artikel.id,
+      name: 'vorne',
+      art: 'motiv',
+      pflicht: true,
+      aufpreis: 200,
+      erlaubte_motive: [erlaubt.id],
+    })
+    const hinten = await pb.collection('druckstellen').create({
+      artikel: artikel.id,
+      name: 'hinten',
+      art: 'text',
+      aufpreis: 500,
+    })
+    return { artikel, groesse, erlaubt, fremd, vorne, hinten }
+  }
+
+  async function mitPosition() {
+    const stand = await mitAuftrag()
+    const sortiment = await bedruckbarerArtikel()
+    const res = await app(POSITIONEN, {
+      ...json({
+        auftrag: stand.auftrag.id,
+        artikel: sortiment.artikel.id,
+        groesse: sortiment.groesse.id,
+        anzahl: 1,
+      }),
+      cookie: stand.cookie,
+    })
+    if (!res.ok) throw new Error(`Position nicht angelegt: ${res.status}`)
+    return { ...stand, ...sortiment, position: await res.json() }
+  }
+
+  function belegen(cookie: string, felder: Record<string, unknown>) {
+    return app(BELEGUNGEN, { ...json(felder), cookie })
+  }
+
+  test('Mitglied belegt Motiv- und Text-Druckstelle und schickt ab', async () => {
+    const p = await mitPosition()
+
+    const motiv = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      motiv: p.erlaubt.id,
+    })
+    const text = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: 'Spitzname',
+    })
+    const fertig = await patch(`${AUFTRAEGE}/${p.auftrag.id}`, p.cookie, {
+      status: 'fertig',
+    })
+
+    expect(motiv.status).toBe(200)
+    expect(text.status).toBe(200)
+    expect(fertig.status).toBe(200)
+  })
+
+  test('unerlaubtes Motiv wird abgelehnt', async () => {
+    const p = await mitPosition()
+
+    const res = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      motiv: p.fremd.id,
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('Text an einer Motiv-Druckstelle wird abgelehnt', async () => {
+    const p = await mitPosition()
+
+    const nurText = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      text: 'Spitzname',
+    })
+    const beides = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      motiv: p.erlaubt.id,
+      text: 'Spitzname',
+    })
+
+    expect(nurText.status).toBe(400)
+    expect(beides.status).toBe(400)
+  })
+
+  test('Motiv oder leerer Text an einer Text-Druckstelle wird abgelehnt', async () => {
+    const p = await mitPosition()
+
+    const motiv = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      motiv: p.erlaubt.id,
+    })
+    const leer = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: '   ',
+    })
+
+    expect(motiv.status).toBe(400)
+    expect(leer.status).toBe(400)
+  })
+
+  test('Druckstelle eines anderen Artikels wird abgelehnt', async () => {
+    const p = await mitPosition()
+    const anderer = await bedruckbarerArtikel()
+
+    const res = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: anderer.hinten.id,
+      text: 'Spitzname',
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('dieselbe Druckstelle lässt sich nur einmal belegen', async () => {
+    const p = await mitPosition()
+    const belegung = { position: p.position.id, druckstelle: p.hinten.id }
+
+    const erste = await belegen(p.cookie, { ...belegung, text: 'Eins' })
+    const zweite = await belegen(p.cookie, { ...belegung, text: 'Zwei' })
+
+    expect(erste.status).toBe(200)
+    expect(zweite.status).toBe(400)
+  })
+
+  test('Bin fertig mit leerer Pflicht-Druckstelle wird abgelehnt', async () => {
+    const p = await mitPosition()
+    await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: 'Spitzname',
+    })
+
+    const res = await patch(`${AUFTRAEGE}/${p.auftrag.id}`, p.cookie, {
+      status: 'fertig',
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('ausgeblendete Pflicht-Druckstelle hält Bin fertig nicht auf', async () => {
+    const p = await mitPosition()
+    const pb = await superuser()
+    await pb
+      .collection('druckstellen')
+      .update(p.vorne.id, { ausgeblendet: true })
+
+    const res = await patch(`${AUFTRAEGE}/${p.auftrag.id}`, p.cookie, {
+      status: 'fertig',
+    })
+
+    expect(res.status).toBe(200)
+  })
+
+  test('Mitglied sieht und belegt keine fremden Positionen', async () => {
+    const p = await mitPosition()
+    const neu = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: 'Spitzname',
+    })
+    const { id } = await neu.json()
+    const fremd = await anmelden(await neuesMitglied())
+
+    const gelesen = await app(`${BELEGUNGEN}/${id}`, { cookie: fremd })
+    const belegt = await belegen(fremd, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      motiv: p.erlaubt.id,
+    })
+
+    expect(gelesen.status).toBe(404)
+    expect(belegt.ok).toBe(false)
+  })
+
+  test('Belegung am abgeschickten Auftrag ist für das Mitglied gesperrt', async () => {
+    const p = await mitPosition()
+    const neu = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.vorne.id,
+      motiv: p.erlaubt.id,
+    })
+    const { id } = await neu.json()
+    await patch(`${AUFTRAEGE}/${p.auftrag.id}`, p.cookie, { status: 'fertig' })
+
+    const text = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: 'Spitzname',
+    })
+    const geloescht = await app(`${BELEGUNGEN}/${id}`, {
+      method: 'DELETE',
+      cookie: p.cookie,
+    })
+
+    expect(text.ok).toBe(false)
+    expect(geloescht.ok).toBe(false)
+  })
+
+  test('Artikel einer Position lässt sich nicht umstellen', async () => {
+    const p = await mitPosition()
+    const anderer = await bedruckbarerArtikel()
+
+    const res = await patch(`${POSITIONEN}/${p.position.id}`, p.cookie, {
+      artikel: anderer.artikel.id,
+      groesse: anderer.groesse.id,
+    })
+
+    expect(res.ok).toBe(false)
+  })
+
+  test('Belegungen gehen mit ihrer Position', async () => {
+    const p = await mitPosition()
+    const neu = await belegen(p.cookie, {
+      position: p.position.id,
+      druckstelle: p.hinten.id,
+      text: 'Spitzname',
+    })
+    const { id } = await neu.json()
+
+    await app(`${POSITIONEN}/${p.position.id}`, {
+      method: 'DELETE',
+      cookie: p.cookie,
+    })
+
+    const pb = await superuser()
+    await expect(pb.collection('belegungen').getOne(id)).rejects.toThrow()
   })
 })

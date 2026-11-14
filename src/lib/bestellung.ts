@@ -1,4 +1,5 @@
 import type { AuftragStatus } from '@/lib/auftrag'
+import type { Belegung } from '@/lib/belegung'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Bestellrunde, Auftrag und Position aus PocketBase. Wer was lesen und
@@ -27,6 +28,8 @@ export type Position = {
   anzahl: number
 }
 
+export type PositionsBelegung = Belegung & { position: string }
+
 export async function ladeRunden(): Promise<Array<Bestellrunde>> {
   const pb = createBrowserPocketBase()
   return pb
@@ -42,12 +45,16 @@ export async function ladeOffeneRunde(): Promise<Bestellrunde | null> {
   return offen.at(0) ?? null
 }
 
-// Der Auftrag eines Mitglieds in einer Runde samt Positionen; ohne Auftrag
-// hat das Mitglied noch nichts eingetragen.
+// Der Auftrag eines Mitglieds in einer Runde samt Positionen und Belegungen;
+// ohne Auftrag hat das Mitglied noch nichts eingetragen.
 export async function ladeAuftrag(
   runde: string,
   mitglied: string,
-): Promise<{ auftrag: Auftrag | null; positionen: Array<Position> }> {
+): Promise<{
+  auftrag: Auftrag | null
+  positionen: Array<Position>
+  belegungen: Array<PositionsBelegung>
+}> {
   const pb = createBrowserPocketBase()
   const gefunden = await pb.collection('auftraege').getFullList<Auftrag>({
     filter: pb.filter('runde = {:runde} && mitglied = {:mitglied}', {
@@ -56,12 +63,17 @@ export async function ladeAuftrag(
     }),
   })
   const auftrag = gefunden.at(0) ?? null
-  if (!auftrag) return { auftrag, positionen: [] }
-  const positionen = await pb.collection('positionen').getFullList<Position>({
-    filter: pb.filter('auftrag = {:id}', { id: auftrag.id }),
-    sort: 'created',
-  })
-  return { auftrag, positionen }
+  if (!auftrag) return { auftrag, positionen: [], belegungen: [] }
+  const [positionen, belegungen] = await Promise.all([
+    pb.collection('positionen').getFullList<Position>({
+      filter: pb.filter('auftrag = {:id}', { id: auftrag.id }),
+      sort: 'created',
+    }),
+    pb.collection('belegungen').getFullList<PositionsBelegung>({
+      filter: pb.filter('position.auftrag = {:id}', { id: auftrag.id }),
+    }),
+  ])
+  return { auftrag, positionen, belegungen }
 }
 
 // Daten wie das Bestelldatum laufen in der App als JJJJ-MM-TT. PocketBase

@@ -60,6 +60,22 @@ export async function neuesMitglied(
   return { id: record.id, email, password }
 }
 
+// Alle Testdateien teilen sich ein PocketBase, und es gibt höchstens eine
+// offene Bestellrunde. Tests nutzen deshalb die offene Runde, die gerade da
+// ist, oder legen sie an.
+export async function offeneRunde() {
+  const pb = await superuser()
+  const offen = await pb
+    .collection('bestellrunden')
+    .getFullList({ filter: "status = 'offen'" })
+  if (offen.length > 0) return offen[0]
+  return pb.collection('bestellrunden').create({
+    name: 'Testrunde',
+    bestelldatum: '2026-12-01 12:00:00.000Z',
+    status: 'offen',
+  })
+}
+
 export function anmeldung(m: TestMitglied) {
   return app(
     '/pb/api/collections/mitglieder/auth-with-password',

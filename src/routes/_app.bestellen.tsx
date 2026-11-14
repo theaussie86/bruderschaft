@@ -3,13 +3,13 @@ import { ImageOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { Bestellrunde } from '@/lib/bestellung'
-import type { SortimentArtikel } from '@/lib/sortiment'
+import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { PageHeader } from '@/components/PageHeader'
 import { AuftragKarte } from '@/components/bestellung/AuftragKarte'
 import { ladeOffeneRunde } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
-import { bildPfad, ladeSortiment } from '@/lib/sortiment'
+import { bildPfad, ladeMotive, ladeSortiment } from '@/lib/sortiment'
 
 export const Route = createFileRoute('/_app/bestellen')({
   component: Bestellen,
@@ -22,12 +22,15 @@ function Bestellen() {
   const [stand, setStand] = useState<{
     runde: Bestellrunde | null
     sortiment: Array<SortimentArtikel>
+    motive: Array<Motiv>
   } | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([ladeOffeneRunde(), ladeSortiment()])
-      .then(([runde, sortiment]) => setStand({ runde, sortiment }))
+    Promise.all([ladeOffeneRunde(), ladeSortiment(), ladeMotive()])
+      .then(([runde, sortiment, motive]) =>
+        setStand({ runde, sortiment, motive }),
+      )
       .catch((err: unknown) =>
         setFehler(
           fehlertext(err, 'Die Bestellung konnte nicht geladen werden.'),
@@ -62,6 +65,7 @@ function Bestellen() {
               runde={stand.runde}
               mitglied={mitglied.id}
               sortiment={stand.sortiment}
+              motive={stand.motive}
             />
           )}
           <SortimentAnsicht
