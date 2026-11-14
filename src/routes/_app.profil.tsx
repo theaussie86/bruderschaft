@@ -130,6 +130,22 @@ function Profil() {
       >
         <LogOut className="size-4" /> Abmelden
       </Link>
+
+      {/* Rechtliches auch nach dem Login erreichbar (Issue #42) */}
+      <nav
+        aria-label="Rechtliches"
+        className="text-smoke mt-6 flex justify-center gap-6 text-sm"
+      >
+        <Link to="/impressum" className="hover:text-bone">
+          Impressum
+        </Link>
+        <Link to="/datenschutz" className="hover:text-bone">
+          Datenschutz
+        </Link>
+        <Link to="/cookies" className="hover:text-bone">
+          Cookies
+        </Link>
+      </nav>
     </>
   )
 }

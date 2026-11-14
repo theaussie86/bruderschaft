@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 import { PublicPage } from '@/components/PublicPage'
+import { SPEICHERUNGEN } from '@/lib/cookie-hinweis'
 
 // Statisch (Spec #17). Der Verantwortliche steht als Platzhalter da, bis der
 // Club ihn vor dem Go-live einträgt.
@@ -47,8 +48,26 @@ function Datenschutz() {
         </Abschnitt>
         <Abschnitt titel="Cookies">
           <p>
-            Die App setzt nur ein technisch notwendiges Cookie für die
-            Anmeldung. Es gibt keine Analyse und kein Tracking.
+            Die App speichert in deinem Browser nur, was technisch notwendig
+            ist. Dafür braucht es keine Einwilligung (§ 25 Abs. 2 Nr. 2
+            TDDDG). Es gibt keine Analyse, kein Tracking und keine Inhalte von
+            Drittanbietern, Schriften liegen auf unserem eigenen Server. Einen
+            Service Worker oder Offline-Speicher nutzt die App nicht.
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            {SPEICHERUNGEN.map((s) => (
+              <li key={s.name}>
+                <code className="text-bone">{s.name}</code> ({s.art}): {s.zweck}{' '}
+                {s.dauer}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2">
+            Details und den Hinweis zum Zurücksetzen findest du auf der Seite{' '}
+            <Link to="/cookies" className="text-bone underline">
+              Cookies
+            </Link>
+            .
           </p>
         </Abschnitt>
         <Abschnitt titel="Deine Rechte">

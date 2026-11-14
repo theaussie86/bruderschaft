@@ -1,6 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import appCss from '../styles.css?url'
+import { CookieHinweis } from '@/components/CookieHinweis'
 import { ladeSitzung } from '@/lib/sitzung.functions'
 
 export const Route = createRootRoute({
@@ -40,6 +41,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <CookieHinweis />
         <Scripts />
       </body>
     </html>

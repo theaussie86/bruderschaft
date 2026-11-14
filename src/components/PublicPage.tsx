@@ -10,6 +10,9 @@ export function PublicFooter() {
       <Link to="/datenschutz" className="hover:text-bone">
         Datenschutz
       </Link>
+      <Link to="/cookies" className="hover:text-bone">
+        Cookies
+      </Link>
     </footer>
   )
 }
