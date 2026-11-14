@@ -1,0 +1,190 @@
+/* Schriften selbst gehostet, kein Google-CDN (DSGVO). */
+@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/big-shoulders-display';
+@import 'tailwindcss' source('../');
+
+@theme {
+  --font-display: 'Big Shoulders Display Variable', 'Big Shoulders Display', 'Oswald', 'Arial Narrow', sans-serif;
+  --font-sans: 'Archivo Variable', 'Archivo', ui-sans-serif, system-ui, sans-serif;
+
+  --color-coal: #0d0c0b;
+  --color-iron: #151311;
+  --color-anthracite: #1d1a17;
+  --color-slate: #27231f;
+  --color-line: #39332d;
+  --color-bone: #ede4d3;
+  --color-ash: #a89d8b;
+  --color-smoke: #7d7366;
+  --color-rust: #b8371f;
+  --color-rust-hi: #d04527;
+  --color-blood: #6e1810;
+  --color-brass: #c89d5c;
+  --color-copper: #b0683a;
+  --color-patina: #93ad80;
+  --color-wood: #5b3a22;
+}
+
+@layer base {
+  html {
+    background: var(--color-coal);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    color: var(--color-bone);
+    background-color: var(--color-iron);
+    background-image:
+      radial-gradient(120% 50% at 50% -10%, rgb(110 24 16 / 0.22), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.93 0 0 0 0 0.89 0 0 0 0 0.83 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--color-rust);
+    color: var(--color-bone);
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* verhindert Zoom auf iOS */
+  }
+
+  button:not(:disabled),
+  [role='button'] {
+    cursor: pointer;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility card {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 40%), var(--color-anthracite);
+  border: 1px solid rgb(237 228 211 / 0.08);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.03) inset,
+    0 12px 30px -20px rgb(0 0 0 / 0.9);
+}
+
+@utility eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+@utility field {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  background: var(--color-coal);
+  padding: 0.8rem 0.95rem;
+  color: var(--color-bone);
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  &::placeholder {
+    color: var(--color-smoke);
+  }
+  &:focus {
+    border-color: var(--color-brass);
+    box-shadow: 0 0 0 3px rgb(200 157 92 / 0.18);
+  }
+}
+
+@utility leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted rgb(237 228 211 / 0.22);
+  transform: translateY(-0.3em);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@utility animate-rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@utility animate-sheet {
+  animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@utility animate-pop {
+  animation: pop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@utility animate-fade {
+  animation: fade 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

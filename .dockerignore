@@ -6,3 +6,6 @@ club-assets
 docs
 *.md
 .env*
+reference
+pocketbase
+.pocketbase

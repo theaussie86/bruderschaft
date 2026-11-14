@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --bun vite dev --port 3000",
+    "dev:pb": "./scripts/pb-dev.sh",
     "start": "bun run server.ts",
     "build": "bun --bun vite build",
     "preview": "vite preview",
@@ -20,6 +21,7 @@
     "@tanstack/react-start": "^1.169.5",
     "@tanstack/router-plugin": "^1.169.0",
     "lucide-react": "^1.72.0",
+    "pocketbase": "0.29.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.2.2"
