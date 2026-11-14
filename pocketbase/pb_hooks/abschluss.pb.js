@@ -4,17 +4,23 @@
 // Status einer Runde wechselt nur diese Hook-Route, transaktional, damit
 // Festpreise, `mitbestellt` und Status immer zusammenpassen.
 
-// Warnzahlen vor dem Abschließen: wie viele Aufträge nicht fertig sind.
+// Warnung vor dem Abschließen: wie viele Aufträge nicht fertig sind und
+// welche Positionen nicht mehr verfügbar sind.
 routerAdd(
   'GET',
   '/api/club/bestellrunden/{id}/abschluss',
   (e) => {
     const { istAdmin } = require(`${__hooks}/lib/einladung.js`)
-    const { nichtFertig, runde } = require(`${__hooks}/lib/abschluss.js`)
+    const { nichtFertig, nichtVerfuegbar, runde } = require(
+      `${__hooks}/lib/abschluss.js`,
+    )
     if (!istAdmin(e.auth))
       throw new ForbiddenError('Nur Admins schließen Bestellrunden ab.')
     const r = runde(e.app, e.request.pathValue('id'))
-    return e.json(200, { nicht_fertig: nichtFertig(e.app, r.id).length })
+    return e.json(200, {
+      nicht_fertig: nichtFertig(e.app, r.id).length,
+      nicht_verfuegbar: nichtVerfuegbar(e.app, r.id),
+    })
   },
   $apis.requireAuth('mitglieder'),
 )

@@ -84,6 +84,7 @@ function Bestellen() {
                   runde={stand.runde}
                   ich={mitglied.id}
                   sortiment={stand.sortiment}
+                  motive={stand.motive}
                   onRundeGeaendert={laden}
                 />
               )}

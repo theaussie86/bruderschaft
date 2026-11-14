@@ -322,6 +322,24 @@ describe('Dokument-Modell der Sammelbestellung', () => {
     ).toEqual([true, false, false])
   })
 
+  test('ausgeblendeter Artikel und ausgeblendete Druckstelle markieren ihre Positionen und Textdrucke', () => {
+    const d = daten()
+    d.artikel = d.artikel.map((a) =>
+      a.id === 'muetze' ? { ...a, ausgeblendet: true } : a,
+    )
+    d.druckstellen = d.druckstellen.map((x) =>
+      x.id === 'hinten' ? { ...x, ausgeblendet: true } : x,
+    )
+    const modell = sammelbestellung(d)
+    expect(modell.summen.map((z) => [z.groesse, z.nichtVerfuegbar])).toEqual([
+      ['M', false],
+      ['XL', true],
+      ['One Size', true],
+    ])
+    expect(modell.textdrucke.length).toBeGreaterThan(0)
+    expect(modell.textdrucke.every((t) => t.nichtVerfuegbar)).toBe(true)
+  })
+
   test('ohne mitbestellte Aufträge bleibt das Dokument leer', () => {
     const d = daten()
     d.auftraege = d.auftraege.map((a) => ({ ...a, mitbestellt: false }))

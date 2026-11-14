@@ -20,6 +20,7 @@ import type {
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
+import { NichtVerfuegbar } from '@/components/NichtVerfuegbar'
 import { AdminFelder } from '@/components/bestellung/AdminFelder'
 import { AuftragAbgeschlossen } from '@/components/bestellung/AuftragAbgeschlossen'
 import { BelegungFelder } from '@/components/bestellung/BelegungFelder'
@@ -37,6 +38,7 @@ import { ladeAuftrag, tagAnzeigen } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro, euroMitVorzeichen } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
+import { positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
 
 const STATUS_TEXT = {
   in_arbeit: 'in Arbeit',
@@ -176,6 +178,12 @@ function OffenerAuftrag({
         belegungen: eigene,
         druckstellen: belegteDruckstellen(artikel.druckstellen, eigene),
         fehlend: fehlendePflicht(artikel.druckstellen, wahlAus(eigene)),
+        nichtVerfuegbar: positionNichtVerfuegbar(
+          p,
+          sortiment,
+          motive,
+          belegungen,
+        ),
       },
     ]
   })
@@ -232,7 +240,10 @@ function OffenerAuftrag({
                   <li key={z.id} className="py-3">
                     <div className="flex items-center gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold">{z.artikel.name}</div>
+                        <div className="flex flex-wrap items-center gap-2 font-semibold">
+                          {z.artikel.name}
+                          {z.nichtVerfuegbar && <NichtVerfuegbar />}
+                        </div>
                         <div className="text-ash text-[13px]">
                           Größe {z.groesse.name}
                           {z.belegungen.length > 0 &&

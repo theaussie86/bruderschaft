@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  EyeOff,
   Lock,
   MessageSquare,
   RotateCcw,
@@ -12,10 +13,11 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Auftrag, Bestellrunde, Position } from '@/lib/bestellung'
-import type { SortimentArtikel } from '@/lib/sortiment'
+import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import type { Stand } from '@/lib/uebersicht'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
+import { NichtVerfuegbar } from '@/components/NichtVerfuegbar'
 import { SammelbestellungDownload } from '@/components/bestellung/SammelbestellungDownload'
 import { auftragsSumme } from '@/lib/auftrag'
 import { belegteDruckstellen } from '@/lib/belegung'
@@ -30,6 +32,7 @@ import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { STAND_TEXT, uebersichtZeilen } from '@/lib/uebersicht'
+import { NICHT_VERFUEGBAR, positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
 
 const REIHENFOLGE: Array<Stand> = ['fertig', 'verzicht', 'in_arbeit', 'leer']
 const BALKEN: Record<Stand, string> = {
@@ -76,11 +79,13 @@ export function RundenUebersicht({
   runde,
   ich,
   sortiment,
+  motive,
   onRundeGeaendert,
 }: {
   runde: Bestellrunde
   ich: string
   sortiment: Array<SortimentArtikel>
+  motive: Array<Motiv>
   onRundeGeaendert: () => void | Promise<void>
 }) {
   const [daten, setDaten] = useState<Daten | null>(null)
@@ -142,6 +147,15 @@ export function RundenUebersicht({
     daten.mitglieder,
     daten.auftraege,
     anzahlProAuftrag,
+  )
+  // Aufträge mit mindestens einer Position, deren Sortiment inzwischen
+  // ausgeblendet ist.
+  const mitNichtVerfuegbarem = new Set(
+    daten.positionen
+      .filter((p) =>
+        positionNichtVerfuegbar(p, sortiment, motive, daten.belegungen),
+      )
+      .map((p) => p.auftrag),
   )
   const zahl = (s: Stand) => zeilen.filter((z) => z.stand === s).length
   const erledigt = zahl('fertig') + zahl('verzicht')
@@ -277,6 +291,11 @@ export function RundenUebersicht({
                           : 'nicht mitbestellt'}
                       </Markierung>
                     )}
+                    {z.auftrag &&
+                      z.stand !== 'verzicht' &&
+                      mitNichtVerfuegbarem.has(z.auftrag.id) && (
+                        <NichtVerfuegbar />
+                      )}
                     {z.ausgetreten && (
                       <Markierung ton="neutral">
                         <UserX className="size-3" /> ausgetreten
@@ -379,13 +398,19 @@ function Abschliessen({
   onFertig: () => void | Promise<void>
 }) {
   const [anzahl, setAnzahl] = useState<number | null>(null)
+  const [nichtVerfuegbar, setNichtVerfuegbar] = useState<
+    Array<{ mitglied: string; artikel: string; groesse: string }>
+  >([])
   const [mitnehmen, setMitnehmen] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
   const [laeuft, setLaeuft] = useState(false)
 
   useEffect(() => {
     ladeAbschlussWarnung(runde.id)
-      .then((w) => setAnzahl(w.nicht_fertig))
+      .then((w) => {
+        setAnzahl(w.nicht_fertig)
+        setNichtVerfuegbar(w.nicht_verfuegbar)
+      })
       .catch((err: unknown) =>
         setFehler(fehlertext(err, 'Die Warnung konnte nicht geladen werden.')),
       )
@@ -449,6 +474,27 @@ function Abschliessen({
                 {text}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+      {nichtVerfuegbar.length > 0 && (
+        <div className="border-brass/40 bg-brass/10 mb-3 rounded-2xl border p-4">
+          <div className="flex items-start gap-2.5">
+            <EyeOff className="text-brass mt-0.5 size-5 shrink-0" />
+            <div>
+              <div className="font-semibold">
+                {nichtVerfuegbar.length}{' '}
+                {nichtVerfuegbar.length === 1 ? 'Position' : 'Positionen'}{' '}
+                {NICHT_VERFUEGBAR}
+              </div>
+              <ul className="text-ash text-[15px]">
+                {nichtVerfuegbar.map((p, i) => (
+                  <li key={i}>
+                    {p.mitglied}: {p.artikel}, Größe {p.groesse}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}

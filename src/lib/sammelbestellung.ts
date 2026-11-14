@@ -6,6 +6,8 @@
 // Preise, Summen, Korrekturen und bezahlt kommen gar nicht erst herein, damit
 // sie nie im Dokument für den Drucker landen können.
 
+import { nichtVerfuegbar } from '@/lib/verfuegbarkeit'
+
 type Sortiert = { id: string; sortierung: number; ausgeblendet: boolean }
 
 export type Rundendaten = {
@@ -80,7 +82,7 @@ export type Sammelbestellung = {
 }
 
 export const OHNE_DRUCK = 'ohne Druck'
-export const NICHT_VERFUEGBAR = 'nicht mehr verfügbar'
+export { NICHT_VERFUEGBAR } from '@/lib/verfuegbarkeit'
 
 const datumFormat = new Intl.DateTimeFormat('de-DE', {
   timeZone: 'Europe/Berlin',
@@ -135,13 +137,15 @@ export function sammelbestellung(d: Rundendaten): Sammelbestellung {
             (druckstellenRang.get(x.druckstelle) ?? 0) -
             (druckstellenRang.get(y.druckstelle) ?? 0),
         )
-      const nichtVerfuegbar =
-        artikel.ausgeblendet ||
-        groesse.ausgeblendet ||
-        belegungen.some(
-          (b) => b.druckstelle.ausgeblendet || b.motiv?.ausgeblendet,
-        )
-      return [{ ...p, artikel, groesse, belegungen, nichtVerfuegbar }]
+      return [
+        {
+          ...p,
+          artikel,
+          groesse,
+          belegungen,
+          nichtVerfuegbar: nichtVerfuegbar(artikel, groesse, belegungen),
+        },
+      ]
     })
 
   type Pos = (typeof positionen)[number]

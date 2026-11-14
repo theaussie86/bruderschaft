@@ -99,12 +99,19 @@ export async function ladeFruehereRunden(
     .sort((x, y) => y.abgeschlossen_am.localeCompare(x.abgeschlossen_am))
 }
 
-// Warnzahl vor dem Abschließen: nicht fertige Aufträge mit Positionen.
+// Warnung vor dem Abschließen: Zahl der nicht fertigen Aufträge mit
+// Positionen und die Positionen, die nicht mehr verfügbar sind.
 export async function ladeAbschlussWarnung(runde: string) {
-  return createBrowserPocketBase().send<{ nicht_fertig: number }>(
-    `/api/club/bestellrunden/${encodeURIComponent(runde)}/abschluss`,
-    { method: 'GET' },
-  )
+  return createBrowserPocketBase().send<{
+    nicht_fertig: number
+    nicht_verfuegbar: Array<{
+      mitglied: string
+      artikel: string
+      groesse: string
+    }>
+  }>(`/api/club/bestellrunden/${encodeURIComponent(runde)}/abschluss`, {
+    method: 'GET',
+  })
 }
 
 // Abschließen hält die Preise fest; nicht fertige Aufträge kommen nur mit

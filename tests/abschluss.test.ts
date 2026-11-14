@@ -130,7 +130,30 @@ describe('Abschließen', () => {
     })
 
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ nicht_fertig: 1 })
+    expect(await res.json()).toEqual({ nicht_fertig: 1, nicht_verfuegbar: [] })
+    await abschliessen(cookie, runde.id)
+  })
+
+  test('Warnung nennt zusätzlich die nicht verfügbaren Positionen', async () => {
+    const s = await sortiment()
+    const andere = await sortiment()
+    const pb = await superuser()
+    const anna = await neuesMitglied({ name: 'Anna' })
+    const bert = await neuesMitglied({ name: 'Bert' })
+    const { runde } = await auftrag(s, 'fertig', bert)
+    await auftrag(s, 'in_arbeit', anna)
+    await auftrag(andere, 'fertig')
+    await pb.collection('groessen').update(s.groesse.id, { ausgeblendet: true })
+    const cookie = await admin()
+
+    const res = await app(`/pb/api/club/bestellrunden/${runde.id}/abschluss`, {
+      cookie,
+    })
+
+    expect((await res.json()).nicht_verfuegbar).toEqual([
+      { mitglied: 'Anna', artikel: 'Hoodie', groesse: 'XL' },
+      { mitglied: 'Bert', artikel: 'Hoodie', groesse: 'XL' },
+    ])
     await abschliessen(cookie, runde.id)
   })
 

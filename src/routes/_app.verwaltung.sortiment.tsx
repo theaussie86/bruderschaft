@@ -9,6 +9,7 @@ import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
 import { Pfeile } from '@/components/Pfeile'
 import { Vorschau } from '@/components/Vorschau'
+import { Aktionen } from '@/components/sortiment/Aktionen'
 import { Druckstellen } from '@/components/sortiment/Druckstellen'
 import { Motive } from '@/components/sortiment/Motive'
 import { fehlertext } from '@/lib/geburtstag'
@@ -18,7 +19,9 @@ import { naechsteSortierung, verschieben } from '@/lib/reihenfolge'
 import { ladeMotive, ladeSortiment } from '@/lib/sortiment'
 
 // Verwaltung > Sortiment: Artikel mit Größen und Druckstellen sowie die
-// gemeinsame Motivliste anlegen, bearbeiten, Reihenfolge ändern. Die Rechte prüft PocketBase (ADR 0002).
+// gemeinsame Motivliste anlegen, bearbeiten, Reihenfolge ändern, ausblenden,
+// löschen (nur nie Bestelltes) und Artikel kopieren. Die Rechte und Regeln
+// prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/sortiment')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
@@ -173,6 +176,16 @@ function Sortiment() {
                       if (text) setMeldung({ text, fehler: false })
                       await laden()
                     }}
+                  />
+                  <Aktionen
+                    collection="artikel"
+                    eintrag={a}
+                    onGeaendert={async (text) => {
+                      setOffen(null)
+                      setMeldung(text ? { text, fehler: false } : null)
+                      await laden()
+                    }}
+                    onFehler={(text) => setMeldung({ text, fehler: true })}
                   />
                 </div>
               )}
@@ -390,16 +403,27 @@ function Groessen({
               </button>
             </div>
             {offen === g.id && (
-              <GroesseFormular
-                artikelId={artikel.id}
-                groesse={g}
-                sortierung={g.sortierung}
-                onFertig={async () => {
-                  setOffen(null)
-                  await onGeaendert()
-                }}
-                onFehler={onFehler}
-              />
+              <>
+                <GroesseFormular
+                  artikelId={artikel.id}
+                  groesse={g}
+                  sortierung={g.sortierung}
+                  onFertig={async () => {
+                    setOffen(null)
+                    await onGeaendert()
+                  }}
+                  onFehler={onFehler}
+                />
+                <Aktionen
+                  collection="groessen"
+                  eintrag={g}
+                  onGeaendert={async () => {
+                    setOffen(null)
+                    await onGeaendert()
+                  }}
+                  onFehler={onFehler}
+                />
+              </>
             )}
           </li>
         ))}

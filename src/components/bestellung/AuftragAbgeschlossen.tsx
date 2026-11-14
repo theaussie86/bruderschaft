@@ -10,12 +10,14 @@ import type {
 } from '@/lib/bestellung'
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { Markierung } from '@/components/Markierung'
+import { NichtVerfuegbar } from '@/components/NichtVerfuegbar'
 import { AdminFelder } from '@/components/bestellung/AdminFelder'
 import { belegungsText } from '@/lib/belegung'
 import { ladeAuftrag, ladeEinstellungen, tagAnzeigen } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro, euroMitVorzeichen } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
+import { positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
 
 // Ein Auftrag in einer abgeschlossenen Bestellrunde, nur lesend. Ein
 // mitbestellter Auftrag zeigt die festgehaltenen Preise, die Summe, bezahlt
@@ -103,6 +105,12 @@ export function AuftragAbgeschlossen({
       name: artikel?.name ?? 'Artikel',
       groesse: groesse?.name ?? '',
       druck: artikel ? belegungsText(artikel.druckstellen, motive, eigene) : '',
+      nichtVerfuegbar: positionNichtVerfuegbar(
+        p,
+        sortiment,
+        motive,
+        belegungen,
+      ),
     }
   })
   const korrektur = auftrag?.korrektur_betrag ?? 0
@@ -146,7 +154,10 @@ export function AuftragAbgeschlossen({
                 {zeilen.map((z) => (
                   <li key={z.id} className="flex items-center gap-3 py-3">
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold">{z.name}</div>
+                      <div className="flex flex-wrap items-center gap-2 font-semibold">
+                        {z.name}
+                        {z.nichtVerfuegbar && <NichtVerfuegbar />}
+                      </div>
                       <div className="text-ash text-[13px]">
                         Größe {z.groesse}
                         {z.druck && ` · ${z.druck}`}

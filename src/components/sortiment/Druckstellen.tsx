@@ -9,6 +9,7 @@ import type {
 } from '@/lib/sortiment'
 import { Button } from '@/components/Button'
 import { Pfeile } from '@/components/Pfeile'
+import { Aktionen } from '@/components/sortiment/Aktionen'
 import { fehlertext } from '@/lib/geburtstag'
 import { centAlsEingabe, centAus, euro } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -78,14 +79,22 @@ export function Druckstellen({
               </button>
             </div>
             {offen === d.id && (
-              <DruckstelleFormular
-                artikelId={artikel.id}
-                druckstelle={d}
-                motive={motive}
-                sortierung={d.sortierung}
-                onFertig={fertig}
-                onFehler={onFehler}
-              />
+              <>
+                <DruckstelleFormular
+                  artikelId={artikel.id}
+                  druckstelle={d}
+                  motive={motive}
+                  sortierung={d.sortierung}
+                  onFertig={fertig}
+                  onFehler={onFehler}
+                />
+                <Aktionen
+                  collection="druckstellen"
+                  eintrag={d}
+                  onGeaendert={fertig}
+                  onFehler={onFehler}
+                />
+              </>
             )}
           </li>
         ))}

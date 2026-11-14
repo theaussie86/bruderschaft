@@ -6,12 +6,13 @@ import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
 import { Pfeile } from '@/components/Pfeile'
 import { Vorschau } from '@/components/Vorschau'
+import { Aktionen } from '@/components/sortiment/Aktionen'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { naechsteSortierung } from '@/lib/reihenfolge'
 
 // Die gemeinsame Motivliste für alle Artikel: anlegen, Name und Bild ändern,
-// Reihenfolge bestimmen.
+// Reihenfolge bestimmen, ausblenden und nie Bestelltes löschen.
 export function Motive({
   motive,
   onVerschieben,
@@ -75,12 +76,20 @@ export function Motive({
               </button>
             </div>
             {offen === m.id && (
-              <MotivFormular
-                motiv={m}
-                sortierung={m.sortierung}
-                onFertig={fertig}
-                onFehler={onFehler}
-              />
+              <>
+                <MotivFormular
+                  motiv={m}
+                  sortierung={m.sortierung}
+                  onFertig={fertig}
+                  onFehler={onFehler}
+                />
+                <Aktionen
+                  collection="motive"
+                  eintrag={m}
+                  onGeaendert={fertig}
+                  onFehler={onFehler}
+                />
+              </>
             )}
           </li>
         ))}

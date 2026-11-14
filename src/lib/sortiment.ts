@@ -84,3 +84,36 @@ export function bildPfad(
   const pfad = `/pb/api/files/${r.collectionId}/${r.id}/${encodeURIComponent(r.bild)}`
   return thumb ? `${pfad}?thumb=${thumb}` : pfad
 }
+
+export type SortimentCollection =
+  'artikel' | 'groessen' | 'druckstellen' | 'motive'
+
+// Ausblenden statt Löschen: Ausgeblendetes ist für neue Positionen nicht
+// wählbar, bestehende bleiben gültig (prüft PocketBase, ADR 0002).
+export async function sichtbarkeitSetzen(
+  collection: SortimentCollection,
+  id: string,
+  ausgeblendet: boolean,
+) {
+  await createBrowserPocketBase()
+    .collection(collection)
+    .update(id, { ausgeblendet })
+}
+
+// Löschen geht nur, solange nie bestellt wurde. Sonst lehnt PocketBase mit
+// einer Meldung ab, die zum Ausblenden rät.
+export async function sortimentLoeschen(
+  collection: SortimentCollection,
+  id: string,
+) {
+  await createBrowserPocketBase().collection(collection).delete(id)
+}
+
+// Kopie mit Bild, Größen, Druckstellen und erlaubten Motiven, z. B. für eine
+// neue Farbe.
+export async function artikelKopieren(id: string) {
+  return createBrowserPocketBase().send<Artikel>(
+    `/api/club/artikel/${encodeURIComponent(id)}/kopieren`,
+    { method: 'POST' },
+  )
+}

@@ -55,6 +55,68 @@ function nichtFertig(app, rundeId) {
     .filter((auftrag) => positionenVon(app, auftrag.id).length > 0)
 }
 
+// Positionen, deren Artikel, Größe, Druckstelle oder Motiv inzwischen
+// ausgeblendet ist, aus allen Aufträgen der Runde außer Verzicht. Für die
+// Warnung vor dem Abschließen, mit Mitglied, Artikel und Größe.
+function nichtVerfuegbar(app, rundeId) {
+  const ausgeblendet = (collection, id) => {
+    try {
+      return app.findRecordById(collection, id).getBool('ausgeblendet')
+    } catch {
+      return false
+    }
+  }
+  const auftraege = app.findRecordsByFilter(
+    'auftraege',
+    "runde = {:runde} && status != 'verzicht'",
+    '',
+    0,
+    0,
+    { runde: rundeId },
+  )
+  const liste = []
+  for (const auftrag of auftraege) {
+    const mitglied = app.findRecordById(
+      'mitglieder',
+      auftrag.getString('mitglied'),
+    )
+    for (const position of positionenVon(app, auftrag.id)) {
+      const belegungen = app.findRecordsByFilter(
+        'belegungen',
+        'position = {:id}',
+        '',
+        0,
+        0,
+        { id: position.id },
+      )
+      const betroffen =
+        ausgeblendet('artikel', position.getString('artikel')) ||
+        ausgeblendet('groessen', position.getString('groesse')) ||
+        belegungen.some(
+          (b) =>
+            ausgeblendet('druckstellen', b.getString('druckstelle')) ||
+            (!!b.getString('motiv') &&
+              ausgeblendet('motive', b.getString('motiv'))),
+        )
+      if (!betroffen) continue
+      liste.push({
+        mitglied: mitglied.getString('name'),
+        artikel: app
+          .findRecordById('artikel', position.getString('artikel'))
+          .getString('name'),
+        groesse: app
+          .findRecordById('groessen', position.getString('groesse'))
+          .getString('name'),
+      })
+    }
+  }
+  return liste.sort(
+    (x, y) =>
+      x.mitglied.localeCompare(y.mitglied) ||
+      x.artikel.localeCompare(y.artikel),
+  )
+}
+
 function runde(app, id) {
   try {
     return app.findRecordById('bestellrunden', id)
@@ -68,5 +130,6 @@ module.exports = {
   positionenVon,
   festeSumme,
   nichtFertig,
+  nichtVerfuegbar,
   runde,
 }
