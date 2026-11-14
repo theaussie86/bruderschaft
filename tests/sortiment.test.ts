@@ -188,6 +188,34 @@ describe('Sortiment: Admin pflegt Artikel und Größen', () => {
     ])
   })
 
+  test.each(['artikel', 'groessen', 'druckstellen', 'motive'])(
+    '%s lässt sich wie in der App nach sortierung,created lesen',
+    async (collection) => {
+      const cookie = await anmelden(await neuesMitglied())
+      const res = await app(
+        `/pb/api/collections/${collection}/records?sort=sortierung,created`,
+        { cookie },
+      )
+      expect(res.status).toBe(200)
+    },
+  )
+
+  test('bei gleicher Sortierung kommt der zuerst angelegte Artikel zuerst', async () => {
+    const cookie = await alsAdmin()
+    const marke = crypto.randomUUID()
+    const erster = await artikelVomSuperuser({ name: `Z ${marke}` })
+    await new Promise((r) => setTimeout(r, 5))
+    const zweiter = await artikelVomSuperuser({ name: `A ${marke}` })
+    const res = await app(
+      `${ARTIKEL}?sort=sortierung,created&filter=${encodeURIComponent(`name ~ "${marke}"`)}`,
+      { cookie },
+    )
+    expect((await res.json()).items.map((x: { id: string }) => x.id)).toEqual([
+      erster.id,
+      zweiter.id,
+    ])
+  })
+
   test('Löschen eines nie bestellten Artikels nimmt seine Größen mit', async () => {
     const cookie = await alsAdmin()
     const artikel = await artikelVomSuperuser()

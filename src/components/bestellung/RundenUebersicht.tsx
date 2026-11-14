@@ -16,6 +16,7 @@ import type { SortimentArtikel } from '@/lib/sortiment'
 import type { Stand } from '@/lib/uebersicht'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
+import { SammelbestellungDownload } from '@/components/bestellung/SammelbestellungDownload'
 import { auftragsSumme } from '@/lib/auftrag'
 import { belegteDruckstellen } from '@/lib/belegung'
 import {
@@ -333,9 +334,20 @@ export function RundenUebersicht({
 
       <div className="border-line/70 border-t p-4">
         {!offen ? (
-          <Button full disabled={laeuft} onClick={() => void oeffnen()}>
-            <RotateCcw className="size-4" /> Wieder öffnen
-          </Button>
+          <div>
+            <div className="text-ash mb-2 text-sm">
+              Sammelbestellung für den Drucker
+            </div>
+            <SammelbestellungDownload runde={runde.id} />
+            <Button
+              full
+              className="mt-2"
+              disabled={laeuft}
+              onClick={() => void oeffnen()}
+            >
+              <RotateCcw className="size-4" /> Wieder öffnen
+            </Button>
+          </div>
         ) : abschliessen ? (
           <Abschliessen
             runde={runde}

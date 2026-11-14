@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Bestellrunde } from '@/lib/bestellung'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
+import { SammelbestellungDownload } from '@/components/bestellung/SammelbestellungDownload'
 import { PageHeader } from '@/components/PageHeader'
 import {
   ladeRunden,
@@ -159,6 +160,11 @@ function Bestellrunden() {
                     {r.status}
                   </Markierung>
                 </div>
+                {!istOffen && (
+                  <div className="mt-4">
+                    <SammelbestellungDownload runde={r.id} klein />
+                  </div>
+                )}
                 {offen === r.id && (
                   <div className="border-line/60 mt-4 border-t pt-4">
                     <RundeFormular runde={r} onFertig={fertig} />

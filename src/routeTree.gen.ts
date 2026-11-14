@@ -30,6 +30,7 @@ import { Route as AppVerwaltungEinstellungenRouteImport } from './routes/_app.ve
 import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
 import { Route as AppVerwaltungSortimentRouteImport } from './routes/_app.verwaltung.sortiment'
 import { Route as AppBestellenMitgliedMitgliedIdRouteImport } from './routes/_app.bestellen_.mitglied.$mitgliedId'
+import { Route as ApiSammelbestellungRundeIdFormatRouteImport } from './routes/api/sammelbestellung.$rundeId.$format'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -138,6 +139,12 @@ const AppBestellenMitgliedMitgliedIdRoute =
     path: '/bestellen/mitglied/$mitgliedId',
     getParentRoute: () => AppRoute,
   } as any)
+const ApiSammelbestellungRundeIdFormatRoute =
+  ApiSammelbestellungRundeIdFormatRouteImport.update({
+    id: '/api/sammelbestellung/$rundeId/$format',
+    path: '/api/sammelbestellung/$rundeId/$format',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
+  '/api/sammelbestellung/$rundeId/$format': typeof ApiSammelbestellungRundeIdFormatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
+  '/api/sammelbestellung/$rundeId/$format': typeof ApiSammelbestellungRundeIdFormatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +215,7 @@ export interface FileRoutesById {
   '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/_app/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/_app/bestellen_/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
+  '/api/sammelbestellung/$rundeId/$format': typeof ApiSammelbestellungRundeIdFormatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
     | '/bestellen/mitglied/$mitgliedId'
+    | '/api/sammelbestellung/$rundeId/$format'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
     | '/bestellen/mitglied/$mitgliedId'
+    | '/api/sammelbestellung/$rundeId/$format'
   id:
     | '__root__'
     | '/'
@@ -275,6 +287,7 @@ export interface FileRouteTypes {
     | '/_app/verwaltung/mitglieder'
     | '/_app/verwaltung/sortiment'
     | '/_app/bestellen_/mitglied/$mitgliedId'
+    | '/api/sammelbestellung/$rundeId/$format'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,6 +301,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ClubAssetsSplatRoute: typeof ClubAssetsSplatRoute
   PbSplatRoute: typeof PbSplatRoute
+  ApiSammelbestellungRundeIdFormatRoute: typeof ApiSammelbestellungRundeIdFormatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -439,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBestellenMitgliedMitgliedIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/sammelbestellung/$rundeId/$format': {
+      id: '/api/sammelbestellung/$rundeId/$format'
+      path: '/api/sammelbestellung/$rundeId/$format'
+      fullPath: '/api/sammelbestellung/$rundeId/$format'
+      preLoaderRoute: typeof ApiSammelbestellungRundeIdFormatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -483,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ClubAssetsSplatRoute: ClubAssetsSplatRoute,
   PbSplatRoute: PbSplatRoute,
+  ApiSammelbestellungRundeIdFormatRoute: ApiSammelbestellungRundeIdFormatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
