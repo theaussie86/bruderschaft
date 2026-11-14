@@ -1,24 +1,46 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { PageHeader, Segmented } from '../components/ui'
-import { TerminRow, isPast } from '../components/termin'
-import { parts } from '../lib/format'
+import { BirthdayRow, TerminRow, isPast } from '../components/termin'
+import { birthdayIn, parts } from '../lib/format'
+import { HEUTE, MEMBERS } from '../mock/data'
 import { useApp } from '../mock/store'
+import type { Birthday } from '../components/termin'
 import type { Termin } from '../mock/data'
 
-type Ansicht = 'kommend' | 'vergangen'
+type Eintrag = { kind: 'termin'; date: string; t: Termin } | { kind: 'geburtstag'; date: string; b: Birthday }
+
+/** Geburtstage aktiver Mitglieder (nicht ausgetreten) von heute an für die nächsten 6 Monate. */
+function upcomingBirthdays(birthdays: Record<string, string>): Array<Birthday> {
+  const year = Number(HEUTE.slice(0, 4))
+  const end = new Date(HEUTE)
+  end.setUTCMonth(end.getUTCMonth() + 6)
+  const limit = end.toISOString().slice(0, 10)
+  const out: Array<Birthday> = []
+  for (const m of MEMBERS) {
+    const bd = birthdays[m.id]
+    if (m.status === 'gesperrt' || !bd) continue
+    for (const y of [year, year + 1]) {
+      const date = birthdayIn(bd, y)
+      if (date >= HEUTE && date <= limit) out.push({ memberId: m.id, name: m.name, date, age: y - Number(bd.slice(0, 4)) })
+    }
+  }
+  return out
+}
+
+type Ansicht = 'kommend' | 'archiv'
 
 export const Route = createFileRoute('/_app/kalender/')({
   validateSearch: (s: Record<string, unknown>): { ansicht?: Ansicht } => ({
-    ansicht: s.ansicht === 'vergangen' ? 'vergangen' : undefined,
+    ansicht: s.ansicht === 'archiv' ? 'archiv' : undefined,
   }),
   component: Kalender,
 })
 
-function groupByMonth(list: Array<Termin>) {
-  const groups: Array<{ key: string; label: string; items: Array<Termin> }> = []
+function groupByMonth(list: Array<Eintrag>) {
+  const groups: Array<{ key: string; label: string; items: Array<Eintrag> }> = []
   for (const t of list) {
-    const p = parts(t.start)
+    const p = parts(t.date)
     let g = groups.find((x) => x.key === p.key)
     if (!g) {
       g = { key: p.key, label: `${p.monthLong} ${p.year}`, items: [] }
@@ -35,12 +57,17 @@ function Kalender() {
   const state = useApp()
   const isAdmin = state.role === 'admin'
 
-  const list =
+  const toEintrag = (t: Termin): Eintrag => ({ kind: 'termin', date: t.start, t })
+  const list: Array<Eintrag> =
     ansicht === 'kommend'
-      ? state.termine.filter((t) => !isPast(t)).sort((a, b) => a.start.localeCompare(b.start))
+      ? [
+          ...state.termine.filter((t) => !isPast(t)).map(toEintrag),
+          ...upcomingBirthdays(state.birthdays).map((b): Eintrag => ({ kind: 'geburtstag', date: b.date, b })),
+        ].sort((a, b) => a.date.localeCompare(b.date) || (a.kind === b.kind ? 0 : a.kind === 'termin' ? -1 : 1))
       : state.termine
-          .filter((t) => isPast(t) && !t.cancelled && (t.kind === 'Veranstaltung' || t.kind === 'Sitzung'))
+          .filter((t) => isPast(t) && !t.cancelled && (t.kind === 'Veranstaltung' || !!t.protocol?.length))
           .sort((a, b) => b.start.localeCompare(a.start))
+          .map(toEintrag)
 
   return (
     <>
@@ -60,14 +87,14 @@ function Kalender() {
       />
       <Segmented<Ansicht>
         value={ansicht}
-        onChange={(v) => navigate({ to: '/kalender', search: v === 'vergangen' ? { ansicht: v } : {}, replace: true })}
+        onChange={(v) => navigate({ to: '/kalender', search: v === 'archiv' ? { ansicht: v } : {}, replace: true })}
         options={[
           ['kommend', 'Kommend'],
-          ['vergangen', 'Vergangen'],
+          ['archiv', 'Archiv'],
         ]}
       />
-      {ansicht === 'vergangen' && (
-        <p className="mt-3 text-[14px] text-ash">Das Archiv: Veranstaltungen mit Bildern und Sitzungen mit Protokoll. Stammtische erscheinen hier nicht.</p>
+      {ansicht === 'archiv' && (
+        <p className="mt-3 text-[14px] text-ash">Das Archiv: Veranstaltungen mit Bildern und Stammtische mit Protokoll.</p>
       )}
 
       <div className="mt-2">
@@ -78,9 +105,9 @@ function Kalender() {
               <span className="h-px flex-1 bg-gradient-to-r from-brass/30 to-transparent" />
             </div>
             <ul className="space-y-2.5">
-              {g.items.map((t, i) => (
-                <li key={t.id} className="animate-rise" style={{ animationDelay: `${i * 40}ms` }}>
-                  <TerminRow t={t} past={ansicht === 'vergangen'} />
+              {g.items.map((e, i) => (
+                <li key={e.kind === 'termin' ? e.t.id : `bd-${e.b.memberId}-${e.date}`} className="animate-rise" style={{ animationDelay: `${i * 40}ms` }}>
+                  {e.kind === 'termin' ? <TerminRow t={e.t} past={ansicht === 'archiv'} /> : <BirthdayRow b={e.b} />}
                 </li>
               ))}
             </ul>

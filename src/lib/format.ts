@@ -50,3 +50,11 @@ export const parts = (iso: string) => {
     key: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`,
   }
 }
+
+/** Geburtstag im Jahr `year`; der 29.02. fällt in Nicht-Schaltjahren auf den 28.02. Rückgabe: ISO-Datum. */
+export const birthdayIn = (birthday: string, year: number) => {
+  const [, m, d] = birthday.split('-').map(Number)
+  const leap = new Date(year, 1, 29).getMonth() === 1
+  const day = m === 2 && d === 29 && !leap ? 28 : d
+  return `${year}-${pad(m)}-${pad(day)}`
+}
