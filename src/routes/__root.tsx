@@ -1,8 +1,6 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import appCss from '../styles.css?url'
-import { DummyBanner } from '../components/DummyBanner'
-import { ToastHost } from '../components/ui'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -12,25 +10,13 @@ export const Route = createRootRoute({
       { name: 'robots', content: 'noindex, nofollow' },
       { name: 'theme-color', content: '#0d0c0b' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-      { title: 'Club-App (Klick-Dummy)' },
+      { title: 'Club-App' },
     ],
-    links: [
-      { rel: 'stylesheet', href: appCss },
-    ],
+    links: [{ rel: 'stylesheet', href: appCss }],
   }),
   shellComponent: RootDocument,
-  component: RootLayout,
+  component: Outlet,
 })
-
-function RootLayout() {
-  return (
-    <>
-      <DummyBanner />
-      <Outlet />
-      <ToastHost />
-    </>
-  )
-}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

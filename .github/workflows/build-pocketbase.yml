@@ -1,0 +1,67 @@
+name: Build PocketBase
+
+# Baut das PocketBase-Image (Binary, pb_migrations, pb_hooks) nach GHCR, Package
+# bruderschaft-pocketbase. Kein automatischer Deploy: PocketBase hält die Daten
+# und wird bewusst aktualisiert - neuen sha-*-Tag in die Compose-Anwendung in
+# Dokploy eintragen, vorher Backup (siehe pocketbase/docker-compose.yml).
+
+on:
+  push:
+    branches: [main]
+    paths: ['pocketbase/**', '.github/workflows/build-pocketbase.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: build-pocketbase-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.event.repository.name }}-pocketbase
+
+jobs:
+  build:
+    name: Build & Push to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags und Labels bestimmen
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build und Push
+        uses: docker/build-push-action@v7
+        with:
+          context: pocketbase
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=pocketbase
+          cache-to: type=gha,mode=max,scope=pocketbase
+          provenance: false
+
+      # Mehr Rollback-Punkte als bei der App: ein PocketBase-Update wird
+      # seltener ausgerollt und soll länger zurückdrehbar bleiben.
+      - name: Alte Package-Versionen aufräumen
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ env.IMAGE_NAME }}
+          package-type: container
+          min-versions-to-keep: 10

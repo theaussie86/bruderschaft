@@ -13,3 +13,6 @@ todos.json
 
 # Echte Club-Bilder liegen nur lokal und im Deployment-Volume, nie im Repo.
 club-assets/
+
+# Lokales PocketBase (Binary und Daten), siehe scripts/pb-dev.sh
+.pocketbase/
