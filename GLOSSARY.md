@@ -8,6 +8,10 @@ Mitglieder-App eines Clubs mit rund 20 festen Mitgliedern. Kern ist die gemeinsa
 Eine Person, die zum Club gehört und einen Zugang hat. Wird vom Admin angelegt, registriert sich nie selbst.
 _Avoid_: User, Member, Kunde
 
+**Geburtstag**:
+Das Geburtsdatum eines Mitglieds, mit Jahr. Jedes Mitglied gibt ihn beim ersten Login an und ändert ihn selbst im Profil; ein Admin kann ihn korrigieren. Er steht jedes Jahr mit dem Alter, das das Mitglied wird, im Kalender und im Kalender-Abo, solange das Mitglied nicht ausgetreten ist, und ist kein Termin. Ein Geburtstag am 29. Februar steht in Nicht-Schaltjahren am 28. Februar.
+_Avoid_: Geburtstagstermin
+
 **Eingeladenes Mitglied**:
 Ein Mitglied, das der Admin angelegt hat und das sein Passwort über den Einladungslink noch nicht gesetzt hat. Der Admin kann die Einladung erneut senden, dann gilt nur noch der neue Link.
 _Avoid_: inaktiv, unbestätigt
@@ -22,7 +26,7 @@ _Avoid_: anonym, Gast
 
 **Admin**:
 Ein Recht, das einzelne Mitglieder zusätzlich haben. Ein Admin ist immer auch Mitglied und bestellt selbst. Jeder Admin kann das Recht vergeben und entziehen; es bleibt immer mindestens ein Admin.
-_Avoid_: Verwalter, Superuser
+_Avoid_: Verwalter, Superuser, Schriftführer (für das Recht)
 
 **Support-Konto**:
 Der Zugang des Entwicklers, mit denselben Rechten wie ein Admin. Er ist kein Mitglied, bestellt nicht und taucht in keiner Übersicht oder Liste auf.
@@ -80,6 +84,10 @@ _Avoid_: Artikel (für die Zeile), Item
 Ein bestellbares Kleidungsstück mit Preis, optionalem Bild und optionaler Beschreibung, z. B. Hoodie oder Mütze. Jede Farbe ist ein eigener Artikel. Der Preis gilt inklusive Aufdruck, solange kein Aufpreis festgelegt ist. Jeder eingeblendete Artikel steht in jeder Bestellrunde zur Wahl.
 _Avoid_: Produkt, Klamotte, Variante (für Farben)
 
+**Artikelnummer**:
+Die Nummer, unter der der Drucker einen Artikel in seinem Katalog führt. Optional. Sehen nur Admins und der Drucker in der Sammelbestellung, nicht die Mitglieder beim Bestellen.
+_Avoid_: SKU, Bestellnummer
+
 **Größe**:
 Eine wählbare Größe eines Artikels, optional mit Aufpreis. Jeder Artikel hat seine eigene Größenliste.
 _Avoid_: Variante
@@ -103,7 +111,7 @@ _Avoid_: gelöscht, deaktiviert, archiviert
 ## Club-Leben
 
 **Termin**:
-Ein Eintrag im Kalender des Clubs mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Sitzung und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
+Ein Eintrag im Kalender des Clubs mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
 _Avoid_: Event, Eintrag, Serie
 
 **Abgesagter Termin**:
@@ -115,15 +123,15 @@ Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder 
 _Avoid_: Event, Party
 
 **Archiv**:
-Die vergangenen, nicht abgesagten Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder. Stammtische, Sitzungen und abgesagte Veranstaltungen gehören nicht dazu.
-_Avoid_: Galerie, Chronik
+Die vergangenen, nicht abgesagten Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
+_Avoid_: Galerie, Veranstaltungsgalerie, Chronik
 
-**Sitzung**:
-Ein Termin, an dem ein Protokoll hängt.
-_Avoid_: Meeting, Versammlung
+**Stammtisch**:
+Das regelmäßige Treffen des Clubs. An einem Stammtisch kann ein Protokoll hängen.
+_Avoid_: Sitzung, Meeting, Versammlung
 
 **Protokoll**:
-Die Niederschrift einer Sitzung, von einem Admin hochgeladen, für alle Mitglieder lesbar. Eine Sitzung hat höchstens ein Protokoll, das aus mehreren Dateien bestehen kann.
+Die Niederschrift eines Stammtischs, von einem Admin hochgeladen, für alle Mitglieder lesbar. Ein Stammtisch hat höchstens ein Protokoll, das aus mehreren Dateien bestehen kann.
 _Avoid_: Notiz, Mitschrift
 
 **Kalender-Abo**:
