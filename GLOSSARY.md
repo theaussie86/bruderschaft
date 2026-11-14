@@ -115,7 +115,7 @@ Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder 
 _Avoid_: Event, Party
 
 **Archiv**:
-Die vergangenen Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder. Stammtische und Sitzungen gehören nicht dazu.
+Die vergangenen, nicht abgesagten Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder. Stammtische, Sitzungen und abgesagte Veranstaltungen gehören nicht dazu.
 _Avoid_: Galerie, Chronik
 
 **Sitzung**:
