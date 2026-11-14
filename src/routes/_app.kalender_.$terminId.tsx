@@ -15,16 +15,23 @@ import type { Termin } from '@/lib/termine'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
+import { Bilder } from '@/components/termin/Bilder'
 import { TerminFormular } from '@/components/termin/TerminFormular'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { ART_NAME, ladeTermin, tagTeile, zeitText } from '@/lib/termine'
 
-// Ein Termin mit allen Angaben. Admins bearbeiten, kopieren, sagen ab oder
-// löschen ihn; gelöscht werden nur falsch angelegte Termine.
+// Ein Termin mit allen Angaben, bei Veranstaltungen mit den Bildern. Admins
+// bearbeiten, kopieren, sagen ab oder löschen ihn; gelöscht werden nur falsch
+// angelegte Termine.
 export const Route = createFileRoute('/_app/kalender_/$terminId')({
   component: TerminSeite,
 })
+
+// PocketBase verweigert das Löschen, solange Bilder auf den Termin zeigen, und
+// meldet das ohne Feldfehler.
+const LOESCHEN_VERWEIGERT =
+  'Zu diesem Termin gibt es Bilder, er lässt sich nicht löschen. Fällt er aus, sag ihn ab.'
 
 const KNOPF =
   'border-line/70 text-bone hover:bg-slate/50 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-60'
@@ -74,7 +81,14 @@ function TerminSeite() {
       await createBrowserPocketBase().collection('termine').delete(termin.id)
       await navigate({ to: '/kalender', replace: true })
     } catch (err) {
-      setFehler(fehlertext(err, 'Der Termin konnte nicht gelöscht werden.'))
+      const status = (err as { status?: number }).status
+      const data = (err as { response?: { data?: object } }).response?.data
+      setFehler(
+        status === 400 && Object.keys(data ?? {}).length === 0
+          ? LOESCHEN_VERWEIGERT
+          : fehlertext(err, 'Der Termin konnte nicht gelöscht werden.'),
+      )
+      setLoeschenFragen(false)
       setLaeuft(false)
     }
   }
@@ -152,6 +166,10 @@ function TerminSeite() {
               </p>
             )}
           </div>
+
+          {termin.art === 'veranstaltung' && (
+            <Bilder termin={termin} mitglied={mitglied} />
+          )}
 
           {mitglied.admin && (
             <section className="mt-8" aria-label="Admin">

@@ -1,13 +1,20 @@
 import { Link } from '@tanstack/react-router'
-import { Ban, ChevronRight, MapPin } from 'lucide-react'
+import { Ban, ChevronRight, Images, MapPin } from 'lucide-react'
 
 import type { Termin } from '@/lib/termine'
 import { Markierung } from '@/components/Markierung'
 import { ART_NAME, tagTeile, zeitText } from '@/lib/termine'
 
 // Ein Termin in der Liste: Kalenderblatt, Art, Titel, Zeit und Ort. Abgesagte
-// bleiben sichtbar, durchgestrichen und markiert.
-export function TerminZeile({ termin: t }: { termin: Termin }) {
+// bleiben sichtbar, durchgestrichen und markiert. Im Archiv steht die Zahl der
+// Bilder dabei.
+export function TerminZeile({
+  termin: t,
+  bilder,
+}: {
+  termin: Termin
+  bilder?: number
+}) {
   const tag = tagTeile(t.beginn)
   return (
     <Link
@@ -56,6 +63,14 @@ export function TerminZeile({ termin: t }: { termin: Termin }) {
             </>
           )}
         </div>
+        {bilder !== undefined && (
+          <div className="text-ash mt-1.5 flex items-center gap-1.5 text-[13px]">
+            <Images className="size-3.5" />
+            {bilder === 0
+              ? 'Noch keine Bilder'
+              : `${bilder} ${bilder === 1 ? 'Bild' : 'Bilder'}`}
+          </div>
+        )}
       </div>
       <div className="text-smoke flex items-center pr-3">
         <ChevronRight className="size-5" />

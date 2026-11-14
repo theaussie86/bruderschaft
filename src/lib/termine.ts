@@ -192,6 +192,30 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
     .sort((a, b) => alsDate(a.beginn).getTime() - alsDate(b.beginn).getTime())
 }
 
+// Das Archiv: vergangene, nicht abgesagte Veranstaltungen, auch ohne Bilder.
+// Vergangen ist ein Termin nach seinem letzten Tag. Neueste zuerst.
+export function archivTermine(termine: Array<Termin>, jetzt = new Date()) {
+  const heute = berlinTag(jetzt)
+  return termine
+    .filter(
+      (t) =>
+        t.art === 'veranstaltung' &&
+        !t.abgesagt &&
+        berlinTag(t.ende || t.beginn) < heute,
+    )
+    .sort((a, b) => alsDate(b.beginn).getTime() - alsDate(a.beginn).getTime())
+}
+
+// Bilder lassen sich hochladen, sobald eine Veranstaltung begonnen hat, und
+// nur, wenn sie nicht abgesagt ist. Dieselbe Regel prüft PocketBase.
+export function bilderErlaubt(t: Termin, jetzt = new Date()) {
+  return (
+    t.art === 'veranstaltung' &&
+    !t.abgesagt &&
+    alsDate(t.beginn).getTime() <= jetzt.getTime()
+  )
+}
+
 const FELDER = 'id,titel,art,beginn,ende,ganztaegig,ort,infotext,abgesagt'
 
 // Lädt grob ab vorgestern, den genauen Schnitt macht kommendeTermine.
@@ -209,4 +233,19 @@ export async function ladeKommendeTermine(jetzt = new Date()) {
 export async function ladeTermin(id: string): Promise<Termin> {
   const pb = createBrowserPocketBase()
   return pb.collection('termine').getOne<Termin>(id, { fields: FELDER })
+}
+
+// Lädt alle Veranstaltungen bis heute, den genauen Schnitt macht archivTermine.
+export async function ladeArchiv(jetzt = new Date()) {
+  const pb = createBrowserPocketBase()
+  const bis = fuerPocketBase(jetzt.getTime())
+  const termine = await pb.collection('termine').getFullList<Termin>({
+    sort: '-beginn',
+    fields: FELDER,
+    filter: pb.filter(
+      "art = 'veranstaltung' && abgesagt = false && beginn <= {:bis}",
+      { bis },
+    ),
+  })
+  return archivTermine(termine, jetzt)
 }
