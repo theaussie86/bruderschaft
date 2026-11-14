@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AbmeldenRouteImport } from './routes/abmelden'
+import { Route as GeburtstagRouteImport } from './routes/geburtstag'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PasswortSetzenRouteImport } from './routes/passwort-setzen'
 import { Route as PasswortVergessenRouteImport } from './routes/passwort-vergessen'
@@ -35,6 +36,11 @@ const AppRoute = AppRouteImport.update({
 const AbmeldenRoute = AbmeldenRouteImport.update({
   id: '/abmelden',
   path: '/abmelden',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeburtstagRoute = GeburtstagRouteImport.update({
+  id: '/geburtstag',
+  path: '/geburtstag',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -91,6 +97,7 @@ const AppVerwaltungMitgliederRoute = AppVerwaltungMitgliederRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/geburtstag': typeof GeburtstagRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
+  '/geburtstag': typeof GeburtstagRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/abmelden': typeof AbmeldenRoute
+  '/geburtstag': typeof GeburtstagRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/abmelden'
+    | '/geburtstag'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/abmelden'
+    | '/geburtstag'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/abmelden'
+    | '/geburtstag'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AbmeldenRoute: typeof AbmeldenRoute
+  GeburtstagRoute: typeof GeburtstagRoute
   LoginRoute: typeof LoginRoute
   PasswortSetzenRoute: typeof PasswortSetzenRoute
   PasswortVergessenRoute: typeof PasswortVergessenRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       path: '/abmelden'
       fullPath: '/abmelden'
       preLoaderRoute: typeof AbmeldenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/geburtstag': {
+      id: '/geburtstag'
+      path: '/geburtstag'
+      fullPath: '/geburtstag'
+      preLoaderRoute: typeof GeburtstagRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -306,6 +326,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AbmeldenRoute: AbmeldenRoute,
+  GeburtstagRoute: GeburtstagRoute,
   LoginRoute: LoginRoute,
   PasswortSetzenRoute: PasswortSetzenRoute,
   PasswortVergessenRoute: PasswortVergessenRoute,

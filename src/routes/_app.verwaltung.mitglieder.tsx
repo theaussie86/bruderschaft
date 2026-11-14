@@ -1,12 +1,14 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { UserPlus } from 'lucide-react'
+import { Cake, UserPlus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@/components/Button'
+import { GeburtstagFormular } from '@/components/GeburtstagFormular'
 import { PageHeader } from '@/components/PageHeader'
+import { fehlertext, geburtstagAnzeigen, geburtstagAus } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
-// Verwaltung > Mitglieder: einladen und erneut einladen. Die Rechte prüft
+// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag korrigieren. Die Rechte prüft
 // PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
@@ -21,11 +23,7 @@ type Eintrag = {
   email: string
   verified: boolean
   admin: boolean
-}
-
-function fehlertext(err: unknown, standard: string) {
-  const message = (err as { response?: { message?: string } }).response?.message
-  return message || standard
+  geburtstag: string
 }
 
 function Mitglieder() {
@@ -36,13 +34,16 @@ function Mitglieder() {
   } | null>(null)
   const [formOffen, setFormOffen] = useState(false)
   const [laeuft, setLaeuft] = useState(false)
+  const [geburtstagVon, setGeburtstagVon] = useState<string | null>(null)
 
   const laden = useCallback(async () => {
     try {
       const items = await createBrowserPocketBase()
         .collection('mitglieder')
         .getFullList<Eintrag>({ filter: 'support = false', sort: 'name' })
-      setListe(items)
+      setListe(
+        items.map((m) => ({ ...m, geburtstag: geburtstagAus(m.geburtstag) })),
+      )
     } catch (err) {
       setMeldung({
         text: fehlertext(err, 'Die Mitglieder konnten nicht geladen werden.'),
@@ -161,10 +162,39 @@ function Mitglieder() {
                 {m.email && (
                   <div className="text-ash truncate text-[13px]">{m.email}</div>
                 )}
+                <button
+                  type="button"
+                  className="text-ash hover:text-bone mt-0.5 inline-flex items-center gap-1.5 text-[13px]"
+                  aria-expanded={geburtstagVon === m.id}
+                  onClick={() =>
+                    setGeburtstagVon(geburtstagVon === m.id ? null : m.id)
+                  }
+                >
+                  <Cake className="size-3.5" />
+                  {m.geburtstag
+                    ? geburtstagAnzeigen(m.geburtstag)
+                    : 'Geburtstag fehlt'}
+                </button>
+                {geburtstagVon === m.id && (
+                  <div className="mt-3 mb-2">
+                    <GeburtstagFormular
+                      mitgliedId={m.id}
+                      wert={m.geburtstag}
+                      onGespeichert={async () => {
+                        setGeburtstagVon(null)
+                        setMeldung({
+                          text: `Geburtstag von ${m.name} korrigiert.`,
+                          fehler: false,
+                        })
+                        await laden()
+                      }}
+                    />
+                  </div>
+                )}
                 {!m.verified && (
                   <button
                     type="button"
-                    className="text-brass hover:text-bone mt-0.5 text-[13px] font-semibold"
+                    className="text-brass hover:text-bone mt-0.5 block text-[13px] font-semibold"
                     onClick={() => erneutEinladen(m)}
                   >
                     Erneut einladen

@@ -14,6 +14,9 @@ import { VERWALTUNG_LINKS } from '@/components/verwaltung'
 export const Route = createFileRoute('/_app')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied) throw redirect({ to: '/login' })
+    // Pflichtschritt beim ersten Login (Spec #17).
+    if (!context.mitglied.geburtstag && !context.mitglied.support)
+      throw redirect({ to: '/geburtstag' })
     return { mitglied: context.mitglied }
   },
   component: AppShell,

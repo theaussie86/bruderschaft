@@ -20,6 +20,8 @@ describe('Sitzung verlängern (authRefresh in der Root-Route)', () => {
       name: 'Testmitglied',
       email: mitglied.email,
       admin: false,
+      support: false,
+      geburtstag: '',
     })
   })
 
