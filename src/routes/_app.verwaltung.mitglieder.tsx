@@ -1,15 +1,17 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Cake, UserPlus } from 'lucide-react'
+import { Cake, Settings2, UserPlus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@/components/Button'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
 import { Markierung } from '@/components/Markierung'
+import { MitgliedVerwalten } from '@/components/MitgliedVerwalten'
 import { PageHeader } from '@/components/PageHeader'
 import { fehlertext, geburtstagAnzeigen, geburtstagAus } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
-// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag korrigieren. Die Rechte prüft
+// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag korrigieren,
+// Admin-Recht, Sperre, Mail und Löschen. Die Rechte prüft
 // PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
@@ -24,6 +26,7 @@ type Eintrag = {
   email: string
   verified: boolean
   admin: boolean
+  gesperrt: boolean
   geburtstag: string
 }
 
@@ -36,6 +39,7 @@ function Mitglieder() {
   const [formOffen, setFormOffen] = useState(false)
   const [laeuft, setLaeuft] = useState(false)
   const [geburtstagVon, setGeburtstagVon] = useState<string | null>(null)
+  const [verwaltetVon, setVerwaltetVon] = useState<string | null>(null)
 
   const laden = useCallback(async () => {
     try {
@@ -159,6 +163,9 @@ function Mitglieder() {
                 <div className="flex items-center gap-2 font-semibold">
                   {m.name}
                   {m.admin && <Markierung ton="brass">Admin</Markierung>}
+                  {m.gesperrt && (
+                    <Markierung ton="neutral">ausgetreten</Markierung>
+                  )}
                 </div>
                 {m.email && (
                   <div className="text-ash truncate text-[13px]">{m.email}</div>
@@ -187,6 +194,29 @@ function Mitglieder() {
                           text: `Geburtstag von ${m.name} korrigiert.`,
                           fehler: false,
                         })
+                        await laden()
+                      }}
+                    />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="text-ash hover:text-bone mt-0.5 flex items-center gap-1.5 text-[13px]"
+                  aria-expanded={verwaltetVon === m.id}
+                  onClick={() =>
+                    setVerwaltetVon(verwaltetVon === m.id ? null : m.id)
+                  }
+                >
+                  <Settings2 className="size-3.5" />
+                  Verwalten
+                </button>
+                {verwaltetVon === m.id && (
+                  <div className="mt-3 mb-2">
+                    <MitgliedVerwalten
+                      mitglied={m}
+                      onGeaendert={async (text) => {
+                        setVerwaltetVon(null)
+                        setMeldung({ text, fehler: false })
                         await laden()
                       }}
                     />
