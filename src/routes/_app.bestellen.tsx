@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ImageOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { ArtikelMitGroessen } from '@/lib/sortiment'
+import type { SortimentArtikel } from '@/lib/sortiment'
 import { PageHeader } from '@/components/PageHeader'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
-import { artikelBild, ladeSortiment } from '@/lib/sortiment'
+import { bildPfad, ladeSortiment } from '@/lib/sortiment'
 
 export const Route = createFileRoute('/_app/bestellen')({
   component: Bestellen,
@@ -24,7 +24,7 @@ function Bestellen() {
 // Das Sortiment, wie Mitglieder es sehen: nur eingeblendete Artikel und
 // Größen, ohne Artikelnummer (die ist nur für den Drucker).
 function SortimentAnsicht() {
-  const [liste, setListe] = useState<Array<ArtikelMitGroessen> | null>(null)
+  const [liste, setListe] = useState<Array<SortimentArtikel> | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
 
   useEffect(() => {
@@ -51,7 +51,7 @@ function SortimentAnsicht() {
       <div className="eyebrow mb-3">Sortiment</div>
       <ul className="grid gap-3 sm:grid-cols-2">
         {liste.map((a) => {
-          const src = artikelBild(a, '800x0')
+          const src = bildPfad(a, '800x0')
           const groessen = a.groessen.filter((g) => !g.ausgeblendet)
           return (
             <li key={a.id} className="card overflow-hidden">

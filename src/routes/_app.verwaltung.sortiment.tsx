@@ -1,20 +1,24 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ChevronDown, ChevronUp, EyeOff, ImageOff, Plus } from 'lucide-react'
+import { EyeOff, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Sortierbar } from '@/lib/reihenfolge'
-import type { ArtikelMitGroessen, Groesse } from '@/lib/sortiment'
+import type { Groesse, Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
+import { Pfeile } from '@/components/Pfeile'
+import { Vorschau } from '@/components/Vorschau'
+import { Druckstellen } from '@/components/sortiment/Druckstellen'
+import { Motive } from '@/components/sortiment/Motive'
 import { fehlertext } from '@/lib/geburtstag'
 import { centAlsEingabe, centAus, euro } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { naechsteSortierung, verschieben } from '@/lib/reihenfolge'
-import { artikelBild, ladeSortiment } from '@/lib/sortiment'
+import { ladeMotive, ladeSortiment } from '@/lib/sortiment'
 
-// Verwaltung > Sortiment: Artikel und Größen anlegen, bearbeiten, Reihenfolge
-// ändern. Die Rechte prüft PocketBase (ADR 0002).
+// Verwaltung > Sortiment: Artikel mit Größen und Druckstellen sowie die
+// gemeinsame Motivliste anlegen, bearbeiten, Reihenfolge ändern. Die Rechte prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/sortiment')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
@@ -25,14 +29,20 @@ export const Route = createFileRoute('/_app/verwaltung/sortiment')({
 type Meldung = { text: string; fehler: boolean } | null
 
 function Sortiment() {
-  const [liste, setListe] = useState<Array<ArtikelMitGroessen> | null>(null)
+  const [liste, setListe] = useState<Array<SortimentArtikel> | null>(null)
+  const [motive, setMotive] = useState<Array<Motiv>>([])
   const [meldung, setMeldung] = useState<Meldung>(null)
   // 'neu' für das Anlegen, sonst die ID des Artikels in Bearbeitung.
   const [offen, setOffen] = useState<string | null>(null)
 
   const laden = useCallback(async () => {
     try {
-      setListe(await ladeSortiment())
+      const [sortiment, motivliste] = await Promise.all([
+        ladeSortiment(),
+        ladeMotive(),
+      ])
+      setListe(sortiment)
+      setMotive(motivliste)
     } catch (err) {
       setMeldung({
         text: fehlertext(err, 'Das Sortiment konnte nicht geladen werden.'),
@@ -57,7 +67,7 @@ function Sortiment() {
   }
 
   function neuOrdnen(
-    collection: 'artikel' | 'groessen',
+    collection: 'artikel' | 'groessen' | 'druckstellen' | 'motive',
     eintraege: Array<Sortierbar>,
     id: string,
     richtung: -1 | 1,
@@ -124,7 +134,7 @@ function Sortiment() {
                   unten={i < liste.length - 1}
                   onVerschieben={(r) => neuOrdnen('artikel', liste, a.id, r)}
                 />
-                <Vorschau artikel={a} />
+                <Vorschau eintrag={a} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 font-semibold">
                     {a.name}
@@ -175,63 +185,30 @@ function Sortiment() {
                 onGeaendert={laden}
                 onFehler={(text) => setMeldung({ text, fehler: true })}
               />
+
+              <Druckstellen
+                artikel={a}
+                motive={motive}
+                onVerschieben={(id, r) =>
+                  neuOrdnen('druckstellen', a.druckstellen, id, r)
+                }
+                onGeaendert={laden}
+                onFehler={(text) => setMeldung({ text, fehler: true })}
+              />
             </li>
           ))}
         </ul>
       )}
+
+      {liste !== null && (
+        <Motive
+          motive={motive}
+          onVerschieben={(id, r) => neuOrdnen('motive', motive, id, r)}
+          onGeaendert={laden}
+          onFehler={(text) => setMeldung({ text, fehler: true })}
+        />
+      )}
     </>
-  )
-}
-
-function Vorschau({ artikel }: { artikel: ArtikelMitGroessen }) {
-  const src = artikelBild(artikel, '200x200')
-  return src ? (
-    <img
-      src={src}
-      alt=""
-      className="bg-coal size-16 shrink-0 rounded-lg object-cover"
-    />
-  ) : (
-    <div className="bg-coal text-smoke flex size-16 shrink-0 items-center justify-center rounded-lg">
-      <ImageOff className="size-5" />
-    </div>
-  )
-}
-
-function Pfeile({
-  name,
-  oben,
-  unten,
-  onVerschieben,
-}: {
-  name: string
-  oben: boolean
-  unten: boolean
-  onVerschieben: (richtung: -1 | 1) => void
-}) {
-  const klasse =
-    'text-smoke hover:text-bone disabled:opacity-25 flex size-7 items-center justify-center rounded-md'
-  return (
-    <div className="flex shrink-0 flex-col">
-      <button
-        type="button"
-        className={klasse}
-        disabled={!oben}
-        aria-label={`${name} nach oben`}
-        onClick={() => onVerschieben(-1)}
-      >
-        <ChevronUp className="size-4" />
-      </button>
-      <button
-        type="button"
-        className={klasse}
-        disabled={!unten}
-        aria-label={`${name} nach unten`}
-        onClick={() => onVerschieben(1)}
-      >
-        <ChevronDown className="size-4" />
-      </button>
-    </div>
   )
 }
 
@@ -240,7 +217,7 @@ function ArtikelFormular({
   sortierung,
   onFertig,
 }: {
-  artikel?: ArtikelMitGroessen
+  artikel?: SortimentArtikel
   sortierung: number
   onFertig: (meldung: string | null) => void | Promise<void>
 }) {
@@ -367,7 +344,7 @@ function Groessen({
   onGeaendert,
   onFehler,
 }: {
-  artikel: ArtikelMitGroessen
+  artikel: SortimentArtikel
   onVerschieben: (id: string, richtung: -1 | 1) => void
   onGeaendert: () => Promise<void>
   onFehler: (text: string) => void
