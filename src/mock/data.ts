@@ -14,6 +14,8 @@ export interface Member {
   name: string
   email: string
   status: MemberStatus
+  /** Geburtsdatum mit Jahr, ISO (JJJJ-MM-TT) */
+  birthday: string
   admin?: boolean
 }
 
@@ -51,6 +53,8 @@ export interface Article {
   sizes: Array<Size>
   spots: Array<PrintSpot>
   hidden?: boolean
+  /** Katalognummer des Druckers, optional. Nur für Admins sichtbar. */
+  articleNumber?: string
 }
 
 export interface PositionPrint {
@@ -95,7 +99,7 @@ export interface Round {
   closedOn?: string
 }
 
-export type TerminKind = 'Stammtisch' | 'Sitzung' | 'Veranstaltung'
+export type TerminKind = 'Stammtisch' | 'Veranstaltung'
 
 export interface GalleryImage {
   id: string
@@ -134,18 +138,18 @@ export interface Settings {
 export const CURRENT_MEMBER_ID = 'kalle'
 
 export const MEMBERS: Array<Member> = [
-  { id: 'kalle', name: 'Kalle', email: 'kalle@example.org', status: 'aktiv', admin: true },
-  { id: 'bodo', name: 'Bodo', email: 'bodo@example.org', status: 'aktiv' },
-  { id: 'hias', name: 'Hias', email: 'hias@example.org', status: 'aktiv' },
-  { id: 'wastl', name: 'Wastl', email: 'wastl@example.org', status: 'aktiv', admin: true },
-  { id: 'ferdl', name: 'Ferdl', email: 'ferdl@example.org', status: 'aktiv' },
-  { id: 'mo', name: 'Mo', email: 'mo@example.org', status: 'aktiv' },
-  { id: 'rudi', name: 'Rudi', email: 'rudi@example.org', status: 'gesperrt' },
-  { id: 'toni', name: 'Toni', email: 'toni@example.org', status: 'aktiv' },
-  { id: 'ole', name: 'Ole', email: 'ole@example.org', status: 'eingeladen' },
-  { id: 'jakob', name: 'Jakob', email: 'jakob@example.org', status: 'aktiv' },
-  { id: 'lenny', name: 'Lenny', email: 'lenny@example.org', status: 'aktiv' },
-  { id: 'gusti', name: 'Gusti', email: 'gusti@example.org', status: 'aktiv' },
+  { id: 'kalle', name: 'Kalle', email: 'kalle@example.org', birthday: '1976-03-14', status: 'aktiv', admin: true },
+  { id: 'bodo', name: 'Bodo', email: 'bodo@example.org', birthday: '1981-11-20', status: 'aktiv' },
+  { id: 'hias', name: 'Hias', email: 'hias@example.org', birthday: '1969-02-29', status: 'aktiv' },
+  { id: 'wastl', name: 'Wastl', email: 'wastl@example.org', birthday: '1974-07-08', status: 'aktiv', admin: true },
+  { id: 'ferdl', name: 'Ferdl', email: 'ferdl@example.org', birthday: '1988-12-03', status: 'aktiv' },
+  { id: 'mo', name: 'Mo', email: 'mo@example.org', birthday: '1992-05-27', status: 'aktiv' },
+  { id: 'rudi', name: 'Rudi', email: 'rudi@example.org', birthday: '1979-09-15', status: 'gesperrt' },
+  { id: 'toni', name: 'Toni', email: 'toni@example.org', birthday: '1985-01-30', status: 'aktiv' },
+  { id: 'ole', name: 'Ole', email: 'ole@example.org', birthday: '1995-06-11', status: 'eingeladen' },
+  { id: 'jakob', name: 'Jakob', email: 'jakob@example.org', birthday: '1983-11-18', status: 'aktiv' },
+  { id: 'lenny', name: 'Lenny', email: 'lenny@example.org', birthday: '1990-04-02', status: 'aktiv' },
+  { id: 'gusti', name: 'Gusti', email: 'gusti@example.org', birthday: '1972-08-23', status: 'aktiv' },
 ]
 
 // ---------- Sortiment ----------
@@ -165,6 +169,7 @@ const STANDARD_SIZES = sizes(['S', 'M', 'L', 'XL', 'XXL', '3XL'], { XXL: 3, '3XL
 export const ARTICLES: Array<Article> = [
   {
     id: 'shirt-schwarz',
+    articleNumber: 'TS-180-BK',
     name: 'T-Shirt schwarz',
     price: 25,
     image: asset('artikel-shirt.jpg'),
@@ -178,6 +183,7 @@ export const ARTICLES: Array<Article> = [
   },
   {
     id: 'hoodie-schwarz',
+    articleNumber: 'HD-350-BK',
     name: 'Hoodie schwarz',
     price: 49,
     description: 'Kapuzenpullover mit Känguru-Tasche, innen angeraut.',
@@ -190,6 +196,7 @@ export const ARTICLES: Array<Article> = [
   },
   {
     id: 'zip-schwarz',
+    articleNumber: 'ZH-320-BK',
     name: 'Zip-Hoodie schwarz',
     price: 59,
     description: 'Durchgehender Reißverschluss, Brustdruck klein.',
@@ -201,6 +208,7 @@ export const ARTICLES: Array<Article> = [
   },
   {
     id: 'muetze-schwarz',
+    articleNumber: 'BN-020-BK',
     name: 'Mütze schwarz',
     price: 19,
     description: 'Strickmütze mit Umschlag.',
@@ -220,6 +228,7 @@ export const ARTICLES: Array<Article> = [
   },
   {
     id: 'muetze-grau',
+    articleNumber: 'BN-020-GY',
     name: 'Mütze grau',
     price: 19,
     description: 'Ausgeblendet, nicht mehr lieferbar.',
@@ -352,7 +361,7 @@ export const TERMINE: Array<Termin> = [
   },
   {
     id: 'jhv-2026-12-05',
-    kind: 'Sitzung',
+    kind: 'Stammtisch',
     title: 'Jahreshauptversammlung',
     start: '2026-12-05T18:00',
     end: '2026-12-05T21:00',
@@ -400,7 +409,8 @@ export const TERMINE: Array<Termin> = [
     title: 'Stammtisch',
     start: '2026-10-16T19:30',
     place: 'Gasthof zur Linde, Nebenzimmer',
-    info: '',
+    info: 'Planung Rocknacht und Bestellrunde Winter.',
+    protocol: [{ name: 'Protokoll Stammtisch Oktober 2026.pdf', size: '184 KB' }],
   },
   {
     id: 'rocknacht-2026-10-10',
@@ -415,15 +425,6 @@ export const TERMINE: Array<Termin> = [
       img('r3', 'archiv-zahnrad.jpg', 'toni'),
       img('r4', 'motiv-brotherhood-strahlen.jpg', 'bodo'),
     ],
-  },
-  {
-    id: 'sitzung-2026-10-08',
-    kind: 'Sitzung',
-    title: 'Herbstsitzung',
-    start: '2026-10-08T19:00',
-    place: 'Vereinsheim',
-    info: 'Planung Rocknacht und Bestellrunde Winter.',
-    protocol: [{ name: 'Protokoll Herbstsitzung 2026.pdf', size: '184 KB' }],
   },
   {
     id: 'sommerfest-2026-07-25',
@@ -461,7 +462,7 @@ export const TERMINE: Array<Termin> = [
   },
   {
     id: 'jhv-2025-12-06',
-    kind: 'Sitzung',
+    kind: 'Stammtisch',
     title: 'Jahreshauptversammlung',
     start: '2025-12-06T18:00',
     place: 'Vereinsheim',

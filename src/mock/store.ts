@@ -26,6 +26,10 @@ export interface AppState {
   orders: Array<Order>
   termine: Array<Termin>
   settings: Settings
+  /** Geburtstage je Mitglied (ISO), im Dummy änderbar */
+  birthdays: Record<string, string>
+  /** Artikelnummern des Druckers je Artikel, im Dummy änderbar */
+  articleNumbers: Record<string, string>
   toast: Toast | null
 }
 
@@ -36,6 +40,8 @@ const initial = (): AppState => ({
   orders: structuredClone(ORDERS),
   termine: structuredClone(TERMINE),
   settings: { ...SETTINGS },
+  birthdays: Object.fromEntries(MEMBERS.map((m) => [m.id, m.birthday])),
+  articleNumbers: Object.fromEntries(ARTICLES.filter((a) => a.articleNumber).map((a) => [a.id, a.articleNumber as string])),
   toast: null,
 })
 
@@ -282,6 +288,17 @@ export const actions = {
     update((d) => {
       const t = d.termine.find((x) => x.id === id)
       if (t?.images) t.images = t.images.filter((i) => i.id !== imageId)
+    })
+  },
+  setBirthday(memberId: string, birthday: string) {
+    update((d) => {
+      d.birthdays[memberId] = birthday
+    })
+  },
+  setArticleNumber(articleId: string, nr: string) {
+    update((d) => {
+      if (nr.trim()) d.articleNumbers[articleId] = nr.trim()
+      else delete d.articleNumbers[articleId]
     })
   },
   setPaymentHint(text: string) {

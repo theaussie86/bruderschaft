@@ -57,11 +57,10 @@ function TerminNeu() {
             value={kind}
             onChange={(k) => {
               setKind(k)
-              if (!title || ['Stammtisch', 'Sitzung', 'Veranstaltung'].includes(title)) setTitle(k === 'Stammtisch' ? 'Stammtisch' : '')
+              if (!title || ['Stammtisch', 'Veranstaltung'].includes(title)) setTitle(k === 'Stammtisch' ? 'Stammtisch' : '')
             }}
             options={[
               ['Stammtisch', 'Stammtisch'],
-              ['Sitzung', 'Sitzung'],
               ['Veranstaltung', 'Veranstaltung'],
             ]}
           />

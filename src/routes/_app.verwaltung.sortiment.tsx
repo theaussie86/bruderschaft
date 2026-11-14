@@ -5,13 +5,15 @@ import { Button, ClubImage, Pill, SectionTitle, notInDummy } from '../components
 import { MotifTile } from '../components/order'
 import { ARTICLES, MOTIFS } from '../mock/data'
 import { euro } from '../lib/format'
+import { actions, useApp } from '../mock/store'
 
 export const Route = createFileRoute('/_app/verwaltung/sortiment')({ component: Sortiment })
 
 function Sortiment() {
+  const state = useApp()
   return (
     <AdminPage title="Sortiment">
-      <Teaser>Angedeutet: Hier pflegt ein Admin Artikel, Größen, Druckstellen, Motive, Aufpreise und Reihenfolge. Im Dummy nur zum Ansehen.</Teaser>
+      <Teaser>Angedeutet: Hier pflegt ein Admin Artikel, Größen, Druckstellen, Motive, Aufpreise und Reihenfolge. Im Dummy änderbar ist nur die Artikelnummer (Katalognummer des Druckers, Mitglieder sehen sie nicht).</Teaser>
 
       <SectionTitle aside={<Button size="sm" variant="ghost" onClick={() => notInDummy('Artikel anlegen')}><Plus className="size-4" /> Artikel</Button>}>
         Artikel
@@ -34,6 +36,15 @@ function Sortiment() {
                   </Pill>
                 )}
               </div>
+              <label className="mt-1 flex items-center gap-2 text-[13px] text-ash">
+                Artikelnummer
+                <input
+                  className="field !min-h-8 !w-40 !px-2 !py-1 text-[13px]"
+                  value={state.articleNumbers[a.id] ?? ''}
+                  placeholder="optional"
+                  onChange={(e) => actions.setArticleNumber(a.id, e.target.value)}
+                />
+              </label>
               <div className="mt-0.5 text-[13px] text-ash">
                 Größen: {a.sizes.map((s) => (s.surcharge ? `${s.label} (+${euro(s.surcharge)})` : s.label)).join(', ')}
               </div>

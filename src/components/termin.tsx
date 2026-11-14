@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Ban, ChevronRight, FileText, Images, MapPin } from 'lucide-react'
+import { Ban, Cake, ChevronRight, FileText, Images, MapPin } from 'lucide-react'
 import { parts, time } from '../lib/format'
 import { HEUTE } from '../mock/data'
 import { ClubImage, Pill } from './ui'
@@ -8,8 +8,7 @@ import type { Termin, TerminKind } from '../mock/data'
 export const isPast = (t: Termin) => t.start.slice(0, 10) < HEUTE
 
 export const KIND_TONE: Record<TerminKind, 'neutral' | 'brass' | 'rust'> = {
-  Stammtisch: 'neutral',
-  Sitzung: 'brass',
+  Stammtisch: 'brass',
   Veranstaltung: 'rust',
 }
 
@@ -65,7 +64,7 @@ export function TerminRow({ t, past }: { t: Termin; past?: boolean }) {
             )}
           </div>
         )}
-        {past && t.kind === 'Sitzung' && t.protocol && (
+        {past && t.kind === 'Stammtisch' && t.protocol && (
           <div className="mt-2 flex items-center gap-1.5 text-[13px] text-brass">
             <FileText className="size-3.5" /> Protokoll · {t.protocol.length} {t.protocol.length === 1 ? 'Datei' : 'Dateien'}
           </div>
@@ -75,5 +74,32 @@ export function TerminRow({ t, past }: { t: Termin; past?: boolean }) {
         <ChevronRight className="size-5" />
       </div>
     </Link>
+  )
+}
+
+export interface Birthday {
+  memberId: string
+  name: string
+  /** ISO-Datum des Geburtstags im angezeigten Jahr */
+  date: string
+  /** Alter, das das Mitglied wird */
+  age: number
+}
+
+/** Geburtstag als Ganztags-Eintrag: kein Termin, keine Detailseite. */
+export function BirthdayRow({ b }: { b: Birthday }) {
+  const p = parts(b.date)
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-dashed border-line px-4 py-2.5">
+      <div className="flex w-[56px] shrink-0 items-baseline justify-center gap-1.5 text-ash">
+        <span className="tnum font-display text-[1.4rem] leading-none font-extrabold">{p.day}</span>
+        <span className="text-[12px] font-semibold tracking-wider uppercase">{p.month}</span>
+      </div>
+      <Cake className="size-4 shrink-0 text-brass" />
+      <div className="min-w-0 flex-1 truncate text-[15px] font-semibold">
+        {b.name} wird {b.age}
+      </div>
+      <span className="text-[13px] text-smoke">ganztägig</span>
+    </div>
   )
 }

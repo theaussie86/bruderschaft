@@ -1,8 +1,9 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { CalendarPlus, ChevronRight, Copy, KeyRound, LogOut } from 'lucide-react'
+import { Cake, CalendarPlus, ChevronRight, Copy, KeyRound, LogOut } from 'lucide-react'
 import { Button, PageHeader, SectionTitle, Sheet } from '../components/ui'
 import { ADMIN_LINKS, Monogram } from '../components/nav'
+import { dateShort } from '../lib/format'
 import { actions, memberById, useApp } from '../mock/store'
 import type { LucideIcon } from 'lucide-react'
 
@@ -13,7 +14,9 @@ function Profil() {
   const navigate = useNavigate()
   const me = memberById(state.me)
   const isAdmin = state.role === 'admin'
-  const [sheet, setSheet] = useState<'pw' | 'abo' | null>(null)
+  const [sheet, setSheet] = useState<'pw' | 'abo' | 'geb' | null>(null)
+  const birthday = state.birthdays[state.me] ?? ''
+  const [bdDraft, setBdDraft] = useState(birthday)
 
   return (
     <>
@@ -29,6 +32,15 @@ function Profil() {
       </div>
 
       <ul className="card mt-4 divide-y divide-line/60 overflow-hidden">
+        <Row
+          icon={Cake}
+          label="Geburtstag"
+          hint={birthday ? dateShort(birthday) : 'Noch nicht angegeben'}
+          onClick={() => {
+            setBdDraft(birthday)
+            setSheet('geb')
+          }}
+        />
         <Row icon={KeyRound} label="Passwort ändern" onClick={() => setSheet('pw')} />
         <Row icon={CalendarPlus} label="Kalender abonnieren" hint="Alle Termine im eigenen Kalender" onClick={() => setSheet('abo')} />
       </ul>
@@ -66,6 +78,28 @@ function Profil() {
           <input className="field" type="password" placeholder="Aktuelles Passwort" autoComplete="current-password" />
           <input className="field" type="password" placeholder="Neues Passwort" autoComplete="new-password" />
           <input className="field" type="password" placeholder="Neues Passwort wiederholen" autoComplete="new-password" />
+          <Button full type="submit" className="mt-2">
+            Speichern
+          </Button>
+        </form>
+      </Sheet>
+
+      <Sheet open={sheet === 'geb'} onClose={() => setSheet(null)} title="Geburtstag">
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!bdDraft) return
+            actions.setBirthday(state.me, bdDraft)
+            setSheet(null)
+            actions.toast('Geburtstag gespeichert')
+          }}
+        >
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold">Geburtsdatum</span>
+            <input className="field" type="date" required max="2026-11-14" value={bdDraft} onChange={(e) => setBdDraft(e.target.value)} />
+          </label>
+          <p className="text-[13px] text-smoke">Mit Jahr. Im Kalender steht dein Geburtstag mit dem Alter, das du wirst.</p>
           <Button full type="submit" className="mt-2">
             Speichern
           </Button>

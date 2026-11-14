@@ -29,7 +29,7 @@ function TerminDetail() {
 
   return (
     <>
-      <PageHeader eyebrow={t.kind} title={t.title} back={past ? '/kalender?ansicht=vergangen' : '/kalender'} />
+      <PageHeader eyebrow={t.kind} title={t.title} back={past ? '/kalender?ansicht=archiv' : '/kalender'} />
 
       {hero && (
         <div className="relative -mx-4 mb-5 aspect-[16/9] overflow-hidden sm:mx-0 sm:rounded-[20px]">
@@ -70,7 +70,7 @@ function TerminDetail() {
       </div>
 
       {t.kind === 'Veranstaltung' && !t.cancelled && <Gallery t={t} past={past} isAdmin={isAdmin} me={state.me} />}
-      {t.kind === 'Sitzung' && <Protocol t={t} isAdmin={isAdmin} />}
+      {t.kind === 'Stammtisch' && <Protocol t={t} isAdmin={isAdmin} />}
 
       {isAdmin && (
         <>
@@ -131,7 +131,7 @@ function Protocol({ t, isAdmin }: { t: Termin; isAdmin: boolean }) {
           ))}
         </ul>
       ) : (
-        <div className="card p-5 text-ash">{isPast(t) ? 'Noch kein Protokoll hochgeladen.' : 'Das Protokoll kommt nach der Sitzung.'}</div>
+        <div className="card p-5 text-ash">{isPast(t) ? 'Noch kein Protokoll hochgeladen.' : 'Das Protokoll kommt nach dem Stammtisch.'}</div>
       )}
       {isAdmin && (
         <Button variant="quiet" full className="mt-3" onClick={() => notInDummy('Protokoll hochladen')}>
