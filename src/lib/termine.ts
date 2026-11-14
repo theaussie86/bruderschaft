@@ -15,6 +15,8 @@ export type Termin = {
   ort: string
   infotext: string
   abgesagt: boolean
+  // Dateinamen des Protokolls. PocketBase liefert sie nur bei Stammtischen.
+  protokoll?: Array<string>
 }
 
 export const ART_NAME: Record<TerminArt, string> = {
@@ -192,14 +194,15 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
     .sort((a, b) => alsDate(a.beginn).getTime() - alsDate(b.beginn).getTime())
 }
 
-// Das Archiv: vergangene, nicht abgesagte Veranstaltungen, auch ohne Bilder.
-// Vergangen ist ein Termin nach seinem letzten Tag. Neueste zuerst.
+// Das Archiv: vergangene, nicht abgesagte Veranstaltungen, auch ohne Bilder,
+// und vergangene, nicht abgesagte Stammtische mit Protokoll. Vergangen ist ein
+// Termin nach seinem letzten Tag. Neueste zuerst.
 export function archivTermine(termine: Array<Termin>, jetzt = new Date()) {
   const heute = berlinTag(jetzt)
   return termine
     .filter(
       (t) =>
-        t.art === 'veranstaltung' &&
+        (t.art === 'veranstaltung' || (t.protokoll?.length ?? 0) > 0) &&
         !t.abgesagt &&
         berlinTag(t.ende || t.beginn) < heute,
     )
@@ -216,7 +219,8 @@ export function bilderErlaubt(t: Termin, jetzt = new Date()) {
   )
 }
 
-const FELDER = 'id,titel,art,beginn,ende,ganztaegig,ort,infotext,abgesagt'
+const FELDER =
+  'id,titel,art,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll'
 
 // Lädt grob ab vorgestern, den genauen Schnitt macht kommendeTermine.
 export async function ladeKommendeTermine(jetzt = new Date()) {
@@ -235,17 +239,17 @@ export async function ladeTermin(id: string): Promise<Termin> {
   return pb.collection('termine').getOne<Termin>(id, { fields: FELDER })
 }
 
-// Lädt alle Veranstaltungen bis heute, den genauen Schnitt macht archivTermine.
+// Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.
+export const ARCHIV_FILTER =
+  "(art = 'veranstaltung' || (art = 'stammtisch' && protokoll:length > 0)) && abgesagt = false"
+
 export async function ladeArchiv(jetzt = new Date()) {
   const pb = createBrowserPocketBase()
   const bis = fuerPocketBase(jetzt.getTime())
   const termine = await pb.collection('termine').getFullList<Termin>({
     sort: '-beginn',
     fields: FELDER,
-    filter: pb.filter(
-      "art = 'veranstaltung' && abgesagt = false && beginn <= {:bis}",
-      { bis },
-    ),
+    filter: pb.filter(`${ARCHIV_FILTER} && beginn <= {:bis}`, { bis }),
   })
   return archivTermine(termine, jetzt)
 }

@@ -12,7 +12,7 @@ import { ladeArchiv, ladeKommendeTermine, tagTeile } from '@/lib/termine'
 
 // Tab Kalender mit dem Umschalter "Kommend / Archiv". Kommend: heutige und
 // künftige Termine nach Monat, abgesagte durchgestrichen. Archiv: vergangene,
-// nicht abgesagte Veranstaltungen, neueste zuerst. Admins legen hier Termine an.
+// nicht abgesagte Veranstaltungen und Stammtische mit Protokoll, neueste zuerst. Admins legen hier Termine an.
 type Ansicht = 'kommend' | 'archiv'
 
 export const Route = createFileRoute('/_app/kalender')({
@@ -96,7 +96,8 @@ function Kalender() {
       />
       {ansicht === 'archiv' && (
         <p className="text-ash mt-3 text-[14px]">
-          Vergangene Veranstaltungen mit ihren Bildern.
+          Vergangene Veranstaltungen mit ihren Bildern und Stammtische mit
+          Protokoll.
         </p>
       )}
       <div className="mt-2">

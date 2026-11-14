@@ -10,3 +10,21 @@ onRecordValidate((e) => {
   }
   e.next()
 }, 'termine')
+
+// Ein Protokoll gehört nur zum Stammtisch. Wechselt die Art, bleibt es
+// gespeichert, ist aber weder im Datensatz noch als Datei zu sehen, bis die
+// Art zurückgeändert wird.
+onRecordEnrich((e) => {
+  if (e.record.get('art') !== 'stammtisch') e.record.hide('protokoll')
+  e.next()
+}, 'termine')
+
+onFileDownloadRequest((e) => {
+  if (
+    e.fileField.name === 'protokoll' &&
+    e.record.get('art') !== 'stammtisch'
+  ) {
+    throw new NotFoundError()
+  }
+  e.next()
+}, 'termine')

@@ -23,6 +23,7 @@ function termin(felder: Partial<Termin>): Termin {
     ort: '',
     infotext: '',
     abgesagt: false,
+    protokoll: [],
     ...felder,
   }
 }
@@ -190,6 +191,33 @@ describe('Termine: Archiv', () => {
     )
 
     expect(liste.map((t) => t.id)).toEqual(['neu', 'alt'])
+  })
+
+  test('vergangene Stammtische nur mit Protokoll, abgesagte nie', () => {
+    const liste = archivTermine(
+      [
+        termin({ id: 'ohne', beginn: '2026-11-05 18:30:00.000Z' }),
+        termin({
+          id: 'mit',
+          beginn: '2026-11-12 18:30:00.000Z',
+          protokoll: ['protokoll.pdf'],
+        }),
+        termin({
+          id: 'abgesagt',
+          beginn: '2026-11-19 18:30:00.000Z',
+          protokoll: ['protokoll.pdf'],
+          abgesagt: true,
+        }),
+        termin({
+          id: 'heute',
+          beginn: '2026-12-11 08:00:00.000Z',
+          protokoll: ['protokoll.pdf'],
+        }),
+      ],
+      jetzt,
+    )
+
+    expect(liste.map((t) => t.id)).toEqual(['mit'])
   })
 
   test('ein mehrtägiger Termin kommt erst nach seinem letzten Tag ins Archiv', () => {

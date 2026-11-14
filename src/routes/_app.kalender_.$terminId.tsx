@@ -16,12 +16,14 @@ import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
 import { Bilder } from '@/components/termin/Bilder'
+import { Protokoll } from '@/components/termin/Protokoll'
 import { TerminFormular } from '@/components/termin/TerminFormular'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { ART_NAME, ladeTermin, tagTeile, zeitText } from '@/lib/termine'
 
-// Ein Termin mit allen Angaben, bei Veranstaltungen mit den Bildern. Admins
+// Ein Termin mit allen Angaben, bei Veranstaltungen mit den Bildern, bei
+// Stammtischen mit dem Protokoll. Admins
 // bearbeiten, kopieren, sagen ab oder löschen ihn; gelöscht werden nur falsch
 // angelegte Termine.
 export const Route = createFileRoute('/_app/kalender_/$terminId')({
@@ -169,6 +171,14 @@ function TerminSeite() {
 
           {termin.art === 'veranstaltung' && (
             <Bilder termin={termin} mitglied={mitglied} />
+          )}
+
+          {termin.art === 'stammtisch' && (
+            <Protokoll
+              termin={termin}
+              admin={mitglied.admin}
+              onGeaendert={setTermin}
+            />
           )}
 
           {mitglied.admin && (
