@@ -131,7 +131,11 @@ export async function rundeOeffnen(runde: string) {
   )
 }
 
-export type Einstellungen = { id: string; zahlungshinweis: string }
+export type Einstellungen = {
+  id: string
+  zahlungshinweis: string
+  kalender_token: string
+}
 
 // Es gibt genau einen Datensatz, angelegt von der Migration.
 export async function ladeEinstellungen(): Promise<Einstellungen | null> {

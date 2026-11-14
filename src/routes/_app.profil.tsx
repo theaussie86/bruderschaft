@@ -1,10 +1,17 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
-import { Cake, ChevronRight, KeyRound, LogOut } from 'lucide-react'
+import {
+  Cake,
+  CalendarPlus,
+  ChevronRight,
+  KeyRound,
+  LogOut,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/Button'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
+import { KalenderAbo } from '@/components/KalenderAbo'
 import { PageHeader } from '@/components/PageHeader'
 import { VERWALTUNG_LINKS } from '@/components/verwaltung'
 import { fehlertext, geburtstagAnzeigen } from '@/lib/geburtstag'
@@ -14,13 +21,15 @@ export const Route = createFileRoute('/_app/profil')({ component: Profil })
 
 const MINDESTLAENGE = 8
 
+type Bereich = 'geburtstag' | 'passwort' | 'kalender'
+
 function Profil() {
   const { mitglied } = Route.useRouteContext()
   const router = useRouter()
-  const [offen, setOffen] = useState<'geburtstag' | 'passwort' | null>(null)
+  const [offen, setOffen] = useState<Bereich | null>(null)
   const [meldung, setMeldung] = useState<string | null>(null)
 
-  function umschalten(bereich: 'geburtstag' | 'passwort') {
+  function umschalten(bereich: Bereich) {
     setMeldung(null)
     setOffen(offen === bereich ? null : bereich)
   }
@@ -67,6 +76,15 @@ function Profil() {
               setMeldung('Geburtstag gespeichert.')
             }}
           />
+        </Zeile>
+        <Zeile
+          icon={CalendarPlus}
+          label="Kalender-Abo"
+          hinweis="Termine und Geburtstage im eigenen Kalender"
+          offen={offen === 'kalender'}
+          onClick={() => umschalten('kalender')}
+        >
+          <KalenderAbo />
         </Zeile>
         <Zeile
           icon={KeyRound}

@@ -21,6 +21,7 @@ import { Route as AppKalenderRouteImport } from './routes/_app.kalender'
 import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
+import { Route as KalenderAboDateiRouteImport } from './routes/kalender-abo.$datei'
 import { Route as PbSplatRouteImport } from './routes/pb.$'
 import { Route as AppBestellenFrueherRouteImport } from './routes/_app.bestellen_.frueher'
 import { Route as AppKalenderTerminIdRouteImport } from './routes/_app.kalender_.$terminId'
@@ -91,6 +92,11 @@ const ClubAssetsSplatRoute = ClubAssetsSplatRouteImport.update({
   path: '/club-assets/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KalenderAboDateiRoute = KalenderAboDateiRouteImport.update({
+  id: '/kalender-abo/$datei',
+  path: '/kalender-abo/$datei',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PbSplatRoute = PbSplatRouteImport.update({
   id: '/pb/$',
   path: '/pb/$',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/kalender-abo/$datei': typeof KalenderAboDateiRoute
   '/pb/$': typeof PbSplatRoute
   '/bestellen/frueher': typeof AppBestellenFrueherRoute
   '/kalender/$terminId': typeof AppKalenderTerminIdRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/kalender-abo/$datei': typeof KalenderAboDateiRoute
   '/pb/$': typeof PbSplatRoute
   '/bestellen/frueher': typeof AppBestellenFrueherRoute
   '/kalender/$terminId': typeof AppKalenderTerminIdRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/_app/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/kalender-abo/$datei': typeof KalenderAboDateiRoute
   '/pb/$': typeof PbSplatRoute
   '/_app/bestellen_/frueher': typeof AppBestellenFrueherRoute
   '/_app/kalender_/$terminId': typeof AppKalenderTerminIdRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/profil'
     | '/api/health'
     | '/club-assets/$'
+    | '/kalender-abo/$datei'
     | '/pb/$'
     | '/bestellen/frueher'
     | '/kalender/$terminId'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/profil'
     | '/api/health'
     | '/club-assets/$'
+    | '/kalender-abo/$datei'
     | '/pb/$'
     | '/bestellen/frueher'
     | '/kalender/$terminId'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/_app/profil'
     | '/api/health'
     | '/club-assets/$'
+    | '/kalender-abo/$datei'
     | '/pb/$'
     | '/_app/bestellen_/frueher'
     | '/_app/kalender_/$terminId'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   PasswortVergessenRoute: typeof PasswortVergessenRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ClubAssetsSplatRoute: typeof ClubAssetsSplatRoute
+  KalenderAboDateiRoute: typeof KalenderAboDateiRoute
   PbSplatRoute: typeof PbSplatRoute
   ApiSammelbestellungRundeIdFormatRoute: typeof ApiSammelbestellungRundeIdFormatRoute
 }
@@ -388,6 +401,13 @@ declare module '@tanstack/react-router' {
       path: '/club-assets/$'
       fullPath: '/club-assets/$'
       preLoaderRoute: typeof ClubAssetsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kalender-abo/$datei': {
+      id: '/kalender-abo/$datei'
+      path: '/kalender-abo/$datei'
+      fullPath: '/kalender-abo/$datei'
+      preLoaderRoute: typeof KalenderAboDateiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pb/$': {
@@ -503,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   PasswortVergessenRoute: PasswortVergessenRoute,
   ApiHealthRoute: ApiHealthRoute,
   ClubAssetsSplatRoute: ClubAssetsSplatRoute,
+  KalenderAboDateiRoute: KalenderAboDateiRoute,
   PbSplatRoute: PbSplatRoute,
   ApiSammelbestellungRundeIdFormatRoute: ApiSammelbestellungRundeIdFormatRoute,
 }

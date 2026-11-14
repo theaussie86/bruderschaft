@@ -7,6 +7,8 @@ import {
   berlinZeit,
   bilderErlaubt,
   formularAusTermin,
+  geburtstagsZeitraum,
+  kalenderEintraege,
   kommendeTermine,
   terminDaten,
   zeitText,
@@ -244,5 +246,32 @@ describe('Termine: Archiv', () => {
     expect(bilderErlaubt(fest, new Date('2026-12-11T07:00:00Z'))).toBe(false)
     expect(bilderErlaubt({ ...fest, abgesagt: true }, jetzt)).toBe(false)
     expect(bilderErlaubt({ ...fest, art: 'stammtisch' }, jetzt)).toBe(false)
+  })
+})
+
+describe('Kalender mit Geburtstagen', () => {
+  test('Geburtstage stehen nach Tag zwischen den Terminen, am Tag zuerst', () => {
+    const frueh = termin({ id: 'a', beginn: '2026-12-11 18:30:00.000Z' })
+    const spaet = termin({ id: 'b', beginn: '2026-12-20 18:30:00.000Z' })
+    const geburtstage = [
+      { name: 'A', datum: '2026-12-11', alter: 40 },
+      { name: 'B', datum: '2026-12-15', alter: 30 },
+    ]
+
+    const eintraege = kalenderEintraege([frueh, spaet], geburtstage)
+
+    expect(
+      eintraege.map((e) =>
+        e.art === 'termin' ? e.termin.id : e.geburtstag.name,
+      ),
+    ).toEqual(['A', 'a', 'B', 'b'])
+    expect(eintraege[0].beginn).toBe('2026-12-11 12:00:00.000Z')
+  })
+
+  test('Zeitraum für Geburtstage: heute bis in einem Jahr', () => {
+    expect(geburtstagsZeitraum(new Date('2026-11-14T23:30:00Z'))).toEqual({
+      von: '2026-11-15',
+      bis: '2027-11-14',
+    })
   })
 })

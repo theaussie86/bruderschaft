@@ -253,3 +253,56 @@ export async function ladeArchiv(jetzt = new Date()) {
   })
   return archivTermine(termine, jetzt)
 }
+
+// Ein Geburtstag im Kalender, wie ihn die Hook-Route liefert: nur Name, Datum
+// und das Alter, das das Mitglied wird. Kein Termin.
+export type Geburtstag = { name: string; datum: string; alter: number }
+
+export type KalenderEintrag =
+  | { art: 'termin'; beginn: string; termin: Termin }
+  | { art: 'geburtstag'; beginn: string; geburtstag: Geburtstag }
+
+// Termine und Geburtstage in einer Liste nach Tag, Geburtstage am Tag zuerst.
+// Ein Geburtstag liegt mittags UTC, damit der Tag in jeder Zeitzone stimmt.
+export function kalenderEintraege(
+  termine: Array<Termin>,
+  geburtstage: Array<Geburtstag>,
+): Array<KalenderEintrag> {
+  const eintraege: Array<KalenderEintrag> = [
+    ...geburtstage.map((g) => ({
+      art: 'geburtstag' as const,
+      beginn: tagFuerPocketBase(g.datum),
+      geburtstag: g,
+    })),
+    ...termine.map((t) => ({
+      art: 'termin' as const,
+      beginn: t.beginn,
+      termin: t,
+    })),
+  ]
+  const schluessel = (e: KalenderEintrag) =>
+    `${berlinTag(e.beginn)}${e.art === 'geburtstag' ? 0 : 1}`
+  return eintraege
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => {
+      const sa = schluessel(a.e)
+      const sb = schluessel(b.e)
+      return sa === sb ? a.i - b.i : sa < sb ? -1 : 1
+    })
+    .map(({ e }) => e)
+}
+
+// Geburtstage für "Kommend": von heute bis einen Tag vor heute in einem Jahr.
+export function geburtstagsZeitraum(jetzt = new Date()) {
+  const von = berlinTag(jetzt)
+  const [jahr, monat, tag] = von.split('-').map(Number)
+  const bis = new Date(Date.UTC(jahr + 1, monat - 1, tag - 1))
+  return { von, bis: bis.toISOString().slice(0, 10) }
+}
+
+export async function ladeGeburtstage(jetzt = new Date()) {
+  const pb = createBrowserPocketBase()
+  return pb.send<Array<Geburtstag>>('/api/club/geburtstage', {
+    query: geburtstagsZeitraum(jetzt),
+  })
+}
