@@ -21,9 +21,26 @@ function html(text) {
     .replace(/"/g, '&quot;')
 }
 
+// Alle Links der Mails bauen auf meta.appURL. Ist die App-Adresse in den
+// PocketBase-Einstellungen nie eingetragen, steht dort der Standardwert
+// http://localhost:8090 und Empfänger landen auf localhost. Dann lieber keine
+// Mail als eine mit totem Link.
+function pruefeAppUrl(meta) {
+  const url = String(meta.appURL || '')
+  if (
+    !/^https?:\/\//.test(url) ||
+    /\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(url)
+  ) {
+    throw new BadRequestError(
+      'Die App-Adresse ist in den PocketBase-Einstellungen nicht gesetzt (Settings > Application URL). Ohne sie führen die Links in den Mails ins Leere.',
+    )
+  }
+}
+
 // absaetze: Array von HTML-Strings (Aufrufer escapen Nutzereingaben selbst).
 // button: { text, href }. hinweis: kleiner Text unter dem Button.
 function layout(meta, { titel, absaetze, button, hinweis }) {
+  pruefeAppUrl(meta)
   const club = html(meta.appName)
   const logo = `${meta.appURL}/club-assets/brand/mail-logo.png`
   const p = (inhalt) =>
@@ -63,4 +80,4 @@ ${absaetze.map(p).join('\n')}
 </html>`
 }
 
-module.exports = { html, layout }
+module.exports = { html, layout, pruefeAppUrl }

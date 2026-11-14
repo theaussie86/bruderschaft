@@ -8,6 +8,8 @@ onRecordCreateRequest((e) => {
   const { sendeEinladung, istAdmin } = require(`${__hooks}/lib/einladung.js`)
   if (!istAdmin(e.auth)) return e.next()
 
+  // Vor dem Anlegen prüfen, sonst steht das Mitglied ohne Einladung da.
+  require(`${__hooks}/lib/mail.js`).pruefeAppUrl(e.app.settings().meta)
   e.record.setRandomPassword()
   e.record.setVerified(false)
   e.next()
@@ -49,6 +51,7 @@ routerAdd(
     if (mitglied.verified()) {
       throw new BadRequestError('Das Mitglied ist schon aktiv.')
     }
+    require(`${__hooks}/lib/mail.js`).pruefeAppUrl(e.app.settings().meta)
 
     mitglied.refreshTokenKey()
     e.app.save(mitglied)
