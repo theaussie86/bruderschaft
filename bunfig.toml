@@ -1,0 +1,3 @@
+[install]
+# TanStack/router#8139: isolierte node_modules crashen den SSR-Build.
+linker = "hoisted"

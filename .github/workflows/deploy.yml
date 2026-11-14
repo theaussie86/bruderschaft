@@ -1,0 +1,167 @@
+name: Deploy
+
+# Setzt den Image-Tag der Anwendung in Dokploy und löst dort ein Deployment aus.
+# Aufgerufen wird der Workflow vom Build oder von Hand - der Hand-Aufruf ist
+# der Rollback-Weg: früheren SHA-Tag eintragen, deployen. Es wird nie gebaut,
+# nur ein bereits in GHCR liegendes Image referenziert.
+#
+# Bewusst kein SSH: in den Repository-Secrets liegt nur ein Dokploy-API-Key, der
+# genau diese eine Anwendung deployen kann - kein Schlüssel mit Vollzugriff auf
+# den Server.
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: Vollständige Image-Referenz inklusive Tag
+        required: true
+        type: string
+    secrets:
+      DOKPLOY_API_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Image-Referenz, z. B. ghcr.io/theaussie86/bruderschaft:sha-abc1234"
+        required: true
+        type: string
+
+# Zwei Deployments gleichzeitig würden sich gegenseitig den Image-Tag
+# überschreiben. Nicht abbrechen: ein laufender Deploy soll zu Ende rollen,
+# statt einen halb ausgetauschten Swarm-Service zu hinterlassen.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  DOKPLOY_URL: https://manage.weissteiner-automation.com
+  # Anwendung im Dokploy-Projekt "Bruderschaft", als Repository-Variable
+  # DOKPLOY_APPLICATION_ID. Kein Geheimnis - ohne API-Key ist die ID wertlos.
+  APPLICATION_ID: ${{ vars.DOKPLOY_APPLICATION_ID }}
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.image }}
+    runs-on: ubuntu-latest
+    # Der Job fasst das Repository nicht an.
+    permissions: {}
+    # Harte Obergrenze. Die Warteschleife unten bricht selbst nach 15 Minuten ab;
+    # das hier fängt den Fall, dass eine Verbindung hängt statt zu antworten,
+    # sonst blockiert der Lauf bis zum 6-Stunden-Standardlimit.
+    timeout-minutes: 25
+    env:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+      IMAGE: ${{ inputs.image }}
+      # Eindeutiger Titel: daran wird unten genau das Deployment
+      # wiedergefunden, das dieser Lauf ausgelöst hat.
+      DEPLOY_TITLE: GitHub Actions ${{ github.run_id }}.${{ github.run_attempt }}
+    steps:
+      - name: Image-Tag in Dokploy setzen
+        run: |
+          set -euo pipefail
+          body=$(jq -n --arg id "$APPLICATION_ID" --arg image "$IMAGE" \
+            '{applicationId: $id, dockerImage: $image}')
+          code=$(curl -sS --max-time 60 -o response.json -w '%{http_code}' \
+            -X POST "$DOKPLOY_URL/api/application.update" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "$body")
+          if [ "$code" != "200" ]; then
+            echo "application.update antwortete mit HTTP $code:"
+            cat response.json
+            exit 1
+          fi
+          echo "Image-Tag gesetzt: $IMAGE"
+
+      - name: Deployment auslösen
+        run: |
+          set -euo pipefail
+          body=$(jq -n --arg id "$APPLICATION_ID" --arg title "$DEPLOY_TITLE" \
+            --arg description "$IMAGE ($GITHUB_SHA)" \
+            '{applicationId: $id, title: $title, description: $description}')
+          code=$(curl -sS --max-time 60 -o response.json -w '%{http_code}' \
+            -X POST "$DOKPLOY_URL/api/application.deploy" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "$body")
+          if [ "$code" != "200" ]; then
+            echo "application.deploy antwortete mit HTTP $code:"
+            cat response.json
+            exit 1
+          fi
+          echo "Deployment ausgelöst: $DEPLOY_TITLE"
+
+      # Der Deploy-Aufruf kehrt sofort zurück, das Deployment landet in einer
+      # Queue. Ohne dieses Warten wäre ein grüner Workflow keine Aussage über
+      # das Deployment - ein fehlgeschlagener Image-Pull bliebe unbemerkt.
+      #
+      # Gewartet wird auf den Datensatz mit unserem Titel - Dokploy schreibt den
+      # mitgeschickten `title` unverändert in den Deployment-Datensatz. Nicht auf
+      # applicationStatus: der springt binnen Sekunden zurück auf "done", während
+      # Swarm noch rollt.
+      - name: Auf Abschluss des Deployments warten
+        run: |
+          set -euo pipefail
+          missing=0
+          for _ in $(seq 1 90); do
+            sleep 10
+            # Netzfehler beenden hier nicht den Schritt: ein Panel-Neustart
+            # mitten im Deploy ist kein Grund, das Deployment aufzugeben.
+            code=$(curl -sS --max-time 30 -o response.json -w '%{http_code}' \
+              -H "x-api-key: $DOKPLOY_API_KEY" \
+              "$DOKPLOY_URL/api/deployment.all?applicationId=$APPLICATION_ID") || true
+            case "${code:-000}" in
+              200) ;;
+              # Diese drei werden durch Warten nicht besser: abgelaufener
+              # API-Key, fehlende Berechtigung, Endpunkt nicht vorhanden.
+              # Sonst enden sie nach 15 Minuten als irreführender Timeout.
+              401|403|404)
+                echo "deployment.all antwortete mit HTTP $code - kein Wiederholungsfall:"
+                cat response.json
+                exit 1 ;;
+              *)
+                echo "deployment.all antwortete mit HTTP ${code:-000}, erneuter Versuch"
+                continue ;;
+            esac
+            # Rekursive Suche statt fester Pfad: ob die Antwort die Liste roh
+            # oder eingepackt liefert, hängt an der Dokploy-Version.
+            # Antwortet ein Proxy mit HTTP 200 und einer HTML-Fehlerseite,
+            # scheitert jq - das ist ein Wiederholungsfall, kein Abbruch.
+            status=$(jq -r --arg title "$DEPLOY_TITLE" \
+              '[.. | objects | select(.title? == $title and has("status"))] | .[0].status // "pending"' \
+              response.json 2>/dev/null) || status=pending
+            echo "Status: $status"
+            case "$status" in
+              done) echo "Deployment abgeschlossen."; exit 0 ;;
+              error|cancelled) echo "Deployment fehlgeschlagen (Logs im Dokploy-Panel)."; exit 1 ;;
+              # Der Datensatz entsteht erst, wenn die Queue den Job annimmt.
+              # Taucht er nach zwei Minuten nicht auf, stimmt die Annahme über
+              # den Titel nicht mehr - dann lieber sofort und deutlich scheitern
+              # als nach 15 Minuten mit "weder done noch error".
+              pending)
+                missing=$((missing + 1))
+                if [ "$missing" -ge 12 ]; then
+                  echo "Kein Deployment mit dem Titel \"$DEPLOY_TITLE\" gefunden."
+                  echo "Das Deployment läuft womöglich trotzdem - im Dokploy-Panel nachsehen."
+                  exit 1
+                fi ;;
+            esac
+          done
+          echo "Deployment nach 15 Minuten weder done noch error - Abbruch."
+          exit 1
+
+      # Prüft die Konfiguration, nicht den laufenden Container: dass der Tag
+      # wirklich gesetzt wurde. Dass er auch läuft, belegt der Schritt davor -
+      # ein fehlgeschlagener Image-Pull endet dort als Deployment mit "error".
+      - name: Eingetragenen Image-Tag prüfen
+        run: |
+          set -euo pipefail
+          curl -sS -f --max-time 60 -o response.json -H "x-api-key: $DOKPLOY_API_KEY" \
+            "$DOKPLOY_URL/api/application.one?applicationId=$APPLICATION_ID"
+          running=$(jq -r '[.. | objects | select(has("dockerImage"))] | .[0].dockerImage // ""' response.json)
+          if [ "$running" != "$IMAGE" ]; then
+            echo "Erwartet: $IMAGE"
+            echo "Tatsächlich: $running"
+            exit 1
+          fi
+          echo "Eingetragene Version: $running"
