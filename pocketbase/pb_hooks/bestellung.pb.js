@@ -149,7 +149,10 @@ onRecordValidate((e) => {
   let position = null
   let druckstelle = null
   try {
-    position = e.app.findRecordById('positionen', e.record.getString('position'))
+    position = e.app.findRecordById(
+      'positionen',
+      e.record.getString('position'),
+    )
     druckstelle = e.app.findRecordById(
       'druckstellen',
       e.record.getString('druckstelle'),
@@ -192,13 +195,28 @@ onRecordValidate((e) => {
         )
       }
       if (!text) {
-        throw abgelehnt(
-          'text',
-          'text_leer',
-          'Bitte einen Text eintragen.',
-        )
+        throw abgelehnt('text', 'text_leer', 'Bitte einen Text eintragen.')
       }
     }
   }
   e.next()
 }, 'belegungen')
+
+// Eine Korrektur braucht eine Begründung. Ohne Betrag gibt es keine
+// Korrektur, dann geht auch der Grund.
+onRecordValidate((e) => {
+  const abgelehnt = require(`${__hooks}/lib/abgelehnt.js`)
+  const grund = e.record.getString('korrektur_grund').trim()
+  if (e.record.getInt('korrektur_betrag') === 0) {
+    e.record.set('korrektur_grund', '')
+  } else if (!grund) {
+    throw abgelehnt(
+      'korrektur_grund',
+      'korrektur_ohne_grund',
+      'Bitte eine Begründung für die Korrektur angeben.',
+    )
+  } else {
+    e.record.set('korrektur_grund', grund)
+  }
+  e.next()
+}, 'auftraege')

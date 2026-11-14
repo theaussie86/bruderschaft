@@ -645,3 +645,103 @@ describe('Belegung', () => {
     await expect(pb.collection('belegungen').getOne(id)).rejects.toThrow()
   })
 })
+
+describe('Korrektur und bezahlt', () => {
+  test('Mitglied setzt bezahlt und Korrektur vergeblich', async () => {
+    const { cookie, auftrag } = await mitAuftrag()
+    const pfad = `${AUFTRAEGE}/${auftrag.id}`
+
+    const bezahlt = await patch(pfad, cookie, { bezahlt: true })
+    const korrektur = await patch(pfad, cookie, {
+      korrektur_betrag: -500,
+      korrektur_grund: 'Rabatt',
+    })
+    const grund = await patch(pfad, cookie, { korrektur_grund: 'Rabatt' })
+
+    expect(bezahlt.ok).toBe(false)
+    expect(korrektur.ok).toBe(false)
+    expect(grund.ok).toBe(false)
+    const pb = await superuser()
+    expect(await pb.collection('auftraege').getOne(auftrag.id)).toMatchObject({
+      bezahlt: false,
+      korrektur_betrag: 0,
+      korrektur_grund: '',
+    })
+  })
+
+  test('Mitglied legt keinen Auftrag mit bezahlt oder Korrektur an', async () => {
+    const m = await neuesMitglied()
+    const cookie = await anmelden(m)
+    const runde = await offeneRunde()
+
+    const res = await auftragAnlegen(m, cookie, runde.id, {
+      bezahlt: true,
+      korrektur_betrag: -500,
+      korrektur_grund: 'Rabatt',
+    })
+
+    expect(res.ok).toBe(false)
+  })
+
+  test('Admin bearbeitet einen fremden Auftrag mit Korrektur und bezahlt', async () => {
+    const { auftrag } = await mitAuftrag()
+    const admin = await anmelden(await neuesMitglied({ admin: true }))
+
+    const res = await patch(`${AUFTRAEGE}/${auftrag.id}`, admin, {
+      anmerkung: 'vom Admin',
+      bezahlt: true,
+      korrektur_betrag: -500,
+      korrektur_grund: '  Rabatt  ',
+    })
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({
+      anmerkung: 'vom Admin',
+      bezahlt: true,
+      korrektur_betrag: -500,
+      korrektur_grund: 'Rabatt',
+    })
+  })
+
+  test('Korrektur ohne Grund wird abgelehnt', async () => {
+    const { auftrag } = await mitAuftrag()
+    const admin = await anmelden(await neuesMitglied({ admin: true }))
+
+    const res = await patch(`${AUFTRAEGE}/${auftrag.id}`, admin, {
+      korrektur_betrag: 300,
+      korrektur_grund: ' ',
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('Korrektur entfernen leert auch den Grund', async () => {
+    const { auftrag } = await mitAuftrag()
+    const admin = await anmelden(await neuesMitglied({ admin: true }))
+    const pfad = `${AUFTRAEGE}/${auftrag.id}`
+    await patch(pfad, admin, {
+      korrektur_betrag: 300,
+      korrektur_grund: 'Porto',
+    })
+
+    const res = await patch(pfad, admin, { korrektur_betrag: 0 })
+
+    expect(await res.json()).toMatchObject({
+      korrektur_betrag: 0,
+      korrektur_grund: '',
+    })
+  })
+
+  test('Admin legt einen Auftrag für ein Mitglied an', async () => {
+    const anderes = await neuesMitglied()
+    const admin = await anmelden(await neuesMitglied({ admin: true }))
+    const runde = await offeneRunde()
+
+    const res = await auftragAnlegen(anderes, admin, runde.id, {
+      anmerkung: 'telefonisch durchgegeben',
+    })
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ mitglied: anderes.id })
+  })
+})

@@ -25,3 +25,18 @@ export function centAus(eingabe: string): number | null {
 export function centAlsEingabe(cent: number) {
   return (cent / 100).toFixed(2).replace('.', ',')
 }
+
+// Korrektur aus dem Formularfeld ("-5,00", "+4,5", "3") in Cent, mit
+// Vorzeichen. Leer heißt 0, alles andere ergibt null.
+export function korrekturAus(eingabe: string): number | null {
+  const text = eingabe.trim()
+  if (/^[+-]\s/.test(text)) return null
+  const betrag = centAus(text.replace(/^[+-]/, ''))
+  if (betrag === null) return null
+  return text.startsWith('-') ? -betrag : betrag
+}
+
+// -500 -> "-5,00 €", 450 -> "+4,50 €"
+export function euroMitVorzeichen(cent: number) {
+  return `${cent < 0 ? '-' : '+'}${euro(Math.abs(cent))}`
+}

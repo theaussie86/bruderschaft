@@ -6,6 +6,7 @@ import type { Bestellrunde } from '@/lib/bestellung'
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { PageHeader } from '@/components/PageHeader'
 import { AuftragKarte } from '@/components/bestellung/AuftragKarte'
+import { RundenUebersicht } from '@/components/bestellung/RundenUebersicht'
 import { ladeOffeneRunde } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
@@ -16,7 +17,8 @@ export const Route = createFileRoute('/_app/bestellen')({
 })
 
 // Tab Bestellen: der eigene Auftrag in der offenen Bestellrunde, darunter das
-// Sortiment zum Ansehen. Ohne offene Runde nur der Hinweis.
+// Sortiment zum Ansehen. Admins sehen darüber die Übersicht der Runde. Ohne
+// offene Runde nur der Hinweis.
 function Bestellen() {
   const { mitglied } = Route.useRouteContext()
   const [stand, setStand] = useState<{
@@ -58,15 +60,26 @@ function Bestellen() {
                 Sobald ein Admin eine eröffnet, bestellst du hier.
               </p>
             </div>
-          ) : mitglied.support ? (
-            <p className="text-ash">Das Support-Konto bestellt nicht.</p>
           ) : (
-            <AuftragKarte
-              runde={stand.runde}
-              mitglied={mitglied.id}
-              sortiment={stand.sortiment}
-              motive={stand.motive}
-            />
+            <>
+              {(mitglied.admin || mitglied.support) && (
+                <RundenUebersicht
+                  runde={stand.runde}
+                  ich={mitglied.id}
+                  sortiment={stand.sortiment}
+                />
+              )}
+              {mitglied.support ? (
+                <p className="text-ash">Das Support-Konto bestellt nicht.</p>
+              ) : (
+                <AuftragKarte
+                  runde={stand.runde}
+                  mitglied={mitglied.id}
+                  sortiment={stand.sortiment}
+                  motive={stand.motive}
+                />
+              )}
+            </>
           )}
           <SortimentAnsicht
             liste={stand.sortiment.filter((a) => !a.ausgeblendet)}

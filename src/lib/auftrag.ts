@@ -1,5 +1,5 @@
 // Summe eines Auftrags, solange die Bestellrunde offen ist: aus den aktuellen
-// Preisen des Sortiments, in Cent (siehe src/lib/geld.ts).
+// Preisen des Sortiments plus Korrektur, in Cent (siehe src/lib/geld.ts).
 
 export type AuftragStatus = 'in_arbeit' | 'fertig' | 'verzicht'
 
@@ -22,10 +22,11 @@ export function auftragsSumme(
     groesse: { aufpreis: number }
     druckstellen?: Array<{ aufpreis: number }>
   }>,
+  korrektur = 0,
 ) {
   return positionen.reduce(
     (summe, p) =>
       summe + p.anzahl * stueckpreis(p.artikel, p.groesse, p.druckstellen),
-    0,
+    korrektur,
   )
 }

@@ -25,6 +25,7 @@ import { Route as PbSplatRouteImport } from './routes/pb.$'
 import { Route as AppVerwaltungBestellrundenRouteImport } from './routes/_app.verwaltung.bestellrunden'
 import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
 import { Route as AppVerwaltungSortimentRouteImport } from './routes/_app.verwaltung.sortiment'
+import { Route as AppBestellenMitgliedMitgliedIdRouteImport } from './routes/_app.bestellen_.mitglied.$mitgliedId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +107,12 @@ const AppVerwaltungSortimentRoute = AppVerwaltungSortimentRouteImport.update({
   path: '/verwaltung/sortiment',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBestellenMitgliedMitgliedIdRoute =
+  AppBestellenMitgliedMitgliedIdRouteImport.update({
+    id: '/bestellen_/mitglied/$mitgliedId',
+    path: '/bestellen/mitglied/$mitgliedId',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
+  '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -140,6 +148,7 @@ export interface FileRoutesByTo {
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
+  '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -159,6 +168,7 @@ export interface FileRoutesById {
   '/_app/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/_app/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
+  '/_app/bestellen_/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/verwaltung/bestellrunden'
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
+    | '/bestellen/mitglied/$mitgliedId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/verwaltung/bestellrunden'
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
+    | '/bestellen/mitglied/$mitgliedId'
   id:
     | '__root__'
     | '/'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
     | '/_app/verwaltung/bestellrunden'
     | '/_app/verwaltung/mitglieder'
     | '/_app/verwaltung/sortiment'
+    | '/_app/bestellen_/mitglied/$mitgliedId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVerwaltungSortimentRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/bestellen_/mitglied/$mitgliedId': {
+      id: '/_app/bestellen_/mitglied/$mitgliedId'
+      path: '/bestellen/mitglied/$mitgliedId'
+      fullPath: '/bestellen/mitglied/$mitgliedId'
+      preLoaderRoute: typeof AppBestellenMitgliedMitgliedIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -352,6 +372,7 @@ interface AppRouteChildren {
   AppVerwaltungBestellrundenRoute: typeof AppVerwaltungBestellrundenRoute
   AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
   AppVerwaltungSortimentRoute: typeof AppVerwaltungSortimentRoute
+  AppBestellenMitgliedMitgliedIdRoute: typeof AppBestellenMitgliedMitgliedIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -361,6 +382,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppVerwaltungBestellrundenRoute: AppVerwaltungBestellrundenRoute,
   AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
   AppVerwaltungSortimentRoute: AppVerwaltungSortimentRoute,
+  AppBestellenMitgliedMitgliedIdRoute: AppBestellenMitgliedMitgliedIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

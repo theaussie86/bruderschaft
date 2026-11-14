@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { centAus, euro } from '@/lib/geld'
+import { centAus, euro, euroMitVorzeichen, korrekturAus } from '@/lib/geld'
 
 describe('Geldbeträge', () => {
   test('Cent werden als Euro angezeigt', () => {
@@ -25,4 +25,20 @@ describe('Geldbeträge', () => {
       expect(centAus(eingabe)).toBeNull()
     },
   )
+})
+
+describe('Korrekturbetrag', () => {
+  test('liest Beträge mit Vorzeichen', () => {
+    expect(korrekturAus('-5,00')).toBe(-500)
+    expect(korrekturAus('+4,5')).toBe(450)
+    expect(korrekturAus('3')).toBe(300)
+    expect(korrekturAus('')).toBe(0)
+    expect(korrekturAus('- 5')).toBeNull()
+    expect(korrekturAus('abc')).toBeNull()
+  })
+
+  test('zeigt das Vorzeichen', () => {
+    expect(euroMitVorzeichen(-500)).toBe('-5,00 €')
+    expect(euroMitVorzeichen(450)).toBe('+4,50 €')
+  })
 })

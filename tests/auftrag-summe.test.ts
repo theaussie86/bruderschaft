@@ -46,3 +46,13 @@ describe('Aufpreise belegter Druckstellen', () => {
     ).toBe(2 * 4490 + 1500)
   })
 })
+
+describe('Korrektur', () => {
+  test('Summe enthält die Korrektur, plus wie minus', () => {
+    const positionen = [
+      { anzahl: 1, artikel: { preis: 3990 }, groesse: { aufpreis: 0 } },
+    ]
+    expect(auftragsSumme(positionen, -500)).toBe(3490)
+    expect(auftragsSumme(positionen, 450)).toBe(4440)
+  })
+})

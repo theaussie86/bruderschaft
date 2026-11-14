@@ -33,7 +33,12 @@ import {
 } from '@/lib/belegung'
 import { ladeAuftrag, tagAnzeigen } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
-import { euro } from '@/lib/geld'
+import {
+  centAlsEingabe,
+  euro,
+  euroMitVorzeichen,
+  korrekturAus,
+} from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 const STATUS_TEXT = {
@@ -63,20 +68,23 @@ async function belegungenSpeichern(
     await pb.collection('belegungen').create({ position, ...felder })
 }
 
-// Der eigene Auftrag in der offenen Bestellrunde: Positionen mit Belegung der
-// Druckstellen, Summe live aus den aktuellen Preisen, Anmerkung, "Bin fertig"
-// und "Diesmal nichts". Den Auftrag legt die Karte erst an, wenn das Mitglied
-// etwas einträgt.
+// Ein Auftrag in der offenen Bestellrunde: Positionen mit Belegung der
+// Druckstellen, Summe live aus den aktuellen Preisen plus Korrektur,
+// Anmerkung, "Bin fertig" und "Diesmal nichts". Den Auftrag legt die Karte
+// erst an, wenn etwas eingetragen wird. Mit `fuer` bearbeitet ein Admin den
+// Auftrag eines Mitglieds und setzt dazu Korrektur und bezahlt.
 export function AuftragKarte({
   runde,
   mitglied,
   sortiment,
   motive,
+  fuer,
 }: {
   runde: Bestellrunde
   mitglied: string
   sortiment: Array<SortimentArtikel>
   motive: Array<Motiv>
+  fuer?: string
 }) {
   const [auftrag, setAuftrag] = useState<Auftrag | null>(null)
   const [positionen, setPositionen] = useState<Array<Position>>([])
@@ -165,10 +173,15 @@ export function AuftragKarte({
   const unvollstaendig = zeilen.some((z) => z.fehlend.length > 0)
 
   return (
-    <section className="card overflow-hidden" aria-label="Dein Auftrag">
+    <section
+      className="card overflow-hidden"
+      aria-label={fuer ? `Auftrag von ${fuer}` : 'Dein Auftrag'}
+    >
       <div className="border-line/60 flex items-center justify-between gap-3 border-b px-5 py-4">
         <div>
-          <div className="eyebrow">Dein Auftrag</div>
+          <div className="eyebrow">
+            {fuer ? `Auftrag von ${fuer}` : 'Dein Auftrag'}
+          </div>
           <div className="text-ash mt-0.5 text-sm">
             Bestelldatum {tagAnzeigen(runde.bestelldatum)}
           </div>
@@ -336,12 +349,34 @@ export function AuftragKarte({
               />
             )}
 
-            {zeilen.length > 0 && (
-              <div className="border-line/60 mt-4 flex items-baseline justify-between border-t pt-4">
-                <span className="font-semibold">Summe</span>
-                <span className="tnum text-xl font-bold">
-                  {euro(auftragsSumme(zeilen))}
-                </span>
+            {(zeilen.length > 0 || !!auftrag?.korrektur_betrag) && (
+              <div className="border-line/60 mt-4 space-y-1.5 border-t pt-4">
+                {!!auftrag?.korrektur_betrag && (
+                  <>
+                    <div className="text-ash flex items-baseline justify-between gap-3 text-[15px]">
+                      <span>Zwischensumme</span>
+                      <span className="tnum">
+                        {euro(auftragsSumme(zeilen))}
+                      </span>
+                    </div>
+                    <div className="text-ash flex items-baseline justify-between gap-3 text-[15px]">
+                      <span className="truncate">
+                        Korrektur · {auftrag.korrektur_grund}
+                      </span>
+                      <span className="tnum">
+                        {euroMitVorzeichen(auftrag.korrektur_betrag)}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-baseline justify-between">
+                  <span className="font-semibold">Summe</span>
+                  <span className="tnum text-xl font-bold">
+                    {euro(
+                      auftragsSumme(zeilen, auftrag?.korrektur_betrag ?? 0),
+                    )}
+                  </span>
+                </div>
               </div>
             )}
 
@@ -363,6 +398,23 @@ export function AuftragKarte({
           </>
         )}
 
+        {fuer && status !== 'verzicht' && (
+          <AdminFelder
+            key={`${auftrag?.korrektur_betrag ?? 0}|${auftrag?.korrektur_grund ?? ''}`}
+            auftrag={auftrag}
+            disabled={laeuft}
+            onSpeichern={(felder) =>
+              ausfuehren(async () => {
+                if (auftrag)
+                  await createBrowserPocketBase()
+                    .collection('auftraege')
+                    .update(auftrag.id, felder)
+                else await auftragId(felder)
+              }, 'Der Auftrag konnte nicht geändert werden.')
+            }
+          />
+        )}
+
         {fehler && (
           <p role="alert" className="text-rust-hi mt-4 text-sm">
             {fehler}
@@ -376,7 +428,9 @@ export function AuftragKarte({
                 <div className="flex items-start gap-3">
                   <Check className="text-patina mt-0.5 size-5 shrink-0" />
                   <div className="text-[15px]">
-                    <div className="font-semibold">Abgeschickt, danke!</div>
+                    <div className="font-semibold">
+                      {fuer ? 'Abgeschickt' : 'Abgeschickt, danke!'}
+                    </div>
                     <div className="text-ash">
                       Wieder öffnen geht, solange die Runde offen ist.
                     </div>
@@ -745,5 +799,109 @@ function AnmerkungFeld({
         </Button>
       )}
     </form>
+  )
+}
+
+// Nur für Admins: bezahlt und Korrektur (Betrag plus oder minus mit
+// Begründung). Die Korrektur ändert die Summe, nicht die Preise.
+function AdminFelder({
+  auftrag,
+  disabled,
+  onSpeichern,
+}: {
+  auftrag: Auftrag | null
+  disabled: boolean
+  onSpeichern: (
+    felder: Partial<
+      Pick<Auftrag, 'bezahlt' | 'korrektur_betrag' | 'korrektur_grund'>
+    >,
+  ) => Promise<void>
+}) {
+  const vorhanden = auftrag?.korrektur_betrag ?? 0
+  const [betrag, setBetrag] = useState(
+    vorhanden
+      ? `${vorhanden < 0 ? '-' : ''}${centAlsEingabe(Math.abs(vorhanden))}`
+      : '',
+  )
+  const [grund, setGrund] = useState(auftrag?.korrektur_grund ?? '')
+  const cent = korrekturAus(betrag)
+  const gueltig = cent !== null && cent !== 0 && grund.trim() !== ''
+  const bezahlt = auftrag?.bezahlt ?? false
+
+  return (
+    <div className="border-line mt-6 space-y-3 rounded-2xl border border-dashed p-4">
+      <div className="eyebrow">Nur für Admins</div>
+      {auftrag?.status === 'fertig' && (
+        <label className="flex min-h-12 items-center justify-between gap-3">
+          <span>
+            <span className="block font-semibold">Bezahlt</span>
+            <span className="text-ash block text-[13px]">
+              Summe ist auf dem Clubkonto eingegangen
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            className="accent-patina size-6"
+            checked={bezahlt}
+            disabled={disabled}
+            onChange={(e) => void onSpeichern({ bezahlt: e.target.checked })}
+          />
+        </label>
+      )}
+      <form
+        className="border-line/60 border-t pt-3"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (gueltig)
+            void onSpeichern({
+              korrektur_betrag: cent,
+              korrektur_grund: grund.trim(),
+            })
+        }}
+      >
+        <div className="mb-2 font-semibold">Korrektur</div>
+        <div className="grid grid-cols-[110px_1fr] gap-2">
+          <input
+            className="field tnum"
+            inputMode="decimal"
+            placeholder="-5,00"
+            aria-label="Betrag"
+            value={betrag}
+            onChange={(e) => setBetrag(e.target.value)}
+          />
+          <input
+            className="field"
+            placeholder="Begründung, z. B. Porto"
+            aria-label="Begründung"
+            maxLength={200}
+            value={grund}
+            onChange={(e) => setGrund(e.target.value)}
+          />
+        </div>
+        <p className="text-ash mt-1.5 text-[13px]">
+          Plus schlägt auf, Minus zieht ab. Ändert die Summe, nicht die Preise.
+        </p>
+        {cent === null && (
+          <p className="text-rust-hi mt-1 text-[13px]">
+            Bitte einen Betrag wie -5,00 oder 4,50 eingeben.
+          </p>
+        )}
+        <div className="mt-3 flex gap-3">
+          <Button type="submit" disabled={disabled || !gueltig}>
+            Korrektur speichern
+          </Button>
+          {!!vorhanden && (
+            <button
+              type="button"
+              className="text-ash hover:text-bone px-3 font-semibold"
+              disabled={disabled}
+              onClick={() => void onSpeichern({ korrektur_betrag: 0 })}
+            >
+              Entfernen
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   )
 }

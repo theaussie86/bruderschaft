@@ -18,6 +18,17 @@ export type Auftrag = {
   mitglied: string
   status: AuftragStatus
   anmerkung: string
+  bezahlt: boolean
+  // Korrektur in Cent mit Vorzeichen, 0 heißt keine. Setzen nur Admins.
+  korrektur_betrag: number
+  korrektur_grund: string
+}
+
+export type UebersichtMitglied = {
+  id: string
+  name: string
+  gesperrt: boolean
+  support: boolean
 }
 
 export type Position = {
@@ -74,6 +85,33 @@ export async function ladeAuftrag(
     }),
   ])
   return { auftrag, positionen, belegungen }
+}
+
+// Alles für die Übersicht der Runde (nur Admins): Mitglieder, alle Aufträge
+// der Runde und deren Positionen und Belegungen für Stand und Summe.
+export async function ladeUebersicht(runde: string) {
+  const pb = createBrowserPocketBase()
+  const [mitglieder, auftraege, positionen, belegungen] = await Promise.all([
+    pb.collection('mitglieder').getFullList<UebersichtMitglied>({
+      fields: 'id,name,gesperrt,support',
+    }),
+    pb.collection('auftraege').getFullList<Auftrag>({
+      filter: pb.filter('runde = {:runde}', { runde }),
+    }),
+    pb.collection('positionen').getFullList<Position>({
+      filter: pb.filter('auftrag.runde = {:runde}', { runde }),
+    }),
+    pb.collection('belegungen').getFullList<PositionsBelegung>({
+      filter: pb.filter('position.auftrag.runde = {:runde}', { runde }),
+    }),
+  ])
+  return { mitglieder, auftraege, positionen, belegungen }
+}
+
+export async function ladeMitglied(id: string) {
+  return createBrowserPocketBase()
+    .collection('mitglieder')
+    .getOne<UebersichtMitglied>(id, { fields: 'id,name,gesperrt,support' })
 }
 
 // Daten wie das Bestelldatum laufen in der App als JJJJ-MM-TT. PocketBase
