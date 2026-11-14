@@ -40,7 +40,10 @@ describe('Cookie-Hinweis', () => {
 
   test('fragt erneut, wenn eine ältere Fassung bestätigt wurde', () => {
     const s = speicher({
-      'cookie-hinweis': JSON.stringify({ version: 0, bestaetigtAm: '2026-01-01' }),
+      'cookie-hinweis': JSON.stringify({
+        version: 0,
+        bestaetigtAm: '2026-01-01',
+      }),
     })
 
     expect(hinweisBestaetigt(s)).toBe(false)

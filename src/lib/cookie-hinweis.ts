@@ -24,14 +24,16 @@ export const SPEICHERUNGEN: ReadonlyArray<Speicherung> = [
     art: 'Cookie',
     zweck:
       'Hält dich angemeldet. Wird erst beim Login gesetzt, ist für JavaScript nicht lesbar (httpOnly) und geht nur an diese App.',
-    dauer: '90 Tage, verlängert sich bei jeder Nutzung. Beim Abmelden gelöscht.',
+    dauer:
+      '90 Tage, verlängert sich bei jeder Nutzung. Beim Abmelden gelöscht.',
   },
   {
     name: HINWEIS_SCHLUESSEL,
     art: 'localStorage',
     zweck:
       'Merkt sich, dass du den Cookie-Hinweis gelesen hast. Bleibt in deinem Browser und wird nie übertragen.',
-    dauer: 'Bis du ihn auf der Cookie-Seite zurücksetzt oder die Browserdaten löschst.',
+    dauer:
+      'Bis du ihn auf der Cookie-Seite zurücksetzt oder die Browserdaten löschst.',
   },
 ]
 

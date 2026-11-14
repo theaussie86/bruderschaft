@@ -1,9 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
-export function PublicFooter() {
+// Impressum, Datenschutz und Cookies: vor dem Login im Footer, danach im
+// Profil (Issue #42).
+export function RechtlicheLinks({ className = '' }: { className?: string }) {
   return (
-    <footer className="pb-safe text-smoke mt-auto flex justify-center gap-6 py-6 text-sm">
+    <nav
+      aria-label="Rechtliches"
+      className={`text-smoke flex justify-center gap-6 text-sm ${className}`}
+    >
       <Link to="/impressum" className="hover:text-bone">
         Impressum
       </Link>
@@ -13,6 +18,14 @@ export function PublicFooter() {
       <Link to="/cookies" className="hover:text-bone">
         Cookies
       </Link>
+    </nav>
+  )
+}
+
+export function PublicFooter() {
+  return (
+    <footer className="pb-safe mt-auto py-6">
+      <RechtlicheLinks />
     </footer>
   )
 }

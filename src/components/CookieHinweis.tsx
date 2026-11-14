@@ -49,12 +49,13 @@ export function CookieHinweis() {
     <div
       role="region"
       aria-label="Hinweis zu Cookies"
-      className="card animate-rise fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg"
+      // Mobil über der Tab-Leiste der App-Shell (_app.tsx), ab lg ist dort keine.
+      className="card animate-rise fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md p-5 shadow-lg lg:bottom-3"
     >
       <h2 className="text-bone font-semibold">Nur das Nötigste</h2>
       <p className="text-ash mt-2 text-sm leading-relaxed">
-        Die App speichert nur, was sie für die Anmeldung braucht. Kein
-        Tracking, keine Analyse, nichts von Drittanbietern.{' '}
+        Die App speichert nur, was sie für die Anmeldung braucht. Kein Tracking,
+        keine Analyse, nichts von Drittanbietern.{' '}
         <Link to="/cookies" className="text-bone underline">
           Mehr dazu
         </Link>

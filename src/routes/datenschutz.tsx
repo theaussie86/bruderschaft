@@ -49,8 +49,8 @@ function Datenschutz() {
         <Abschnitt titel="Cookies">
           <p>
             Die App speichert in deinem Browser nur, was technisch notwendig
-            ist. Dafür braucht es keine Einwilligung (§ 25 Abs. 2 Nr. 2
-            TDDDG). Es gibt keine Analyse, kein Tracking und keine Inhalte von
+            ist. Dafür braucht es keine Einwilligung (§ 25 Abs. 2 Nr. 2 TDDDG).
+            Es gibt keine Analyse, kein Tracking und keine Inhalte von
             Drittanbietern, Schriften liegen auf unserem eigenen Server. Einen
             Service Worker oder Offline-Speicher nutzt die App nicht.
           </p>

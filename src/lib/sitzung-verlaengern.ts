@@ -51,11 +51,17 @@ export async function verlaengereSitzung(
 export async function pruefeSitzung(
   cookieHeader: string | null,
   pocketbaseUrl: string,
-): Promise<{ mitglied: AngemeldetesMitglied | null; setCookie: string | null }> {
+): Promise<{
+  mitglied: AngemeldetesMitglied | null
+  setCookie: string | null
+}> {
   const token = tokenAusCookieHeader(cookieHeader)
   if (!token) return { mitglied: null, setCookie: null }
 
   const sitzung = await verlaengereSitzung(token, pocketbaseUrl)
   if (!sitzung) return { mitglied: null, setCookie: abmeldeCookie() }
-  return { mitglied: sitzung.mitglied, setCookie: sitzungsCookie(sitzung.token) }
+  return {
+    mitglied: sitzung.mitglied,
+    setCookie: sitzungsCookie(sitzung.token),
+  }
 }
