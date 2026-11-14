@@ -23,6 +23,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
 import { Route as PbSplatRouteImport } from './routes/pb.$'
 import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
+import { Route as AppVerwaltungSortimentRouteImport } from './routes/_app.verwaltung.sortiment'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -93,6 +94,11 @@ const AppVerwaltungMitgliederRoute = AppVerwaltungMitgliederRouteImport.update({
   path: '/verwaltung/mitglieder',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVerwaltungSortimentRoute = AppVerwaltungSortimentRouteImport.update({
+  id: '/verwaltung/sortiment',
+  path: '/verwaltung/sortiment',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
+  '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
+  '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
+  '/_app/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/verwaltung/mitglieder'
+    | '/verwaltung/sortiment'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/verwaltung/mitglieder'
+    | '/verwaltung/sortiment'
   id:
     | '__root__'
     | '/'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/_app/verwaltung/mitglieder'
+    | '/_app/verwaltung/sortiment'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -303,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVerwaltungMitgliederRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/verwaltung/sortiment': {
+      id: '/_app/verwaltung/sortiment'
+      path: '/verwaltung/sortiment'
+      fullPath: '/verwaltung/sortiment'
+      preLoaderRoute: typeof AppVerwaltungSortimentRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -311,6 +330,7 @@ interface AppRouteChildren {
   AppKalenderRoute: typeof AppKalenderRoute
   AppProfilRoute: typeof AppProfilRoute
   AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
+  AppVerwaltungSortimentRoute: typeof AppVerwaltungSortimentRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -318,6 +338,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppKalenderRoute: AppKalenderRoute,
   AppProfilRoute: AppProfilRoute,
   AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
+  AppVerwaltungSortimentRoute: AppVerwaltungSortimentRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

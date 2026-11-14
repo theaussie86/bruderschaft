@@ -23,6 +23,9 @@ const ANFRAGE_HEADER_WEG = [
   'content-length',
   'accept-encoding',
 ]
+// PocketBase-Dateinamen sind eindeutig, eine Datei ändert sich nie (ADR 0003).
+export const DATEI_CACHE = 'private, max-age=31536000, immutable'
+
 const ANTWORT_HEADER_WEG = [
   'content-encoding',
   'content-length',
@@ -54,11 +57,21 @@ export async function pbProxy(
   const token = tokenAusCookieHeader(request.headers.get('cookie'))
   if (token) headers.set('authorization', token)
 
+  // Geschützte Dateien liefert PocketBase nur mit File-Token in der URL. Der
+  // Proxy holt ihn mit dem Token aus dem Cookie, der Browser sieht ihn nie.
+  const zielSuche = new URLSearchParams(url.search)
+  zielSuche.delete('token')
+  if (ziel.datei && token && request.method === 'GET') {
+    const dateiToken = await holeDateiToken(pocketbaseUrl, token)
+    if (dateiToken) zielSuche.set('token', dateiToken)
+  }
+  const suche = zielSuche.size > 0 ? `?${zielSuche}` : ''
+
   const hatBody =
     request.method !== 'GET' &&
     request.method !== 'HEAD' &&
     request.body !== null
-  const antwort = await fetch(`${pocketbaseUrl}${pfad}${url.search}`, {
+  const antwort = await fetch(`${pocketbaseUrl}${pfad}${suche}`, {
     method: request.method,
     headers,
     // Uploads als Stream durchreichen, ohne sie im Speicher zu puffern.
@@ -69,6 +82,8 @@ export async function pbProxy(
 
   const antwortHeader = new Headers(antwort.headers)
   for (const name of ANTWORT_HEADER_WEG) antwortHeader.delete(name)
+
+  if (ziel.datei && antwort.ok) antwortHeader.set('cache-control', DATEI_CACHE)
 
   if (ziel.authEndpunkt && antwort.ok) {
     const { token: neuesToken, ...rest } = (await antwort.json()) as {
@@ -91,7 +106,9 @@ export async function pbProxy(
 // Positivliste statt Sperrliste: Nur Datensätze, Auth-Aktionen, Dateien,
 // eigene Hook-Routen und Health sind erreichbar. Damit fallen Admin-UI (/_/), Superuser-API,
 // Einstellungen, Backups, Logs und die Collection-Verwaltung heraus.
-function erlaubterPfad(pfad: string): { authEndpunkt: boolean } | null {
+type Ziel = { authEndpunkt: boolean; datei: boolean }
+
+function erlaubterPfad(pfad: string): Ziel | null {
   const segmente = pfad.split('/').slice(1)
   let dekodiert: Array<string>
   try {
@@ -104,20 +121,32 @@ function erlaubterPfad(pfad: string): { authEndpunkt: boolean } | null {
   const [api, bereich, name, aktion] = dekodiert
   if (api !== 'api') return null
 
-  if (bereich === 'health' && dekodiert.length === 2)
-    return { authEndpunkt: false }
+  const normal = { authEndpunkt: false, datei: false }
+  if (bereich === 'health' && dekodiert.length === 2) return normal
+  // Dateien: /api/files/<collection>/<datensatz>/<dateiname>
   if (bereich === 'files' && name && !systemCollection(name))
-    return { authEndpunkt: false }
+    return { authEndpunkt: false, datei: dekodiert.length === 5 }
   // Eigene Hook-Routen der App (pocketbase/pb_hooks) liegen unter /api/club/.
-  if (bereich === 'club' && name) return { authEndpunkt: false }
+  if (bereich === 'club' && name) return normal
 
   if (bereich === 'collections' && name && aktion) {
     if (systemCollection(name)) return null
     return {
       authEndpunkt: dekodiert.length === 4 && AUTH_ENDPUNKTE.has(aktion),
+      datei: false,
     }
   }
   return null
+}
+
+async function holeDateiToken(pocketbaseUrl: string, token: string) {
+  const res = await fetch(`${pocketbaseUrl}/api/files/token`, {
+    method: 'POST',
+    headers: { authorization: token },
+  })
+  if (!res.ok) return null
+  const { token: dateiToken } = (await res.json()) as { token?: string }
+  return dateiToken ?? null
 }
 
 function systemCollection(name: string) {
