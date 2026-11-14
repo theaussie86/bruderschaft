@@ -23,6 +23,8 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
 import { Route as PbSplatRouteImport } from './routes/pb.$'
 import { Route as AppBestellenFrueherRouteImport } from './routes/_app.bestellen_.frueher'
+import { Route as AppKalenderTerminIdRouteImport } from './routes/_app.kalender_.$terminId'
+import { Route as AppKalenderNeuRouteImport } from './routes/_app.kalender_.neu'
 import { Route as AppVerwaltungBestellrundenRouteImport } from './routes/_app.verwaltung.bestellrunden'
 import { Route as AppVerwaltungEinstellungenRouteImport } from './routes/_app.verwaltung.einstellungen'
 import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
@@ -98,6 +100,16 @@ const AppBestellenFrueherRoute = AppBestellenFrueherRouteImport.update({
   path: '/bestellen/frueher',
   getParentRoute: () => AppRoute,
 } as any)
+const AppKalenderTerminIdRoute = AppKalenderTerminIdRouteImport.update({
+  id: '/kalender_/$terminId',
+  path: '/kalender/$terminId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKalenderNeuRoute = AppKalenderNeuRouteImport.update({
+  id: '/kalender_/neu',
+  path: '/kalender/neu',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVerwaltungBestellrundenRoute =
   AppVerwaltungBestellrundenRouteImport.update({
     id: '/verwaltung/bestellrunden',
@@ -141,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/bestellen/frueher': typeof AppBestellenFrueherRoute
+  '/kalender/$terminId': typeof AppKalenderTerminIdRoute
+  '/kalender/neu': typeof AppKalenderNeuRoute
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
@@ -161,6 +175,8 @@ export interface FileRoutesByTo {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/bestellen/frueher': typeof AppBestellenFrueherRoute
+  '/kalender/$terminId': typeof AppKalenderTerminIdRoute
+  '/kalender/neu': typeof AppKalenderNeuRoute
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
@@ -183,6 +199,8 @@ export interface FileRoutesById {
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
   '/_app/bestellen_/frueher': typeof AppBestellenFrueherRoute
+  '/_app/kalender_/$terminId': typeof AppKalenderTerminIdRoute
+  '/_app/kalender_/neu': typeof AppKalenderNeuRoute
   '/_app/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
   '/_app/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
@@ -205,6 +223,8 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/bestellen/frueher'
+    | '/kalender/$terminId'
+    | '/kalender/neu'
     | '/verwaltung/bestellrunden'
     | '/verwaltung/einstellungen'
     | '/verwaltung/mitglieder'
@@ -225,6 +245,8 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/bestellen/frueher'
+    | '/kalender/$terminId'
+    | '/kalender/neu'
     | '/verwaltung/bestellrunden'
     | '/verwaltung/einstellungen'
     | '/verwaltung/mitglieder'
@@ -246,6 +268,8 @@ export interface FileRouteTypes {
     | '/club-assets/$'
     | '/pb/$'
     | '/_app/bestellen_/frueher'
+    | '/_app/kalender_/$terminId'
+    | '/_app/kalender_/neu'
     | '/_app/verwaltung/bestellrunden'
     | '/_app/verwaltung/einstellungen'
     | '/_app/verwaltung/mitglieder'
@@ -366,6 +390,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBestellenFrueherRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/kalender_/$terminId': {
+      id: '/_app/kalender_/$terminId'
+      path: '/kalender/$terminId'
+      fullPath: '/kalender/$terminId'
+      preLoaderRoute: typeof AppKalenderTerminIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/kalender_/neu': {
+      id: '/_app/kalender_/neu'
+      path: '/kalender/neu'
+      fullPath: '/kalender/neu'
+      preLoaderRoute: typeof AppKalenderNeuRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/verwaltung/bestellrunden': {
       id: '/_app/verwaltung/bestellrunden'
       path: '/verwaltung/bestellrunden'
@@ -409,6 +447,8 @@ interface AppRouteChildren {
   AppKalenderRoute: typeof AppKalenderRoute
   AppProfilRoute: typeof AppProfilRoute
   AppBestellenFrueherRoute: typeof AppBestellenFrueherRoute
+  AppKalenderTerminIdRoute: typeof AppKalenderTerminIdRoute
+  AppKalenderNeuRoute: typeof AppKalenderNeuRoute
   AppVerwaltungBestellrundenRoute: typeof AppVerwaltungBestellrundenRoute
   AppVerwaltungEinstellungenRoute: typeof AppVerwaltungEinstellungenRoute
   AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
@@ -421,6 +461,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppKalenderRoute: AppKalenderRoute,
   AppProfilRoute: AppProfilRoute,
   AppBestellenFrueherRoute: AppBestellenFrueherRoute,
+  AppKalenderTerminIdRoute: AppKalenderTerminIdRoute,
+  AppKalenderNeuRoute: AppKalenderNeuRoute,
   AppVerwaltungBestellrundenRoute: AppVerwaltungBestellrundenRoute,
   AppVerwaltungEinstellungenRoute: AppVerwaltungEinstellungenRoute,
   AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
