@@ -1,9 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import {
+  AlertTriangle,
   Check,
   ChevronDown,
   ChevronRight,
+  Lock,
   MessageSquare,
+  RotateCcw,
   UserX,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -11,10 +14,17 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Auftrag, Bestellrunde, Position } from '@/lib/bestellung'
 import type { SortimentArtikel } from '@/lib/sortiment'
 import type { Stand } from '@/lib/uebersicht'
+import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
 import { auftragsSumme } from '@/lib/auftrag'
 import { belegteDruckstellen } from '@/lib/belegung'
-import { ladeUebersicht, tagAnzeigen } from '@/lib/bestellung'
+import {
+  ladeAbschlussWarnung,
+  ladeUebersicht,
+  rundeAbschliessen,
+  rundeOeffnen,
+  tagAnzeigen,
+} from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -30,12 +40,14 @@ const BALKEN: Record<Stand, string> = {
 
 type Daten = Awaited<ReturnType<typeof ladeUebersicht>>
 
-// Summe eines Auftrags aus den aktuellen Preisen plus Korrektur.
+// Summe eines Auftrags: festgehalten, sobald er mitbestellt ist, sonst aus
+// den aktuellen Preisen plus Korrektur.
 function summe(
   auftrag: Auftrag,
   daten: Daten,
   sortiment: Array<SortimentArtikel>,
 ) {
+  if (auftrag.mitbestellt) return auftrag.summe
   const zeilen = daten.positionen
     .filter((p: Position) => p.auftrag === auftrag.id)
     .flatMap((p) => {
@@ -57,20 +69,25 @@ function summe(
 
 // Karte "Übersicht der Runde" über dem eigenen Auftrag, nur für Admins: alle
 // Mitglieder mit Stand und bezahlt. Ein Klick auf ein Mitglied öffnet dessen
-// Auftrag zum Bearbeiten oder Anlegen.
+// Auftrag zum Bearbeiten oder Anlegen. Unten schließt der Admin die Runde ab
+// oder öffnet sie wieder.
 export function RundenUebersicht({
   runde,
   ich,
   sortiment,
+  onRundeGeaendert,
 }: {
   runde: Bestellrunde
   ich: string
   sortiment: Array<SortimentArtikel>
+  onRundeGeaendert: () => void | Promise<void>
 }) {
   const [daten, setDaten] = useState<Daten | null>(null)
   const [aufgeklappt, setAufgeklappt] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
   const [laeuft, setLaeuft] = useState(false)
+  const [abschliessen, setAbschliessen] = useState(false)
+  const offen = runde.status === 'offen'
 
   const laden = useCallback(async () => {
     setDaten(await ladeUebersicht(runde.id))
@@ -97,6 +114,19 @@ export function RundenUebersicht({
     }
   }
 
+  async function oeffnen() {
+    setFehler(null)
+    setLaeuft(true)
+    try {
+      await rundeOeffnen(runde.id)
+      await onRundeGeaendert()
+    } catch (err) {
+      setFehler(fehlertext(err, 'Die Runde konnte nicht geöffnet werden.'))
+    } finally {
+      setLaeuft(false)
+    }
+  }
+
   if (!daten)
     return fehler ? (
       <p role="alert" className="text-rust-hi mb-6 text-sm">
@@ -114,9 +144,18 @@ export function RundenUebersicht({
   )
   const zahl = (s: Stand) => zeilen.filter((z) => z.stand === s).length
   const erledigt = zahl('fertig') + zahl('verzicht')
-  const bezahlt = zeilen.filter((z) => z.bezahlt && z.stand === 'fertig').length
-  const ansprechen = zeilen.filter(
-    (z) => z.stand === 'leer' || z.stand === 'in_arbeit',
+  // Bezahlt wird, was abgeschickt ist, nach dem Abschluss was mitbestellt ist.
+  const zahlt = (z: (typeof zeilen)[number]) =>
+    offen ? z.stand === 'fertig' : !!z.auftrag?.mitbestellt
+  const bezahlt = zeilen.filter((z) => z.bezahlt && zahlt(z)).length
+  const ansprechen = offen
+    ? zeilen.filter((z) => z.stand === 'leer' || z.stand === 'in_arbeit')
+    : []
+  // Wie die Warnzahl von PocketBase: in Arbeit und mit Positionen.
+  const nichtFertig = zeilen.filter(
+    (z) =>
+      z.auftrag?.status === 'in_arbeit' &&
+      (anzahlProAuftrag[z.auftrag.id] ?? 0) > 0,
   )
 
   return (
@@ -145,10 +184,10 @@ export function RundenUebersicht({
             <div className="text-ash mt-1 text-sm">bezahlt</div>
           </div>
           <div className="text-ash ml-auto text-right text-sm">
-            Bestelldatum
+            {offen ? 'Bestelldatum' : 'abgeschlossen am'}
             <br />
             <span className="text-bone font-semibold">
-              {tagAnzeigen(runde.bestelldatum)}
+              {tagAnzeigen(offen ? runde.bestelldatum : runde.abgeschlossen_am)}
             </span>
           </div>
         </div>
@@ -204,6 +243,7 @@ export function RundenUebersicht({
               <Link
                 to="/bestellen/mitglied/$mitgliedId"
                 params={{ mitgliedId: z.mitglied.id }}
+                search={{ runde: runde.id }}
                 className="hover:bg-slate/40 flex min-h-[60px] min-w-0 flex-1 items-center gap-3 py-2 pr-2 pl-5"
               >
                 <div className="min-w-0 flex-1">
@@ -227,6 +267,15 @@ export function RundenUebersicht({
                     >
                       {STAND_TEXT[z.stand]}
                     </Markierung>
+                    {!offen && z.stand === 'in_arbeit' && (
+                      <Markierung
+                        ton={z.auftrag?.mitbestellt ? 'brass' : 'neutral'}
+                      >
+                        {z.auftrag?.mitbestellt
+                          ? 'mitgenommen'
+                          : 'nicht mitbestellt'}
+                      </Markierung>
+                    )}
                     {z.ausgetreten && (
                       <Markierung ton="neutral">
                         <UserX className="size-3" /> ausgetreten
@@ -246,7 +295,9 @@ export function RundenUebersicht({
                   </div>
                 </div>
                 {z.auftrag &&
-                  (z.stand === 'fertig' || z.stand === 'in_arbeit') && (
+                  (offen
+                    ? z.stand === 'fertig' || z.stand === 'in_arbeit'
+                    : z.auftrag.mitbestellt) && (
                     <span className="tnum text-ash text-[15px]">
                       {euro(summe(z.auftrag, daten, sortiment))}
                     </span>
@@ -254,7 +305,7 @@ export function RundenUebersicht({
                 <ChevronRight className="text-smoke size-4 shrink-0" />
               </Link>
               <div className="flex w-16 shrink-0 justify-center pr-3">
-                {z.auftrag && z.stand === 'fertig' && (
+                {z.auftrag && zahlt(z) && (
                   <button
                     type="button"
                     disabled={laeuft}
@@ -279,6 +330,140 @@ export function RundenUebersicht({
           ))}
         </ul>
       )}
+
+      <div className="border-line/70 border-t p-4">
+        {!offen ? (
+          <Button full disabled={laeuft} onClick={() => void oeffnen()}>
+            <RotateCcw className="size-4" /> Wieder öffnen
+          </Button>
+        ) : abschliessen ? (
+          <Abschliessen
+            runde={runde}
+            nichtFertig={nichtFertig.map((z) => z.mitglied.name)}
+            onAbbrechen={() => setAbschliessen(false)}
+            onFertig={onRundeGeaendert}
+          />
+        ) : (
+          <Button full onClick={() => setAbschliessen(true)}>
+            <Lock className="size-4" /> Runde abschließen
+          </Button>
+        )}
+      </div>
     </section>
+  )
+}
+
+// Rückfrage vor dem Abschließen: Warnung, wie viele Aufträge nicht fertig
+// sind, und die Wahl, sie mitzunehmen oder wegzulassen.
+function Abschliessen({
+  runde,
+  nichtFertig,
+  onAbbrechen,
+  onFertig,
+}: {
+  runde: Bestellrunde
+  nichtFertig: Array<string>
+  onAbbrechen: () => void
+  onFertig: () => void | Promise<void>
+}) {
+  const [anzahl, setAnzahl] = useState<number | null>(null)
+  const [mitnehmen, setMitnehmen] = useState(false)
+  const [fehler, setFehler] = useState<string | null>(null)
+  const [laeuft, setLaeuft] = useState(false)
+
+  useEffect(() => {
+    ladeAbschlussWarnung(runde.id)
+      .then((w) => setAnzahl(w.nicht_fertig))
+      .catch((err: unknown) =>
+        setFehler(fehlertext(err, 'Die Warnung konnte nicht geladen werden.')),
+      )
+  }, [runde.id])
+
+  async function bestaetigen() {
+    setFehler(null)
+    setLaeuft(true)
+    try {
+      await rundeAbschliessen(runde.id, mitnehmen)
+      await onFertig()
+    } catch (err) {
+      setFehler(fehlertext(err, 'Die Runde konnte nicht abgeschlossen werden.'))
+      setLaeuft(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="font-display text-xl font-bold uppercase">
+        Runde abschließen?
+      </div>
+      <p className="text-ash mt-1 mb-4 text-[15px]">
+        {runde.name}. Danach können Mitglieder nichts mehr ändern.
+      </p>
+      {!!anzahl && (
+        <div className="border-brass/40 bg-brass/10 mb-3 rounded-2xl border p-4">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="text-brass mt-0.5 size-5 shrink-0" />
+            <div>
+              <div className="font-semibold">
+                {anzahl} {anzahl === 1 ? 'Auftrag' : 'Aufträge'} noch nicht
+                fertig
+              </div>
+              {nichtFertig.length > 0 && (
+                <div className="text-ash text-[15px]">
+                  {nichtFertig.join(', ')}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2" role="radiogroup">
+            {(
+              [
+                [true, 'mitnehmen'],
+                [false, 'weglassen'],
+              ] as const
+            ).map(([wert, text]) => (
+              <button
+                key={text}
+                type="button"
+                role="radio"
+                aria-checked={mitnehmen === wert}
+                onClick={() => setMitnehmen(wert)}
+                className={`min-h-12 rounded-xl border text-[15px] font-semibold transition-colors ${
+                  mitnehmen === wert
+                    ? 'border-brass bg-brass/20 text-bone'
+                    : 'border-line text-ash'
+                }`}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="text-ash mb-4 flex items-center gap-2 text-sm">
+        <Lock className="size-4" /> Preise werden beim Abschließen festgehalten.
+      </p>
+      {fehler && (
+        <p role="alert" className="text-rust-hi mb-3 text-sm">
+          {fehler}
+        </p>
+      )}
+      <div className="flex gap-3">
+        <Button
+          className="flex-1"
+          disabled={laeuft || anzahl === null}
+          onClick={() => void bestaetigen()}
+        >
+          Abschließen
+        </Button>
+        <button
+          type="button"
+          className="text-ash hover:text-bone px-3 font-semibold"
+          onClick={onAbbrechen}
+        >
+          Abbrechen
+        </button>
+      </div>
+    </div>
   )
 }

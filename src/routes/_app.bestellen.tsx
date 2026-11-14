@@ -1,13 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ImageOff } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ChevronRight, History, ImageOff } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { Bestellrunde } from '@/lib/bestellung'
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { PageHeader } from '@/components/PageHeader'
 import { AuftragKarte } from '@/components/bestellung/AuftragKarte'
 import { RundenUebersicht } from '@/components/bestellung/RundenUebersicht'
-import { ladeOffeneRunde } from '@/lib/bestellung'
+import { ladeAktuelleRunde } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { euro } from '@/lib/geld'
 import { bildPfad, ladeMotive, ladeSortiment } from '@/lib/sortiment'
@@ -18,7 +18,8 @@ export const Route = createFileRoute('/_app/bestellen')({
 
 // Tab Bestellen: der eigene Auftrag in der offenen Bestellrunde, darunter das
 // Sortiment zum Ansehen. Admins sehen darüber die Übersicht der Runde. Ohne
-// offene Runde nur der Hinweis.
+// offene Runde steht die zuletzt abgeschlossene da, nur lesend; ohne jede
+// Runde nur der Hinweis.
 function Bestellen() {
   const { mitglied } = Route.useRouteContext()
   const [stand, setStand] = useState<{
@@ -28,21 +29,30 @@ function Bestellen() {
   } | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
 
-  useEffect(() => {
-    Promise.all([ladeOffeneRunde(), ladeSortiment(), ladeMotive()])
-      .then(([runde, sortiment, motive]) =>
-        setStand({ runde, sortiment, motive }),
-      )
-      .catch((err: unknown) =>
-        setFehler(
-          fehlertext(err, 'Die Bestellung konnte nicht geladen werden.'),
-        ),
-      )
+  const laden = useCallback(async () => {
+    try {
+      const [runde, sortiment, motive] = await Promise.all([
+        ladeAktuelleRunde(),
+        ladeSortiment(),
+        ladeMotive(),
+      ])
+      setStand({ runde, sortiment, motive })
+    } catch (err) {
+      setFehler(fehlertext(err, 'Die Bestellung konnte nicht geladen werden.'))
+    }
   }, [])
+
+  useEffect(() => {
+    void laden()
+  }, [laden])
+
+  const offen = stand?.runde?.status === 'offen'
 
   return (
     <>
-      <PageHeader title={stand?.runde ? stand.runde.name : 'Bestellen'} />
+      <PageHeader
+        title={offen && stand.runde ? stand.runde.name : 'Bestellen'}
+      />
       {fehler ? (
         <p role="alert" className="text-rust-hi text-sm">
           {fehler}
@@ -51,8 +61,8 @@ function Bestellen() {
         <p className="text-ash">Lädt …</p>
       ) : (
         <>
-          {!stand.runde ? (
-            <div className="card p-8 text-center">
+          {!offen && (
+            <div className="card mb-6 p-8 text-center">
               <div className="font-display text-2xl font-bold uppercase">
                 Gerade keine Bestellrunde
               </div>
@@ -60,19 +70,28 @@ function Bestellen() {
                 Sobald ein Admin eine eröffnet, bestellst du hier.
               </p>
             </div>
-          ) : (
+          )}
+          {stand.runde && (
             <>
+              {!offen && (
+                <h2 className="font-display mb-3 text-2xl font-extrabold uppercase">
+                  {stand.runde.name}
+                </h2>
+              )}
               {(mitglied.admin || mitglied.support) && (
                 <RundenUebersicht
+                  key={`${stand.runde.id}|${stand.runde.status}`}
                   runde={stand.runde}
                   ich={mitglied.id}
                   sortiment={stand.sortiment}
+                  onRundeGeaendert={laden}
                 />
               )}
               {mitglied.support ? (
                 <p className="text-ash">Das Support-Konto bestellt nicht.</p>
               ) : (
                 <AuftragKarte
+                  key={`${stand.runde.id}|${stand.runde.status}`}
                   runde={stand.runde}
                   mitglied={mitglied.id}
                   sortiment={stand.sortiment}
@@ -80,6 +99,21 @@ function Bestellen() {
                 />
               )}
             </>
+          )}
+          {!mitglied.support && (
+            <Link
+              to="/bestellen/frueher"
+              className="card hover:border-brass/30 mt-4 flex min-h-16 items-center gap-4 px-5 transition-colors"
+            >
+              <History className="text-brass size-5" />
+              <span className="flex-1">
+                <span className="block font-semibold">Frühere Runden</span>
+                <span className="text-ash block text-sm">
+                  Deine Aufträge aus abgeschlossenen Bestellrunden
+                </span>
+              </span>
+              <ChevronRight className="text-smoke size-5" />
+            </Link>
           )}
           <SortimentAnsicht
             liste={stand.sortiment.filter((a) => !a.ausgeblendet)}

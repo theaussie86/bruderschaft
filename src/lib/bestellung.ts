@@ -22,6 +22,11 @@ export type Auftrag = {
   // Korrektur in Cent mit Vorzeichen, 0 heißt keine. Setzen nur Admins.
   korrektur_betrag: number
   korrektur_grund: string
+  // Setzt das Abschließen: Der Auftrag geht in die Sammelbestellung.
+  mitbestellt: boolean
+  // Beim Abschließen festgehaltene Summe in Cent inklusive Korrektur, nur bei
+  // mitbestellten Aufträgen.
+  summe: number
 }
 
 export type UebersichtMitglied = {
@@ -37,6 +42,8 @@ export type Position = {
   artikel: string
   groesse: string
   anzahl: number
+  // Beim Abschließen festgehaltener Stückpreis in Cent, sonst 0.
+  stueckpreis: number
 }
 
 export type PositionsBelegung = Belegung & { position: string }
@@ -54,6 +61,78 @@ export async function ladeOffeneRunde(): Promise<Bestellrunde | null> {
     .collection('bestellrunden')
     .getFullList<Bestellrunde>({ filter: "status = 'offen'" })
   return offen.at(0) ?? null
+}
+
+// Die Runde, um die es im Tab Bestellen geht: die offene, sonst die zuletzt
+// abgeschlossene.
+export async function ladeAktuelleRunde(): Promise<Bestellrunde | null> {
+  const pb = createBrowserPocketBase()
+  const runden = await pb
+    .collection('bestellrunden')
+    .getList<Bestellrunde>(1, 1, { sort: '-status,-abgeschlossen_am,-created' })
+  return runden.items.at(0) ?? null
+}
+
+export async function ladeRunde(id: string) {
+  return createBrowserPocketBase()
+    .collection('bestellrunden')
+    .getOne<Bestellrunde>(id)
+}
+
+// Abgeschlossene Runden, in denen das Mitglied einen Auftrag hat, die neueste
+// zuerst.
+export async function ladeFruehereRunden(
+  mitglied: string,
+): Promise<Array<Bestellrunde>> {
+  const pb = createBrowserPocketBase()
+  const auftraege = await pb
+    .collection('auftraege')
+    .getFullList<Auftrag & { expand?: { runde?: Bestellrunde } }>({
+      filter: pb.filter(
+        "mitglied = {:mitglied} && runde.status = 'abgeschlossen'",
+        { mitglied },
+      ),
+      expand: 'runde',
+    })
+  return auftraege
+    .flatMap((a) => (a.expand?.runde ? [a.expand.runde] : []))
+    .sort((x, y) => y.abgeschlossen_am.localeCompare(x.abgeschlossen_am))
+}
+
+// Warnzahl vor dem Abschließen: nicht fertige Aufträge mit Positionen.
+export async function ladeAbschlussWarnung(runde: string) {
+  return createBrowserPocketBase().send<{ nicht_fertig: number }>(
+    `/api/club/bestellrunden/${encodeURIComponent(runde)}/abschluss`,
+    { method: 'GET' },
+  )
+}
+
+// Abschließen hält die Preise fest; nicht fertige Aufträge kommen nur mit
+// `mitnehmen` in die Sammelbestellung. Wieder öffnen geht nur, wenn keine
+// andere Runde offen ist. Beides prüft PocketBase (ADR 0002).
+export async function rundeAbschliessen(runde: string, mitnehmen: boolean) {
+  return createBrowserPocketBase().send<Bestellrunde>(
+    `/api/club/bestellrunden/${encodeURIComponent(runde)}/abschliessen`,
+    { method: 'POST', body: { mitnehmen } },
+  )
+}
+
+export async function rundeOeffnen(runde: string) {
+  return createBrowserPocketBase().send<Bestellrunde>(
+    `/api/club/bestellrunden/${encodeURIComponent(runde)}/oeffnen`,
+    { method: 'POST' },
+  )
+}
+
+export type Einstellungen = { id: string; zahlungshinweis: string }
+
+// Es gibt genau einen Datensatz, angelegt von der Migration.
+export async function ladeEinstellungen(): Promise<Einstellungen | null> {
+  const pb = createBrowserPocketBase()
+  const liste = await pb
+    .collection('einstellungen')
+    .getList<Einstellungen>(1, 1)
+  return liste.items.at(0) ?? null
 }
 
 // Der Auftrag eines Mitglieds in einer Runde samt Positionen und Belegungen;

@@ -20,6 +20,8 @@ import type {
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { Button } from '@/components/Button'
 import { Markierung } from '@/components/Markierung'
+import { AdminFelder } from '@/components/bestellung/AdminFelder'
+import { AuftragAbgeschlossen } from '@/components/bestellung/AuftragAbgeschlossen'
 import { BelegungFelder } from '@/components/bestellung/BelegungFelder'
 import { auftragsSumme, stueckpreis } from '@/lib/auftrag'
 import {
@@ -33,12 +35,7 @@ import {
 } from '@/lib/belegung'
 import { ladeAuftrag, tagAnzeigen } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
-import {
-  centAlsEingabe,
-  euro,
-  euroMitVorzeichen,
-  korrekturAus,
-} from '@/lib/geld'
+import { euro, euroMitVorzeichen } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 const STATUS_TEXT = {
@@ -68,24 +65,36 @@ async function belegungenSpeichern(
     await pb.collection('belegungen').create({ position, ...felder })
 }
 
-// Ein Auftrag in der offenen Bestellrunde: Positionen mit Belegung der
-// Druckstellen, Summe live aus den aktuellen Preisen plus Korrektur,
-// Anmerkung, "Bin fertig" und "Diesmal nichts". Den Auftrag legt die Karte
-// erst an, wenn etwas eingetragen wird. Mit `fuer` bearbeitet ein Admin den
-// Auftrag eines Mitglieds und setzt dazu Korrektur und bezahlt.
-export function AuftragKarte({
-  runde,
-  mitglied,
-  sortiment,
-  motive,
-  fuer,
-}: {
+type AuftragKarteProps = {
   runde: Bestellrunde
   mitglied: string
   sortiment: Array<SortimentArtikel>
   motive: Array<Motiv>
   fuer?: string
-}) {
+}
+
+// Der Auftrag eines Mitglieds in einer Runde: in der offenen zum Bearbeiten,
+// in einer abgeschlossenen nur lesend mit festgehaltenen Preisen.
+export function AuftragKarte(props: AuftragKarteProps) {
+  return props.runde.status === 'abgeschlossen' ? (
+    <AuftragAbgeschlossen {...props} />
+  ) : (
+    <OffenerAuftrag {...props} />
+  )
+}
+
+// Ein Auftrag in der offenen Bestellrunde: Positionen mit Belegung der
+// Druckstellen, Summe live aus den aktuellen Preisen plus Korrektur,
+// Anmerkung, "Bin fertig" und "Diesmal nichts". Den Auftrag legt die Karte
+// erst an, wenn etwas eingetragen wird. Mit `fuer` bearbeitet ein Admin den
+// Auftrag eines Mitglieds und setzt dazu Korrektur und bezahlt.
+function OffenerAuftrag({
+  runde,
+  mitglied,
+  sortiment,
+  motive,
+  fuer,
+}: AuftragKarteProps) {
   const [auftrag, setAuftrag] = useState<Auftrag | null>(null)
   const [positionen, setPositionen] = useState<Array<Position>>([])
   const [belegungen, setBelegungen] = useState<Array<PositionsBelegung>>([])
@@ -799,109 +808,5 @@ function AnmerkungFeld({
         </Button>
       )}
     </form>
-  )
-}
-
-// Nur für Admins: bezahlt und Korrektur (Betrag plus oder minus mit
-// Begründung). Die Korrektur ändert die Summe, nicht die Preise.
-function AdminFelder({
-  auftrag,
-  disabled,
-  onSpeichern,
-}: {
-  auftrag: Auftrag | null
-  disabled: boolean
-  onSpeichern: (
-    felder: Partial<
-      Pick<Auftrag, 'bezahlt' | 'korrektur_betrag' | 'korrektur_grund'>
-    >,
-  ) => Promise<void>
-}) {
-  const vorhanden = auftrag?.korrektur_betrag ?? 0
-  const [betrag, setBetrag] = useState(
-    vorhanden
-      ? `${vorhanden < 0 ? '-' : ''}${centAlsEingabe(Math.abs(vorhanden))}`
-      : '',
-  )
-  const [grund, setGrund] = useState(auftrag?.korrektur_grund ?? '')
-  const cent = korrekturAus(betrag)
-  const gueltig = cent !== null && cent !== 0 && grund.trim() !== ''
-  const bezahlt = auftrag?.bezahlt ?? false
-
-  return (
-    <div className="border-line mt-6 space-y-3 rounded-2xl border border-dashed p-4">
-      <div className="eyebrow">Nur für Admins</div>
-      {auftrag?.status === 'fertig' && (
-        <label className="flex min-h-12 items-center justify-between gap-3">
-          <span>
-            <span className="block font-semibold">Bezahlt</span>
-            <span className="text-ash block text-[13px]">
-              Summe ist auf dem Clubkonto eingegangen
-            </span>
-          </span>
-          <input
-            type="checkbox"
-            className="accent-patina size-6"
-            checked={bezahlt}
-            disabled={disabled}
-            onChange={(e) => void onSpeichern({ bezahlt: e.target.checked })}
-          />
-        </label>
-      )}
-      <form
-        className="border-line/60 border-t pt-3"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (gueltig)
-            void onSpeichern({
-              korrektur_betrag: cent,
-              korrektur_grund: grund.trim(),
-            })
-        }}
-      >
-        <div className="mb-2 font-semibold">Korrektur</div>
-        <div className="grid grid-cols-[110px_1fr] gap-2">
-          <input
-            className="field tnum"
-            inputMode="decimal"
-            placeholder="-5,00"
-            aria-label="Betrag"
-            value={betrag}
-            onChange={(e) => setBetrag(e.target.value)}
-          />
-          <input
-            className="field"
-            placeholder="Begründung, z. B. Porto"
-            aria-label="Begründung"
-            maxLength={200}
-            value={grund}
-            onChange={(e) => setGrund(e.target.value)}
-          />
-        </div>
-        <p className="text-ash mt-1.5 text-[13px]">
-          Plus schlägt auf, Minus zieht ab. Ändert die Summe, nicht die Preise.
-        </p>
-        {cent === null && (
-          <p className="text-rust-hi mt-1 text-[13px]">
-            Bitte einen Betrag wie -5,00 oder 4,50 eingeben.
-          </p>
-        )}
-        <div className="mt-3 flex gap-3">
-          <Button type="submit" disabled={disabled || !gueltig}>
-            Korrektur speichern
-          </Button>
-          {!!vorhanden && (
-            <button
-              type="button"
-              className="text-ash hover:text-bone px-3 font-semibold"
-              disabled={disabled}
-              onClick={() => void onSpeichern({ korrektur_betrag: 0 })}
-            >
-              Entfernen
-            </button>
-          )}
-        </div>
-      </form>
-    </div>
   )
 }

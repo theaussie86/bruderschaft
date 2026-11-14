@@ -2,23 +2,91 @@ import { randomUUID } from 'node:crypto'
 import PocketBase from 'pocketbase'
 import { inject } from 'vitest'
 
+import { SUPERUSER } from './pocketbase-instanz'
 import { pbProxy } from '@/lib/pb-proxy'
 
 export const pocketbaseUrl = inject('pocketbaseUrl')
 
-// Die HTTP-Oberfläche der App: derselbe Handler, den die Route /pb/* aufruft.
-export function app(
-  pfad: string,
-  init: RequestInit & { cookie?: string } = {},
-) {
-  const { cookie, ...rest } = init
-  const headers = new Headers(rest.headers)
-  if (cookie) headers.set('cookie', cookie)
-  return pbProxy(
-    new Request(`http://app.test${pfad}`, { ...rest, headers }),
-    pocketbaseUrl,
-  )
+// Die HTTP-Oberfläche der App gegen ein bestimmtes PocketBase: derselbe
+// Handler, den die Route /pb/* aufruft, dazu Testdaten über den Superuser.
+// Die meisten Tests nutzen das gemeinsame PocketBase (Exporte unten); wer den
+// ganzen Datenbestand betrachtet oder die offene Runde schließt, startet ein
+// eigenes (tests/pocketbase-instanz.ts).
+export function testumgebung(url: () => string) {
+  function app(pfad: string, init: RequestInit & { cookie?: string } = {}) {
+    const { cookie, ...rest } = init
+    const headers = new Headers(rest.headers)
+    if (cookie) headers.set('cookie', cookie)
+    return pbProxy(
+      new Request(`http://app.test${pfad}`, { ...rest, headers }),
+      url(),
+    )
+  }
+
+  // Testdaten legt der Superuser direkt in PocketBase an, nicht über die App.
+  async function superuser() {
+    const pb = new PocketBase(url())
+    pb.autoCancellation(false)
+    await pb
+      .collection('_superusers')
+      .authWithPassword(SUPERUSER.email, SUPERUSER.password)
+    return pb
+  }
+
+  async function neuesMitglied(
+    felder: {
+      name?: string
+      admin?: boolean
+      gesperrt?: boolean
+      support?: boolean
+    } = {},
+  ): Promise<TestMitglied> {
+    const pb = await superuser()
+    const email = `mitglied-${randomUUID()}@test.invalid`
+    const password = `passwort-${randomUUID()}`
+    const record = await pb.collection('mitglieder').create({
+      name: 'Testmitglied',
+      email,
+      password,
+      passwordConfirm: password,
+      ...felder,
+    })
+    return { id: record.id, email, password }
+  }
+
+  // Es gibt höchstens eine offene Bestellrunde. Tests nutzen deshalb die
+  // offene Runde, die gerade da ist, oder legen sie an.
+  async function offeneRunde() {
+    const pb = await superuser()
+    const offen = await pb
+      .collection('bestellrunden')
+      .getFullList({ filter: "status = 'offen'" })
+    if (offen.length > 0) return offen[0]
+    return pb.collection('bestellrunden').create({
+      name: 'Testrunde',
+      bestelldatum: '2026-12-01 12:00:00.000Z',
+      status: 'offen',
+    })
+  }
+
+  function anmeldung(m: TestMitglied) {
+    return app(
+      '/pb/api/collections/mitglieder/auth-with-password',
+      json({ identity: m.email, password: m.password }),
+    )
+  }
+
+  // Liefert den Cookie-Header für Folge-Requests eines angemeldeten Mitglieds.
+  async function anmelden(m: TestMitglied) {
+    const res = await anmeldung(m)
+    if (!res.ok) throw new Error(`Anmeldung fehlgeschlagen: ${res.status}`)
+    return cookieAus(res)
+  }
+
+  return { app, superuser, neuesMitglied, offeneRunde, anmeldung, anmelden }
 }
+
+export type TestMitglied = { id: string; email: string; password: string }
 
 export function json(body: unknown): RequestInit {
   return {
@@ -28,72 +96,20 @@ export function json(body: unknown): RequestInit {
   }
 }
 
-// Testdaten legt der Superuser direkt in PocketBase an, nicht über die App.
-export async function superuser() {
-  const pb = new PocketBase(pocketbaseUrl)
-  pb.autoCancellation(false)
-  const { email, password } = inject('superuser')
-  await pb.collection('_superusers').authWithPassword(email, password)
-  return pb
-}
-
-export type TestMitglied = { id: string; email: string; password: string }
-
-export async function neuesMitglied(
-  felder: {
-    name?: string
-    admin?: boolean
-    gesperrt?: boolean
-    support?: boolean
-  } = {},
-): Promise<TestMitglied> {
-  const pb = await superuser()
-  const email = `mitglied-${randomUUID()}@test.invalid`
-  const password = `passwort-${randomUUID()}`
-  const record = await pb.collection('mitglieder').create({
-    name: 'Testmitglied',
-    email,
-    password,
-    passwordConfirm: password,
-    ...felder,
-  })
-  return { id: record.id, email, password }
-}
-
-// Alle Testdateien teilen sich ein PocketBase, und es gibt höchstens eine
-// offene Bestellrunde. Tests nutzen deshalb die offene Runde, die gerade da
-// ist, oder legen sie an.
-export async function offeneRunde() {
-  const pb = await superuser()
-  const offen = await pb
-    .collection('bestellrunden')
-    .getFullList({ filter: "status = 'offen'" })
-  if (offen.length > 0) return offen[0]
-  return pb.collection('bestellrunden').create({
-    name: 'Testrunde',
-    bestelldatum: '2026-12-01 12:00:00.000Z',
-    status: 'offen',
-  })
-}
-
-export function anmeldung(m: TestMitglied) {
-  return app(
-    '/pb/api/collections/mitglieder/auth-with-password',
-    json({ identity: m.email, password: m.password }),
-  )
-}
-
-// Liefert den Cookie-Header für Folge-Requests eines angemeldeten Mitglieds.
-export async function anmelden(m: TestMitglied) {
-  const res = await anmeldung(m)
-  if (!res.ok) throw new Error(`Anmeldung fehlgeschlagen: ${res.status}`)
-  return cookieAus(res)
-}
-
 export function cookieAus(res: Response) {
   const setCookie = res.headers.get('set-cookie') ?? ''
   return setCookie.split(';')[0]
 }
+
+// Das gemeinsame PocketBase aller Testdateien.
+export const {
+  app,
+  superuser,
+  neuesMitglied,
+  offeneRunde,
+  anmeldung,
+  anmelden,
+} = testumgebung(() => pocketbaseUrl)
 
 // Postfach des Test-SMTP (tests/test-smtp.ts). Wartet kurz, bis die erwartete
 // Zahl an Mails da ist, und liefert sie dekodiert.

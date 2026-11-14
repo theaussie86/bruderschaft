@@ -1,4 +1,4 @@
-import { ClipboardList, Shirt, Users } from 'lucide-react'
+import { ClipboardList, Settings, Shirt, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 // Bereiche der Verwaltung, nur für Admins. Sidebar und Profil zeigen dieselbe
@@ -8,6 +8,7 @@ export const VERWALTUNG_LINKS: Array<{
     | '/verwaltung/bestellrunden'
     | '/verwaltung/sortiment'
     | '/verwaltung/mitglieder'
+    | '/verwaltung/einstellungen'
   label: string
   icon: LucideIcon
 }> = [
@@ -18,4 +19,5 @@ export const VERWALTUNG_LINKS: Array<{
   },
   { to: '/verwaltung/sortiment', label: 'Sortiment', icon: Shirt },
   { to: '/verwaltung/mitglieder', label: 'Mitglieder', icon: Users },
+  { to: '/verwaltung/einstellungen', label: 'Einstellungen', icon: Settings },
 ]

@@ -6,23 +6,26 @@ import type { Bestellrunde, UebersichtMitglied } from '@/lib/bestellung'
 import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { PageHeader } from '@/components/PageHeader'
 import { AuftragKarte } from '@/components/bestellung/AuftragKarte'
-import { ladeMitglied, ladeOffeneRunde } from '@/lib/bestellung'
+import { ladeAktuelleRunde, ladeMitglied, ladeRunde } from '@/lib/bestellung'
 import { fehlertext } from '@/lib/geburtstag'
 import { ladeMotive, ladeSortiment } from '@/lib/sortiment'
 
-// Auftrag eines Mitglieds in der offenen Runde, aus der Übersicht der Runde.
-// Ein Admin bearbeitet ihn oder legt ihn an und setzt Korrektur und bezahlt.
-// Die Rechte prüft PocketBase (ADR 0002).
+// Auftrag eines Mitglieds, aus der Übersicht der Runde. In der offenen Runde
+// bearbeitet ein Admin ihn oder legt ihn an, nach dem Abschluss setzt er nur
+// noch Korrektur und bezahlt. Die Rechte prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/bestellen_/mitglied/$mitgliedId')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin && !context.mitglied.support)
       throw redirect({ to: '/bestellen' })
   },
+  validateSearch: (search: Record<string, unknown>): { runde?: string } =>
+    typeof search.runde === 'string' ? { runde: search.runde } : {},
   component: AuftragEinesMitglieds,
 })
 
 function AuftragEinesMitglieds() {
   const { mitgliedId } = Route.useParams()
+  const { runde: rundeId } = Route.useSearch()
   const [stand, setStand] = useState<{
     runde: Bestellrunde | null
     mitglied: UebersichtMitglied
@@ -33,7 +36,7 @@ function AuftragEinesMitglieds() {
 
   useEffect(() => {
     Promise.all([
-      ladeOffeneRunde(),
+      rundeId ? ladeRunde(rundeId) : ladeAktuelleRunde(),
       ladeMitglied(mitgliedId),
       ladeSortiment(),
       ladeMotive(),
@@ -44,7 +47,7 @@ function AuftragEinesMitglieds() {
       .catch((err: unknown) =>
         setFehler(fehlertext(err, 'Der Auftrag konnte nicht geladen werden.')),
       )
-  }, [mitgliedId])
+  }, [mitgliedId, rundeId])
 
   return (
     <>
@@ -62,7 +65,7 @@ function AuftragEinesMitglieds() {
       ) : stand === null ? (
         <p className="text-ash">Lädt …</p>
       ) : !stand.runde ? (
-        <p className="text-ash">Gerade ist keine Bestellrunde offen.</p>
+        <p className="text-ash">Es gibt noch keine Bestellrunde.</p>
       ) : stand.mitglied.support ? (
         <p className="text-ash">Das Support-Konto bestellt nicht.</p>
       ) : (

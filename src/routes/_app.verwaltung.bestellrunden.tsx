@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Bestellrunde } from '@/lib/bestellung'
@@ -8,6 +8,7 @@ import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
 import {
   ladeRunden,
+  rundeOeffnen,
   tagAnzeigen,
   tagAus,
   tagFuerPocketBase,
@@ -16,8 +17,8 @@ import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Verwaltung > Bestellrunden: eine Runde eröffnen, Name und Bestelldatum der
-// offenen Runde ändern, abgeschlossene Runden ansehen. Höchstens eine offene
-// Runde prüft PocketBase (ADR 0002).
+// offenen Runde ändern, abgeschlossene Runden wieder öffnen. Höchstens eine
+// offene Runde prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/bestellrunden')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
@@ -58,6 +59,23 @@ function Bestellrunden() {
   }
 
   const eineOffen = runden?.some((r) => r.status === 'offen') ?? false
+
+  async function oeffnen(r: Bestellrunde) {
+    setMeldung(null)
+    try {
+      await rundeOeffnen(r.id)
+      setMeldung({
+        text: `${r.name} ist wieder offen. Es gelten die aktuellen Preise.`,
+        fehler: false,
+      })
+    } catch (err) {
+      setMeldung({
+        text: fehlertext(err, 'Die Runde konnte nicht geöffnet werden.'),
+        fehler: true,
+      })
+    }
+    await laden()
+  }
 
   return (
     <>
@@ -119,6 +137,21 @@ function Bestellrunden() {
                         onClick={() => setOffen(offen === r.id ? null : r.id)}
                       >
                         {offen === r.id ? 'Schließen' : 'Bearbeiten'}
+                      </button>
+                    )}
+                    {!istOffen && (
+                      <button
+                        type="button"
+                        className="text-brass hover:text-bone disabled:text-smoke mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold disabled:cursor-not-allowed"
+                        disabled={eineOffen}
+                        title={
+                          eineOffen
+                            ? 'Geht erst, wenn keine andere Runde offen ist.'
+                            : undefined
+                        }
+                        onClick={() => void oeffnen(r)}
+                      >
+                        <RotateCcw className="size-3.5" /> Wieder öffnen
                       </button>
                     )}
                   </div>

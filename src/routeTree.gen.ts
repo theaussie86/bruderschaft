@@ -22,7 +22,9 @@ import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
 import { Route as PbSplatRouteImport } from './routes/pb.$'
+import { Route as AppBestellenFrueherRouteImport } from './routes/_app.bestellen_.frueher'
 import { Route as AppVerwaltungBestellrundenRouteImport } from './routes/_app.verwaltung.bestellrunden'
+import { Route as AppVerwaltungEinstellungenRouteImport } from './routes/_app.verwaltung.einstellungen'
 import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
 import { Route as AppVerwaltungSortimentRouteImport } from './routes/_app.verwaltung.sortiment'
 import { Route as AppBestellenMitgliedMitgliedIdRouteImport } from './routes/_app.bestellen_.mitglied.$mitgliedId'
@@ -91,10 +93,21 @@ const PbSplatRoute = PbSplatRouteImport.update({
   path: '/pb/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppBestellenFrueherRoute = AppBestellenFrueherRouteImport.update({
+  id: '/bestellen_/frueher',
+  path: '/bestellen/frueher',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVerwaltungBestellrundenRoute =
   AppVerwaltungBestellrundenRouteImport.update({
     id: '/verwaltung/bestellrunden',
     path: '/verwaltung/bestellrunden',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppVerwaltungEinstellungenRoute =
+  AppVerwaltungEinstellungenRouteImport.update({
+    id: '/verwaltung/einstellungen',
+    path: '/verwaltung/einstellungen',
     getParentRoute: () => AppRoute,
   } as any)
 const AppVerwaltungMitgliederRoute = AppVerwaltungMitgliederRouteImport.update({
@@ -127,7 +140,9 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/bestellen/frueher': typeof AppBestellenFrueherRoute
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
+  '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
@@ -145,7 +160,9 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/bestellen/frueher': typeof AppBestellenFrueherRoute
   '/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
+  '/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/bestellen/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
@@ -165,7 +182,9 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/_app/bestellen_/frueher': typeof AppBestellenFrueherRoute
   '/_app/verwaltung/bestellrunden': typeof AppVerwaltungBestellrundenRoute
+  '/_app/verwaltung/einstellungen': typeof AppVerwaltungEinstellungenRoute
   '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
   '/_app/verwaltung/sortiment': typeof AppVerwaltungSortimentRoute
   '/_app/bestellen_/mitglied/$mitgliedId': typeof AppBestellenMitgliedMitgliedIdRoute
@@ -185,7 +204,9 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/bestellen/frueher'
     | '/verwaltung/bestellrunden'
+    | '/verwaltung/einstellungen'
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
     | '/bestellen/mitglied/$mitgliedId'
@@ -203,7 +224,9 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/bestellen/frueher'
     | '/verwaltung/bestellrunden'
+    | '/verwaltung/einstellungen'
     | '/verwaltung/mitglieder'
     | '/verwaltung/sortiment'
     | '/bestellen/mitglied/$mitgliedId'
@@ -222,7 +245,9 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/_app/bestellen_/frueher'
     | '/_app/verwaltung/bestellrunden'
+    | '/_app/verwaltung/einstellungen'
     | '/_app/verwaltung/mitglieder'
     | '/_app/verwaltung/sortiment'
     | '/_app/bestellen_/mitglied/$mitgliedId'
@@ -334,11 +359,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PbSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/bestellen_/frueher': {
+      id: '/_app/bestellen_/frueher'
+      path: '/bestellen/frueher'
+      fullPath: '/bestellen/frueher'
+      preLoaderRoute: typeof AppBestellenFrueherRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/verwaltung/bestellrunden': {
       id: '/_app/verwaltung/bestellrunden'
       path: '/verwaltung/bestellrunden'
       fullPath: '/verwaltung/bestellrunden'
       preLoaderRoute: typeof AppVerwaltungBestellrundenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/verwaltung/einstellungen': {
+      id: '/_app/verwaltung/einstellungen'
+      path: '/verwaltung/einstellungen'
+      fullPath: '/verwaltung/einstellungen'
+      preLoaderRoute: typeof AppVerwaltungEinstellungenRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/verwaltung/mitglieder': {
@@ -369,7 +408,9 @@ interface AppRouteChildren {
   AppBestellenRoute: typeof AppBestellenRoute
   AppKalenderRoute: typeof AppKalenderRoute
   AppProfilRoute: typeof AppProfilRoute
+  AppBestellenFrueherRoute: typeof AppBestellenFrueherRoute
   AppVerwaltungBestellrundenRoute: typeof AppVerwaltungBestellrundenRoute
+  AppVerwaltungEinstellungenRoute: typeof AppVerwaltungEinstellungenRoute
   AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
   AppVerwaltungSortimentRoute: typeof AppVerwaltungSortimentRoute
   AppBestellenMitgliedMitgliedIdRoute: typeof AppBestellenMitgliedMitgliedIdRoute
@@ -379,7 +420,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppBestellenRoute: AppBestellenRoute,
   AppKalenderRoute: AppKalenderRoute,
   AppProfilRoute: AppProfilRoute,
+  AppBestellenFrueherRoute: AppBestellenFrueherRoute,
   AppVerwaltungBestellrundenRoute: AppVerwaltungBestellrundenRoute,
+  AppVerwaltungEinstellungenRoute: AppVerwaltungEinstellungenRoute,
   AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
   AppVerwaltungSortimentRoute: AppVerwaltungSortimentRoute,
   AppBestellenMitgliedMitgliedIdRoute: AppBestellenMitgliedMitgliedIdRoute,
