@@ -8,6 +8,8 @@ import {
 import { CalendarDays, Shirt, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
+import { VERWALTUNG_LINKS } from '@/components/verwaltung'
+
 // App-Shell für angemeldete Mitglieder: mobil Tab-Leiste unten, ab lg Sidebar.
 export const Route = createFileRoute('/_app')({
   beforeLoad: ({ context }) => {
@@ -56,6 +58,15 @@ function AppShell() {
         {mitglied.admin && (
           <section className="mt-8" aria-label="Verwaltung">
             <div className="eyebrow mb-2 px-3">Verwaltung</div>
+            <nav className="flex flex-col gap-1">
+              {VERWALTUNG_LINKS.map((l) => (
+                <SeitenLink
+                  key={l.to}
+                  {...l}
+                  aktiv={pathname.startsWith(l.to)}
+                />
+              ))}
+            </nav>
           </section>
         )}
         <div className="border-line/70 mt-auto rounded-2xl border px-3 py-3 text-sm">

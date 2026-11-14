@@ -40,7 +40,12 @@ export async function superuser() {
 export type TestMitglied = { id: string; email: string; password: string }
 
 export async function neuesMitglied(
-  felder: { admin?: boolean; gesperrt?: boolean; support?: boolean } = {},
+  felder: {
+    name?: string
+    admin?: boolean
+    gesperrt?: boolean
+    support?: boolean
+  } = {},
 ): Promise<TestMitglied> {
   const pb = await superuser()
   const email = `mitglied-${randomUUID()}@test.invalid`
@@ -72,4 +77,43 @@ export async function anmelden(m: TestMitglied) {
 export function cookieAus(res: Response) {
   const setCookie = res.headers.get('set-cookie') ?? ''
   return setCookie.split(';')[0]
+}
+
+// Postfach des Test-SMTP (tests/test-smtp.ts). Wartet kurz, bis die erwartete
+// Zahl an Mails da ist, und liefert sie dekodiert.
+export async function postfach(email: string, mindestens = 1) {
+  const ende = Date.now() + 5_000
+  for (;;) {
+    const res = await fetch(
+      `${inject('postfachUrl')}/?an=${encodeURIComponent(email)}`,
+    )
+    const mails = (await res.json()) as Array<{ roh: string }>
+    if (mails.length >= mindestens || Date.now() > ende)
+      return mails.map((m) => quotedPrintable(m.roh))
+    await new Promise((r) => setTimeout(r, 50))
+  }
+}
+
+function quotedPrintable(text: string) {
+  const ohneUmbrueche = text.replace(/=\r\n/g, '')
+  const bytes: Array<number> = []
+  for (let i = 0; i < ohneUmbrueche.length; i++) {
+    const hex = ohneUmbrueche.slice(i + 1, i + 3)
+    if (ohneUmbrueche[i] === '=' && /^[0-9A-F]{2}$/.test(hex)) {
+      bytes.push(parseInt(hex, 16))
+      i += 2
+    } else {
+      bytes.push(...Buffer.from(ohneUmbrueche[i], 'utf8'))
+    }
+  }
+  return Buffer.from(bytes).toString('utf8')
+}
+
+// Das Token aus dem Link "Passwort setzen" der letzten Mail an diese Adresse.
+export async function linkToken(email: string, mindestens = 1) {
+  const mails = await postfach(email, mindestens)
+  const letzte = mails.at(-1) ?? ''
+  const token = /\/passwort-setzen\?token=([\w.-]+)/.exec(letzte)?.[1]
+  if (!token) throw new Error(`Kein Link in der Mail an ${email}`)
+  return token
 }

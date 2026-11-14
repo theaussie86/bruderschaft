@@ -1,4 +1,9 @@
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import {
+  Link,
+  createFileRoute,
+  redirect,
+  useRouter,
+} from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Button } from '@/components/Button'
@@ -71,6 +76,12 @@ function Login() {
           Anmelden
         </Button>
       </form>
+      <Link
+        to="/passwort-vergessen"
+        className="text-brass mt-6 inline-block font-semibold"
+      >
+        Passwort vergessen?
+      </Link>
     </PublicPage>
   )
 }

@@ -88,8 +88,8 @@ export async function pbProxy(
   })
 }
 
-// Positivliste statt Sperrliste: Nur Datensätze, Auth-Aktionen, Dateien und
-// Health sind erreichbar. Damit fallen Admin-UI (/_/), Superuser-API,
+// Positivliste statt Sperrliste: Nur Datensätze, Auth-Aktionen, Dateien,
+// eigene Hook-Routen und Health sind erreichbar. Damit fallen Admin-UI (/_/), Superuser-API,
 // Einstellungen, Backups, Logs und die Collection-Verwaltung heraus.
 function erlaubterPfad(pfad: string): { authEndpunkt: boolean } | null {
   const segmente = pfad.split('/').slice(1)
@@ -108,6 +108,8 @@ function erlaubterPfad(pfad: string): { authEndpunkt: boolean } | null {
     return { authEndpunkt: false }
   if (bereich === 'files' && name && !systemCollection(name))
     return { authEndpunkt: false }
+  // Eigene Hook-Routen der App (pocketbase/pb_hooks) liegen unter /api/club/.
+  if (bereich === 'club' && name) return { authEndpunkt: false }
 
   if (bereich === 'collections' && name && aktion) {
     if (systemCollection(name)) return null

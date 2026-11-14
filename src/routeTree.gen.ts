@@ -13,12 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AbmeldenRouteImport } from './routes/abmelden'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PasswortSetzenRouteImport } from './routes/passwort-setzen'
+import { Route as PasswortVergessenRouteImport } from './routes/passwort-vergessen'
 import { Route as AppBestellenRouteImport } from './routes/_app.bestellen'
 import { Route as AppKalenderRouteImport } from './routes/_app.kalender'
 import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
 import { Route as PbSplatRouteImport } from './routes/pb.$'
+import { Route as AppVerwaltungMitgliederRouteImport } from './routes/_app.verwaltung.mitglieder'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,6 +40,16 @@ const AbmeldenRoute = AbmeldenRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PasswortSetzenRoute = PasswortSetzenRouteImport.update({
+  id: '/passwort-setzen',
+  path: '/passwort-setzen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PasswortVergessenRoute = PasswortVergessenRouteImport.update({
+  id: '/passwort-vergessen',
+  path: '/passwort-vergessen',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppBestellenRoute = AppBestellenRouteImport.update({
@@ -69,28 +82,39 @@ const PbSplatRoute = PbSplatRouteImport.update({
   path: '/pb/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppVerwaltungMitgliederRoute = AppVerwaltungMitgliederRouteImport.update({
+  id: '/verwaltung/mitglieder',
+  path: '/verwaltung/mitglieder',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
   '/login': typeof LoginRoute
+  '/passwort-setzen': typeof PasswortSetzenRoute
+  '/passwort-vergessen': typeof PasswortVergessenRoute
   '/bestellen': typeof AppBestellenRoute
   '/kalender': typeof AppKalenderRoute
   '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abmelden': typeof AbmeldenRoute
   '/login': typeof LoginRoute
+  '/passwort-setzen': typeof PasswortSetzenRoute
+  '/passwort-vergessen': typeof PasswortVergessenRoute
   '/bestellen': typeof AppBestellenRoute
   '/kalender': typeof AppKalenderRoute
   '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,12 +122,15 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/abmelden': typeof AbmeldenRoute
   '/login': typeof LoginRoute
+  '/passwort-setzen': typeof PasswortSetzenRoute
+  '/passwort-vergessen': typeof PasswortVergessenRoute
   '/_app/bestellen': typeof AppBestellenRoute
   '/_app/kalender': typeof AppKalenderRoute
   '/_app/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
   '/pb/$': typeof PbSplatRoute
+  '/_app/verwaltung/mitglieder': typeof AppVerwaltungMitgliederRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,35 +138,44 @@ export interface FileRouteTypes {
     | '/'
     | '/abmelden'
     | '/login'
+    | '/passwort-setzen'
+    | '/passwort-vergessen'
     | '/bestellen'
     | '/kalender'
     | '/profil'
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/verwaltung/mitglieder'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/abmelden'
     | '/login'
+    | '/passwort-setzen'
+    | '/passwort-vergessen'
     | '/bestellen'
     | '/kalender'
     | '/profil'
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/verwaltung/mitglieder'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/abmelden'
     | '/login'
+    | '/passwort-setzen'
+    | '/passwort-vergessen'
     | '/_app/bestellen'
     | '/_app/kalender'
     | '/_app/profil'
     | '/api/health'
     | '/club-assets/$'
     | '/pb/$'
+    | '/_app/verwaltung/mitglieder'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,6 +183,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AbmeldenRoute: typeof AbmeldenRoute
   LoginRoute: typeof LoginRoute
+  PasswortSetzenRoute: typeof PasswortSetzenRoute
+  PasswortVergessenRoute: typeof PasswortVergessenRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ClubAssetsSplatRoute: typeof ClubAssetsSplatRoute
   PbSplatRoute: typeof PbSplatRoute
@@ -180,6 +218,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passwort-setzen': {
+      id: '/passwort-setzen'
+      path: '/passwort-setzen'
+      fullPath: '/passwort-setzen'
+      preLoaderRoute: typeof PasswortSetzenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passwort-vergessen': {
+      id: '/passwort-vergessen'
+      path: '/passwort-vergessen'
+      fullPath: '/passwort-vergessen'
+      preLoaderRoute: typeof PasswortVergessenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/bestellen': {
@@ -224,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PbSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/verwaltung/mitglieder': {
+      id: '/_app/verwaltung/mitglieder'
+      path: '/verwaltung/mitglieder'
+      fullPath: '/verwaltung/mitglieder'
+      preLoaderRoute: typeof AppVerwaltungMitgliederRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -231,12 +290,14 @@ interface AppRouteChildren {
   AppBestellenRoute: typeof AppBestellenRoute
   AppKalenderRoute: typeof AppKalenderRoute
   AppProfilRoute: typeof AppProfilRoute
+  AppVerwaltungMitgliederRoute: typeof AppVerwaltungMitgliederRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppBestellenRoute: AppBestellenRoute,
   AppKalenderRoute: AppKalenderRoute,
   AppProfilRoute: AppProfilRoute,
+  AppVerwaltungMitgliederRoute: AppVerwaltungMitgliederRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -246,6 +307,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AbmeldenRoute: AbmeldenRoute,
   LoginRoute: LoginRoute,
+  PasswortSetzenRoute: PasswortSetzenRoute,
+  PasswortVergessenRoute: PasswortVergessenRoute,
   ApiHealthRoute: ApiHealthRoute,
   ClubAssetsSplatRoute: ClubAssetsSplatRoute,
   PbSplatRoute: PbSplatRoute,
