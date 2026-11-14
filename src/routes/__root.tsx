@@ -1,14 +1,21 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import appCss from '../styles.css?url'
+import { ladeSitzung } from '@/lib/sitzung.functions'
 
 export const Route = createRootRoute({
+  // authRefresh bei jedem Laden: verlängert die Sitzung und liefert das
+  // angemeldete Mitglied für alle Routen darunter.
+  beforeLoad: async () => ({ mitglied: await ladeSitzung() }),
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       { name: 'robots', content: 'noindex, nofollow' },
       { name: 'theme-color', content: '#0d0c0b' },
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-title', content: 'Club-App' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { title: 'Club-App' },
     ],

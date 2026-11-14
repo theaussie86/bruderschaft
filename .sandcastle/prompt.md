@@ -6,6 +6,12 @@
 
 The list above has already been filtered to issues ready for work and is the sole source of truth for what work exists. Do not run your own unfiltered query to find more issues — if the list is empty, there is nothing to do.
 
+## Open blockers (native GitHub "blocked by" relations)
+
+!`for n in $(gh issue list --state open --label Sandcastle --limit 100 --json number --jq '.[].number'); do echo "#$n blocked by: $(gh api repos/theaussie86/bruderschaft/issues/$n/dependencies/blocked_by --jq '[.[] | select(.state=="open") | "#\(.number)"] | join(", ")')"; done | sort -t'#' -k2 -n`
+
+Blocking edges live only in these native relations, not in the issue bodies. Never pick an issue that still has an open blocker in this list.
+
 ## Recent RALPH commits (last 10)
 
 !`git log --oneline --grep="RALPH" -10`
@@ -45,7 +51,7 @@ Pick the highest-priority open issue that is not blocked by another open issue.
 - Read `GLOSSARY.md` and `docs/adr/` before naming things or making architectural choices. Use the glossary terms.
 - This repo is **public**. Never put personal data (names, emails, phone numbers of club members), secrets or `.env` content into code, commits, issues or comments.
 - `club-assets/` and `.pocketbase/` are local-only and gitignored. Do not try to create or commit them.
-- No deploy, no Dokploy, no VPS. Changes under `.github/workflows/` or `pocketbase/` only if the issue explicitly asks for it.
+- No deploy, no Dokploy, no VPS. Changes under `.github/workflows/` only if the issue explicitly asks for it. Sub-issues of spec #17 need migrations and hooks under `pocketbase/` - that is expected (ADR 0002).
 - Language: German prose and comments with real umlauts (ä, ö, ü, ß). No em-dashes or en-dashes, only single hyphens.
 
 - Work on **one issue per iteration**. Do not attempt multiple issues in a single iteration.
