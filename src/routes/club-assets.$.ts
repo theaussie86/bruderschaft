@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import path from 'node:path'
+import { createFileRoute } from '@tanstack/react-router'
 
 // Echte Club-Bilder (Logo, Motive, Artikel) liegen nicht im öffentlichen Repo,
 // sondern in einem Ordner, der im Deployment als Volume hängt. Lokal ist das
