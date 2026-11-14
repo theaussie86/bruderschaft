@@ -10,13 +10,49 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AbmeldenRouteImport } from './routes/abmelden'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppBestellenRouteImport } from './routes/_app.bestellen'
+import { Route as AppKalenderRouteImport } from './routes/_app.kalender'
+import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ClubAssetsSplatRouteImport } from './routes/club-assets.$'
+import { Route as PbSplatRouteImport } from './routes/pb.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AbmeldenRoute = AbmeldenRouteImport.update({
+  id: '/abmelden',
+  path: '/abmelden',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppBestellenRoute = AppBestellenRouteImport.update({
+  id: '/bestellen',
+  path: '/bestellen',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKalenderRoute = AppKalenderRouteImport.update({
+  id: '/kalender',
+  path: '/kalender',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfilRoute = AppProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
@@ -28,35 +64,92 @@ const ClubAssetsSplatRoute = ClubAssetsSplatRouteImport.update({
   path: '/club-assets/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PbSplatRoute = PbSplatRouteImport.update({
+  id: '/pb/$',
+  path: '/pb/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/abmelden': typeof AbmeldenRoute
+  '/login': typeof LoginRoute
+  '/bestellen': typeof AppBestellenRoute
+  '/kalender': typeof AppKalenderRoute
+  '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/pb/$': typeof PbSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/abmelden': typeof AbmeldenRoute
+  '/login': typeof LoginRoute
+  '/bestellen': typeof AppBestellenRoute
+  '/kalender': typeof AppKalenderRoute
+  '/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/pb/$': typeof PbSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/abmelden': typeof AbmeldenRoute
+  '/login': typeof LoginRoute
+  '/_app/bestellen': typeof AppBestellenRoute
+  '/_app/kalender': typeof AppKalenderRoute
+  '/_app/profil': typeof AppProfilRoute
   '/api/health': typeof ApiHealthRoute
   '/club-assets/$': typeof ClubAssetsSplatRoute
+  '/pb/$': typeof PbSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/health' | '/club-assets/$'
+  fullPaths:
+    | '/'
+    | '/abmelden'
+    | '/login'
+    | '/bestellen'
+    | '/kalender'
+    | '/profil'
+    | '/api/health'
+    | '/club-assets/$'
+    | '/pb/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/health' | '/club-assets/$'
-  id: '__root__' | '/' | '/api/health' | '/club-assets/$'
+  to:
+    | '/'
+    | '/abmelden'
+    | '/login'
+    | '/bestellen'
+    | '/kalender'
+    | '/profil'
+    | '/api/health'
+    | '/club-assets/$'
+    | '/pb/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/abmelden'
+    | '/login'
+    | '/_app/bestellen'
+    | '/_app/kalender'
+    | '/_app/profil'
+    | '/api/health'
+    | '/club-assets/$'
+    | '/pb/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AbmeldenRoute: typeof AbmeldenRoute
+  LoginRoute: typeof LoginRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ClubAssetsSplatRoute: typeof ClubAssetsSplatRoute
+  PbSplatRoute: typeof PbSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -67,6 +160,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/abmelden': {
+      id: '/abmelden'
+      path: '/abmelden'
+      fullPath: '/abmelden'
+      preLoaderRoute: typeof AbmeldenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/bestellen': {
+      id: '/_app/bestellen'
+      path: '/bestellen'
+      fullPath: '/bestellen'
+      preLoaderRoute: typeof AppBestellenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/kalender': {
+      id: '/_app/kalender'
+      path: '/kalender'
+      fullPath: '/kalender'
+      preLoaderRoute: typeof AppKalenderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profil': {
+      id: '/_app/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof AppProfilRouteImport
+      parentRoute: typeof AppRoute
     }
     '/api/health': {
       id: '/api/health'
@@ -82,13 +217,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClubAssetsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pb/$': {
+      id: '/pb/$'
+      path: '/pb/$'
+      fullPath: '/pb/$'
+      preLoaderRoute: typeof PbSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBestellenRoute: typeof AppBestellenRoute
+  AppKalenderRoute: typeof AppKalenderRoute
+  AppProfilRoute: typeof AppProfilRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBestellenRoute: AppBestellenRoute,
+  AppKalenderRoute: AppKalenderRoute,
+  AppProfilRoute: AppProfilRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AbmeldenRoute: AbmeldenRoute,
+  LoginRoute: LoginRoute,
   ApiHealthRoute: ApiHealthRoute,
   ClubAssetsSplatRoute: ClubAssetsSplatRoute,
+  PbSplatRoute: PbSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,75 @@
+import { randomUUID } from 'node:crypto'
+import PocketBase from 'pocketbase'
+import { inject } from 'vitest'
+
+import { pbProxy } from '@/lib/pb-proxy'
+
+export const pocketbaseUrl = inject('pocketbaseUrl')
+
+// Die HTTP-Oberfläche der App: derselbe Handler, den die Route /pb/* aufruft.
+export function app(
+  pfad: string,
+  init: RequestInit & { cookie?: string } = {},
+) {
+  const { cookie, ...rest } = init
+  const headers = new Headers(rest.headers)
+  if (cookie) headers.set('cookie', cookie)
+  return pbProxy(
+    new Request(`http://app.test${pfad}`, { ...rest, headers }),
+    pocketbaseUrl,
+  )
+}
+
+export function json(body: unknown): RequestInit {
+  return {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  }
+}
+
+// Testdaten legt der Superuser direkt in PocketBase an, nicht über die App.
+export async function superuser() {
+  const pb = new PocketBase(pocketbaseUrl)
+  pb.autoCancellation(false)
+  const { email, password } = inject('superuser')
+  await pb.collection('_superusers').authWithPassword(email, password)
+  return pb
+}
+
+export type TestMitglied = { id: string; email: string; password: string }
+
+export async function neuesMitglied(
+  felder: { admin?: boolean; gesperrt?: boolean; support?: boolean } = {},
+): Promise<TestMitglied> {
+  const pb = await superuser()
+  const email = `mitglied-${randomUUID()}@test.invalid`
+  const password = `passwort-${randomUUID()}`
+  const record = await pb.collection('mitglieder').create({
+    name: 'Testmitglied',
+    email,
+    password,
+    passwordConfirm: password,
+    ...felder,
+  })
+  return { id: record.id, email, password }
+}
+
+export function anmeldung(m: TestMitglied) {
+  return app(
+    '/pb/api/collections/mitglieder/auth-with-password',
+    json({ identity: m.email, password: m.password }),
+  )
+}
+
+// Liefert den Cookie-Header für Folge-Requests eines angemeldeten Mitglieds.
+export async function anmelden(m: TestMitglied) {
+  const res = await anmeldung(m)
+  if (!res.ok) throw new Error(`Anmeldung fehlgeschlagen: ${res.status}`)
+  return cookieAus(res)
+}
+
+export function cookieAus(res: Response) {
+  const setCookie = res.headers.get('set-cookie') ?? ''
+  return setCookie.split(';')[0]
+}

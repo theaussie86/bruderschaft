@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { createPocketBase } from '@/lib/pocketbase'
@@ -29,6 +29,9 @@ function Home() {
       <p className={`text-center text-sm ${ok ? 'text-patina' : 'text-rust-hi'}`}>
         Backend {ok ? 'verbunden' : 'nicht erreichbar'}
       </p>
+      <Link to="/login" className="text-brass text-center font-semibold">
+        Anmelden
+      </Link>
     </main>
   )
 }

@@ -1,8 +1,12 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import appCss from '../styles.css?url'
+import { ladeSitzung } from '@/lib/sitzung.functions'
 
 export const Route = createRootRoute({
+  // authRefresh bei jedem Laden: verlängert die Sitzung und liefert das
+  // angemeldete Mitglied für alle Routen darunter.
+  beforeLoad: async () => ({ mitglied: await ladeSitzung() }),
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
