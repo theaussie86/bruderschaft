@@ -12,7 +12,7 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
-    if (context.mitglied) throw redirect({ to: '/bestellen' })
+    if (context.mitglied) throw redirect({ to: '/kalender' })
   },
   component: Login,
 })
@@ -36,7 +36,7 @@ function Login() {
           String(form.get('passwort')),
         )
       await router.invalidate()
-      await router.navigate({ to: '/bestellen' })
+      await router.navigate({ to: '/kalender' })
     } catch {
       setFehler('Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.')
     } finally {

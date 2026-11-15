@@ -22,7 +22,7 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 // offene Runde prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/bestellrunden')({
   beforeLoad: ({ context }) => {
-    if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
+    if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
   },
   component: Bestellrunden,
 })

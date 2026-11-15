@@ -24,7 +24,7 @@ export function RechtlicheLinks({ className = '' }: { className?: string }) {
 
 export function PublicFooter() {
   return (
-    <footer className="pb-safe mt-auto py-6">
+    <footer className="mt-auto pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] lg:pb-14">
       <RechtlicheLinks />
     </footer>
   )
