@@ -10,7 +10,7 @@ export const Route = createFileRoute('/geburtstag')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied) throw redirect({ to: '/login' })
     if (context.mitglied.geburtstag || context.mitglied.support)
-      throw redirect({ to: '/bestellen' })
+      throw redirect({ to: '/kalender' })
     return { mitglied: context.mitglied }
   },
   component: Geburtstag,
@@ -33,7 +33,7 @@ function Geburtstag() {
         hinweis="Mit Jahr. Du kannst ihn später im Profil ändern."
         onGespeichert={async () => {
           await router.invalidate()
-          await router.navigate({ to: '/bestellen' })
+          await router.navigate({ to: '/kalender' })
         }}
       />
     </PublicPage>

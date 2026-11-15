@@ -17,7 +17,7 @@ import { ladeStartseite } from '@/lib/startseite'
 export const Route = createFileRoute('/_app/verwaltung/einstellungen')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin && !context.mitglied.support)
-      throw redirect({ to: '/bestellen' })
+      throw redirect({ to: '/kalender' })
   },
   component: EinstellungenSeite,
 })

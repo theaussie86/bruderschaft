@@ -27,8 +27,8 @@ const TABS: Array<{
   label: string
   icon: LucideIcon
 }> = [
-  { to: '/bestellen', label: 'Bestellen', icon: Shirt },
   { to: '/kalender', label: 'Kalender', icon: CalendarDays },
+  { to: '/bestellen', label: 'Bestellen', icon: Shirt },
   { to: '/profil', label: 'Profil', icon: UserRound },
 ]
 
@@ -40,7 +40,7 @@ function AppShell() {
   return (
     <div className="mx-auto flex max-w-6xl">
       <aside className="border-line/60 sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r px-4 py-8 lg:flex">
-        <Link to="/bestellen" className="mb-8 flex items-center gap-3 px-2">
+        <Link to="/kalender" className="mb-8 flex items-center gap-3 px-2">
           <img
             src="/club-assets/brand/logo-256.webp"
             alt=""

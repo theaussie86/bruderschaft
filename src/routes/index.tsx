@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { ArrowRight, LogIn } from 'lucide-react'
 
 import { PublicFooter } from '@/components/PublicPage'
 import { createPocketBase } from '@/lib/pocketbase'
@@ -22,9 +23,29 @@ export const Route = createFileRoute('/')({
 
 function Startseite() {
   const text = Route.useLoaderData()
+  const { mitglied } = Route.useRouteContext()
   return (
     <div className="flex min-h-dvh flex-col px-6">
-      <main className="pt-safe mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 pt-8 text-center">
+      {/* Anmelden dezent oben rechts statt großem Button in der Mitte. */}
+      <header className="pt-safe mx-auto flex w-full max-w-6xl justify-end">
+        <Link
+          to={mitglied ? '/kalender' : '/login'}
+          className="text-ash hover:text-bone hover:border-line focus-visible:outline-brass mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          {mitglied ? (
+            <>
+              Zur App
+              <ArrowRight className="size-4" strokeWidth={2} />
+            </>
+          ) : (
+            <>
+              <LogIn className="size-4" strokeWidth={2} />
+              Anmelden
+            </>
+          )}
+        </Link>
+      </header>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 pb-8 text-center">
         <img src="/club-assets/brand/logo.webp" alt="" className="w-64" />
         <h1 className="font-display text-5xl leading-[0.9] font-black uppercase">
           Hahna Brothers
@@ -34,13 +55,7 @@ function Startseite() {
             {text}
           </p>
         )}
-        <Link
-          to="/login"
-          className="bg-rust text-bone hover:bg-rust-hi mt-4 flex min-h-14 w-full items-center justify-center rounded-2xl text-[17px] font-semibold transition-colors"
-        >
-          Anmelden
-        </Link>
-        <p className="text-smoke text-sm">
+        <p className="text-smoke mt-2 text-sm">
           Zugänge vergibt die Bruderschaft. Eine Registrierung gibt es nicht.
         </p>
       </main>

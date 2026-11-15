@@ -24,7 +24,7 @@ export function RechtlicheLinks({ className = '' }: { className?: string }) {
 
 export function PublicFooter() {
   return (
-    <footer className="pb-safe mt-auto py-6">
+    <footer className="mt-auto pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] lg:pb-14">
       <RechtlicheLinks />
     </footer>
   )
@@ -41,7 +41,7 @@ export function PublicPage({
 }) {
   return (
     <div className="flex min-h-dvh flex-col px-5">
-      <div className="pt-safe mx-auto w-full max-w-md flex-1 pt-6">
+      <div className="mx-auto w-full max-w-md flex-1 pt-[calc(2rem+env(safe-area-inset-top))] lg:pt-14">
         <Link to="/" className="mb-10 inline-flex items-center gap-3">
           <img
             src="/club-assets/brand/logo-256.webp"

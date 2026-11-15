@@ -15,7 +15,7 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 // PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
-    if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
+    if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
   },
   component: Mitglieder,
 })

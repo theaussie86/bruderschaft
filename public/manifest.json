@@ -22,7 +22,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/bestellen",
+  "start_url": "/kalender",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#0d0c0b",

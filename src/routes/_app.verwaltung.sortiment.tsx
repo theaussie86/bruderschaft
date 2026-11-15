@@ -24,7 +24,7 @@ import { ladeMotive, ladeSortiment } from '@/lib/sortiment'
 // prüft PocketBase (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/sortiment')({
   beforeLoad: ({ context }) => {
-    if (!context.mitglied.admin) throw redirect({ to: '/bestellen' })
+    if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
   },
   component: Sortiment,
 })
