@@ -42,7 +42,7 @@ function AppShell() {
       <aside className="border-line/60 sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r px-4 py-8 lg:flex">
         <Link to="/bestellen" className="mb-8 flex items-center gap-3 px-2">
           <img
-            src="/club-assets/brand/logo-icon.svg"
+            src="/club-assets/brand/logo-256.webp"
             alt=""
             className="size-12 shrink-0"
           />

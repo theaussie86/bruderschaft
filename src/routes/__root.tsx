@@ -37,8 +37,9 @@ export const Route = createRootRoute({
       { rel: 'icon', href: '/club-assets/brand/favicon.ico', sizes: '32x32' },
       {
         rel: 'icon',
-        href: '/club-assets/brand/logo-icon.svg',
-        type: 'image/svg+xml',
+        href: '/club-assets/brand/favicon-32.png',
+        type: 'image/png',
+        sizes: '32x32',
       },
       {
         rel: 'apple-touch-icon',

@@ -6,11 +6,6 @@
   "lang": "de",
   "icons": [
     {
-      "src": "/club-assets/brand/logo-icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
-    },
-    {
       "src": "/club-assets/brand/icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
