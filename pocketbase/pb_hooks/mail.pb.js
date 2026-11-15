@@ -1,6 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Die Standardmails von PocketBase bekommen die Club-Hülle aus lib/mail.js.
+// Die Standardmails von PocketBase bekommen die Hülle der Bruderschaft aus lib/mail.js.
 // Die Templates in den Collection-Einstellungen bleiben als Rückfall stehen,
 // verschickt wird aber immer, was hier gebaut wird. Links zeigen auf Seiten der
 // App, nie auf das Admin-UI von PocketBase.

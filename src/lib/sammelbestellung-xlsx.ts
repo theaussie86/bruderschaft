@@ -38,7 +38,7 @@ export async function sammelbestellungXlsx(
   const kopf = mappe.addWorksheet('Kopf')
   kopf.columns = [{ width: 20 }, { width: 40 }]
   kopf.addRows([
-    ['Club', modell.kopf.clubname],
+    ['Bruderschaft', modell.kopf.clubname],
     ['Bestellrunde', modell.kopf.runde],
     ['Erstellt am', modell.kopf.erstellt],
     ['Aufträge', modell.kopf.auftraege],

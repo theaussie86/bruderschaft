@@ -143,7 +143,7 @@ describe('Download der Sammelbestellung', () => {
     await mappe.xlsx.load(await res.arrayBuffer())
 
     const kopf = blattZeilen(mappe, 'Kopf')
-    expect(kopf).toContainEqual(['Club', TEST_CLUB])
+    expect(kopf).toContainEqual(['Bruderschaft', TEST_CLUB])
     expect(kopf).toContainEqual(['Bestellrunde', 'Winter 2026'])
     expect(kopf).toContainEqual(['Aufträge', 2])
     expect(kopf).toContainEqual(['Stücke gesamt', 3])

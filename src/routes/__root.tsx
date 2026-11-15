@@ -24,14 +24,14 @@ export const Route = createRootRoute({
       { name: 'theme-color', content: '#0d0c0b' },
       { name: 'mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-title', content: 'Club-App' },
+      { name: 'apple-mobile-web-app-title', content: 'Hahna Brothers' },
       {
         name: 'apple-mobile-web-app-status-bar-style',
         content: 'black-translucent',
       },
-      { title: 'Club-App' },
+      { title: 'Hahna Brothers' },
     ],
-    // Logo-Dateien kommen wie alle Club-Bilder aus club-assets, nicht aus public
+    // Logo-Dateien kommen wie alle Bilder der Bruderschaft aus club-assets, nicht aus public
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'icon', href: '/club-assets/brand/favicon.ico', sizes: '32x32' },

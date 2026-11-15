@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/PublicPage'
 
-// Statisch (Spec #17). Name und Anschrift des Verantwortlichen trägt der Club
+// Statisch (Spec #17). Name und Anschrift des Verantwortlichen trägt die Bruderschaft
 // vor dem Go-live ein, bis dahin stehen Platzhalter da.
 export const Route = createFileRoute('/impressum')({ component: Impressum })
 
@@ -13,7 +13,7 @@ function Impressum() {
         <section>
           <h2 className="text-bone mb-1 font-semibold">Angaben nach § 5 DDG</h2>
           <p>
-            [Name des Clubs]
+            [Name der Bruderschaft]
             <br />
             [Straße und Hausnummer]
             <br />
