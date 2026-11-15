@@ -25,7 +25,7 @@ function Startseite() {
   return (
     <div className="flex min-h-dvh flex-col px-6">
       <main className="pt-safe mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 pt-8 text-center">
-        <img src="/club-assets/brand/logo-emblem.svg" alt="" className="w-48" />
+        <img src="/club-assets/brand/logo.webp" alt="" className="w-64" />
         <h1 className="font-display text-5xl leading-[0.9] font-black uppercase">
           Club-App
         </h1>

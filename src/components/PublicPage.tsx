@@ -44,7 +44,7 @@ export function PublicPage({
       <div className="pt-safe mx-auto w-full max-w-md flex-1 pt-6">
         <Link to="/" className="mb-10 inline-flex items-center gap-3">
           <img
-            src="/club-assets/brand/logo-icon.svg"
+            src="/club-assets/brand/logo-256.webp"
             alt=""
             className="size-12 shrink-0"
           />
