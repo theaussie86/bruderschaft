@@ -2,8 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { PublicPage } from '@/components/PublicPage'
 
-// Statisch (Spec #17). Name und Anschrift des Verantwortlichen trägt die Bruderschaft
-// vor dem Go-live ein, bis dahin stehen Platzhalter da.
+// Statisch (Spec #17). Angaben nach § 5 DDG für den Betreiber der App.
 export const Route = createFileRoute('/impressum')({ component: Impressum })
 
 function Impressum() {
@@ -13,26 +12,34 @@ function Impressum() {
         <section>
           <h2 className="text-bone mb-1 font-semibold">Angaben nach § 5 DDG</h2>
           <p>
-            [Name der Bruderschaft]
+            Hahna Brothers
             <br />
-            [Straße und Hausnummer]
+            Stephansrieder Straße 6
             <br />
-            [PLZ und Ort]
+            87724 Ottobeuren
           </p>
         </section>
         <section>
           <h2 className="text-bone mb-1 font-semibold">Vertreten durch</h2>
-          <p>[Name des Verantwortlichen]</p>
+          <p>Bernd Frieß</p>
         </section>
         <section>
           <h2 className="text-bone mb-1 font-semibold">Kontakt</h2>
-          <p>E-Mail: [Kontaktadresse]</p>
+          <p>
+            E-Mail:{' '}
+            <a
+              href="mailto:bernd@hahnabrothers.de"
+              className="text-bone underline"
+            >
+              bernd@hahnabrothers.de
+            </a>
+          </p>
         </section>
         <section>
           <h2 className="text-bone mb-1 font-semibold">
             Verantwortlich für den Inhalt
           </h2>
-          <p>[Name des Verantwortlichen], Anschrift wie oben.</p>
+          <p>Bernd Frieß, Anschrift wie oben.</p>
         </section>
       </div>
     </PublicPage>
