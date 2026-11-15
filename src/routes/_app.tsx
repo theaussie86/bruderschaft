@@ -48,7 +48,7 @@ function AppShell() {
           />
           <span>
             <span className="font-display block text-2xl leading-none font-extrabold uppercase">
-              Club-App
+              Hahna Brothers
             </span>
             <span className="text-ash text-xs">nur für Mitglieder</span>
           </span>

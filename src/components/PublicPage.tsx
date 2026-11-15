@@ -49,7 +49,7 @@ export function PublicPage({
             className="size-12 shrink-0"
           />
           <span className="font-display text-xl font-extrabold uppercase">
-            Club-App
+            Hahna Brothers
           </span>
         </Link>
         <h1 className="font-display mb-6 text-4xl font-extrabold uppercase">

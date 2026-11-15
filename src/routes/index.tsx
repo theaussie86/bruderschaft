@@ -27,7 +27,7 @@ function Startseite() {
       <main className="pt-safe mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 pt-8 text-center">
         <img src="/club-assets/brand/logo.webp" alt="" className="w-64" />
         <h1 className="font-display text-5xl leading-[0.9] font-black uppercase">
-          Club-App
+          Hahna Brothers
         </h1>
         {text && (
           <p className="text-ash max-w-xs text-[16px] leading-relaxed whitespace-pre-line">
@@ -41,7 +41,7 @@ function Startseite() {
           Anmelden
         </Link>
         <p className="text-smoke text-sm">
-          Zugänge vergibt der Club. Eine Registrierung gibt es nicht.
+          Zugänge vergibt die Bruderschaft. Eine Registrierung gibt es nicht.
         </p>
       </main>
       <PublicFooter />

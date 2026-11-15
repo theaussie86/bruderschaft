@@ -5,7 +5,7 @@ import { PublicPage } from '@/components/PublicPage'
 import { SPEICHERUNGEN } from '@/lib/cookie-hinweis'
 
 // Statisch (Spec #17). Der Verantwortliche steht als Platzhalter da, bis der
-// Club ihn vor dem Go-live einträgt.
+// die Bruderschaft ihn vor dem Go-live einträgt.
 export const Route = createFileRoute('/datenschutz')({ component: Datenschutz })
 
 function Datenschutz() {
@@ -19,10 +19,10 @@ function Datenschutz() {
         </Abschnitt>
         <Abschnitt titel="Wofür die App da ist">
           <p>
-            Die App ist nur für Mitglieder des Clubs. Zugänge vergibt der Club,
-            eine Registrierung gibt es nicht. Sie dient der gemeinsamen
-            Bestellung von Clubkleidung, den Terminen des Clubs, Bildern von
-            Veranstaltungen und den Protokollen der Stammtische.
+            Die App ist nur für Mitglieder der Bruderschaft. Zugänge vergibt
+            sie, eine Registrierung gibt es nicht. Sie dient der gemeinsamen
+            Bestellung von Brotherhood-Kleidung, den Terminen der Bruderschaft,
+            Bildern von Veranstaltungen und den Protokollen der Stammtische.
           </p>
         </Abschnitt>
         <Abschnitt titel="Welche Daten gespeichert werden">
@@ -32,10 +32,10 @@ function Datenschutz() {
             <li>hochgeladene Bilder und Protokolle</li>
           </ul>
           <p className="mt-2">
-            Rechtsgrundlage ist die Mitgliedschaft im Club (Art. 6 Abs. 1 lit. b
-            DSGVO). Andere Mitglieder sehen weder Mail-Adressen noch die
-            Aufträge anderer. Bilder werden vor dem Hochladen verkleinert und
-            verlieren dabei ihren Standort.
+            Rechtsgrundlage ist die Mitgliedschaft in der Bruderschaft (Art. 6
+            Abs. 1 lit. b DSGVO). Andere Mitglieder sehen weder Mail-Adressen
+            noch die Aufträge anderer. Bilder werden vor dem Hochladen
+            verkleinert und verlieren dabei ihren Standort.
           </p>
         </Abschnitt>
         <Abschnitt titel="Wo die Daten liegen">

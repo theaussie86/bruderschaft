@@ -1,7 +1,7 @@
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Termine im Kalender (Spec #17). PocketBase speichert Zeitpunkte in UTC, der
-// Club lebt in deutscher Zeit. Alle Umrechnungen laufen deshalb fest über
+// Die Bruderschaft lebt in deutscher Zeit. Alle Umrechnungen laufen deshalb fest über
 // Europe/Berlin, damit Server-Rendering und Browser dasselbe zeigen.
 export type TerminArt = 'stammtisch' | 'veranstaltung'
 

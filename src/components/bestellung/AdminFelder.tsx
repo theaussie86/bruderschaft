@@ -39,7 +39,7 @@ export function AdminFelder({
           <span>
             <span className="block font-semibold">Bezahlt</span>
             <span className="text-ash block text-[13px]">
-              Summe ist auf dem Clubkonto eingegangen
+              Summe ist auf dem Konto der Bruderschaft eingegangen
             </span>
           </span>
           <input

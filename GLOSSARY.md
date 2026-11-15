@@ -1,11 +1,15 @@
 # Bruderschaft
 
-Mitglieder-App eines Clubs mit rund 20 festen Mitgliedern. Kern ist die gemeinsame Bestellung von Clubkleidung, damit sie nicht mehr über verstreute Excel-Listen läuft.
+Mitglieder-App einer Bruderschaft mit rund 20 festen Mitgliedern. Kern ist die gemeinsame Bestellung von Brotherhood-Kleidung, damit sie nicht mehr über verstreute Excel-Listen läuft.
 
 ## Personen
 
+**Bruderschaft**:
+Die Gemeinschaft, der die Mitglieder angehören, gegründet 1999 von Leuten, die sich bewusst von Motorrad-Clubs abgegrenzt haben. Ihr Eigenname ist Hahna Brothers, so heißt auch die App.
+_Avoid_: Club, Verein, MC
+
 **Mitglied**:
-Eine Person, die zum Club gehört und einen Zugang hat. Wird vom Admin angelegt, registriert sich nie selbst.
+Eine Person, die zur Bruderschaft gehört und einen Zugang hat. Wird vom Admin angelegt, registriert sich nie selbst.
 _Avoid_: User, Member, Kunde
 
 **Geburtstag**:
@@ -63,7 +67,7 @@ Ein Betrag mit Begründung, den ein Admin auf einen Auftrag aufschlägt oder abz
 _Avoid_: Rabatt (als Oberbegriff), Gutschrift
 
 **Bezahlt**:
-Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Clubkonto eingegangen ist.
+Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Konto der Bruderschaft eingegangen ist.
 _Avoid_: beglichen, Zahlung
 
 **Sammelbestellung**:
@@ -79,6 +83,10 @@ Eine Zeile in einem Auftrag: ein Artikel in einer Größe, mit einem Motiv oder 
 _Avoid_: Artikel (für die Zeile), Item
 
 ## Sortiment
+
+**Brotherhood-Kleidung**:
+Die Kleidung mit den Motiven der Bruderschaft, die Mitglieder gemeinsam bestellen.
+_Avoid_: Clubkleidung, Merch, Kutte
 
 **Artikel**:
 Ein bestellbares Kleidungsstück mit Preis, optionalem Bild und optionaler Beschreibung, z. B. Hoodie oder Mütze. Jede Farbe ist ein eigener Artikel. Der Preis gilt inklusive Aufdruck, solange kein Aufpreis festgelegt ist. Jeder eingeblendete Artikel steht in jeder Bestellrunde zur Wahl.
@@ -108,10 +116,10 @@ _Avoid_: Zuschlag, Extra
 Ein Artikel, eine Größe, Druckstelle oder ein Motiv, das niemand mehr neu wählen kann. In bestehenden Aufträgen bleibt es stehen und ist als nicht mehr verfügbar markiert. Löschen geht nur, solange es nie bestellt wurde.
 _Avoid_: gelöscht, deaktiviert, archiviert
 
-## Club-Leben
+## Leben der Bruderschaft
 
 **Termin**:
-Ein Eintrag im Kalender des Clubs mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
+Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
 _Avoid_: Event, Eintrag, Serie
 
 **Abgesagter Termin**:
@@ -123,11 +131,11 @@ Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder 
 _Avoid_: Event, Party
 
 **Archiv**:
-Die vergangenen, nicht abgesagten Veranstaltungen des Clubs mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
+Die vergangenen, nicht abgesagten Veranstaltungen der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
 _Avoid_: Galerie, Veranstaltungsgalerie, Chronik
 
 **Stammtisch**:
-Das regelmäßige Treffen des Clubs. An einem Stammtisch kann ein Protokoll hängen.
+Das regelmäßige Treffen der Bruderschaft. An einem Stammtisch kann ein Protokoll hängen.
 _Avoid_: Sitzung, Meeting, Versammlung
 
 **Protokoll**:

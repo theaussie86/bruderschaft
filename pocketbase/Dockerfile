@@ -1,4 +1,4 @@
-# PocketBase für die Club-App, nach dem Beispiel aus "Going to production"
+# PocketBase für die App der Bruderschaft, nach dem Beispiel aus "Going to production"
 # (https://pocketbase.io/docs/going-to-production/). Es gibt kein offizielles
 # Image. Schema (pb_migrations) und Fachregeln (pb_hooks, ADR 0002) reisen im
 # Image mit, damit Version und Schema immer zusammen einen Tag bilden.
