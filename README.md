@@ -15,10 +15,10 @@ bun run test
 
 App und PocketBase sind zwei getrennte Dienste in Dokploy und werden **unterschiedlich** ausgerollt.
 
-| Dienst | Bei Merge auf `main` | Image |
-| --- | --- | --- |
-| App | baut und deployt automatisch (`build-image.yml` → `deploy.yml`) | `ghcr.io/theaussie86/bruderschaft:sha-*` |
-| PocketBase | baut nur, **kein** Deploy (`build-pocketbase.yml`) | `ghcr.io/theaussie86/bruderschaft-pocketbase:sha-*` |
+| Dienst     | Bei Merge auf `main`                                            | Image                                               |
+| ---------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| App        | baut und deployt automatisch (`build-image.yml` → `deploy.yml`) | `ghcr.io/theaussie86/bruderschaft:sha-*`            |
+| PocketBase | baut nur, **kein** Deploy (`build-pocketbase.yml`)              | `ghcr.io/theaussie86/bruderschaft-pocketbase:sha-*` |
 
 **Wichtig:** Ändert ein PR etwas unter `pocketbase/` (Migrationen, Hooks), ist die neue App schon live, bevor PocketBase nachzieht. Bis dahin fehlen ihr z. B. neue oder umbenannte Felder. PocketBase deshalb direkt nach dem Merge von Hand ausrollen.
 
