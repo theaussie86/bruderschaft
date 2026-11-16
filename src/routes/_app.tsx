@@ -5,7 +5,7 @@ import {
   redirect,
   useLocation,
 } from '@tanstack/react-router'
-import { CalendarDays, Shirt, UserRound } from 'lucide-react'
+import { CalendarDays, LogOut, Shirt, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 import { VERWALTUNG_LINKS } from '@/components/verwaltung'
@@ -72,11 +72,24 @@ function AppShell() {
             </nav>
           </section>
         )}
-        <div className="border-line/70 mt-auto rounded-2xl border px-3 py-3 text-sm">
-          <div className="truncate font-semibold">{mitglied.name}</div>
-          <div className="text-ash text-xs">
-            {mitglied.admin ? 'Mitglied · Admin' : 'Mitglied'}
-          </div>
+        {/* Wer unten links seinen Namen sieht, sucht dort das Abmelden. */}
+        <div className="border-line/70 mt-auto overflow-hidden rounded-2xl border text-sm">
+          <Link
+            to="/profil"
+            className="hover:bg-slate/50 block px-3 py-3 transition-colors"
+          >
+            <div className="truncate font-semibold">{mitglied.name}</div>
+            <div className="text-ash text-xs">
+              {mitglied.admin ? 'Mitglied · Admin' : 'Mitglied'}
+            </div>
+          </Link>
+          <Link
+            to="/abmelden"
+            className="border-line/70 text-ash hover:bg-slate/50 hover:text-bone flex min-h-11 items-center gap-2 border-t px-3 font-semibold transition-colors"
+          >
+            <LogOut className="size-4" strokeWidth={1.8} />
+            Abmelden
+          </Link>
         </div>
       </aside>
 

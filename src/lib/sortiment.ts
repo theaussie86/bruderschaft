@@ -78,7 +78,7 @@ export async function ladeMotive(): Promise<Array<Motiv>> {
 // ergänzt (ADR 0003).
 export function bildPfad(
   r: { id: string; collectionId: string; bild: string },
-  thumb?: '200x200' | '800x0',
+  thumb?: '200x200f' | '800x0',
 ) {
   if (!r.bild) return null
   const pfad = `/pb/api/files/${r.collectionId}/${r.id}/${encodeURIComponent(r.bild)}`

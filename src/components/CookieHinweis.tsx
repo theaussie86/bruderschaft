@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 
 import { Button } from '@/components/Button'
 import {
@@ -41,12 +41,35 @@ export function zuruecksetzen() {
   window.dispatchEvent(new Event(GEAENDERT))
 }
 
+// Solange der Hinweis steht, bekommt die Seite unten so viel zusätzlichen
+// Platz, wie er hoch ist. Sonst liegt er über dem Ende der Seite, z. B. über
+// "Abmelden" im Profil, und man kommt nicht darunter.
+function usePlatzUnten(hinweis: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = hinweis.current
+    if (!el) return
+    const body = document.body
+    const vorher = body.style.paddingBottom
+    const beobachter = new ResizeObserver(() => {
+      body.style.paddingBottom = `${el.offsetHeight + 12}px`
+    })
+    beobachter.observe(el)
+    return () => {
+      beobachter.disconnect()
+      body.style.paddingBottom = vorher
+    }
+  })
+}
+
 export function CookieHinweis() {
   const bestaetigt = useHinweisBestaetigt()
+  const ref = useRef<HTMLDivElement>(null)
+  usePlatzUnten(ref)
   if (bestaetigt) return null
 
   return (
     <div
+      ref={ref}
       role="region"
       aria-label="Hinweis zu Cookies"
       // Mobil über der Tab-Leiste der App-Shell (_app.tsx), ab lg ist dort keine.

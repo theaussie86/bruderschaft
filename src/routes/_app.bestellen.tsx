@@ -80,7 +80,7 @@ function Bestellen() {
               )}
               {(mitglied.admin || mitglied.support) && (
                 <RundenUebersicht
-                  key={`${stand.runde.id}|${stand.runde.status}`}
+                  key={`uebersicht|${stand.runde.id}|${stand.runde.status}`}
                   runde={stand.runde}
                   ich={mitglied.id}
                   sortiment={stand.sortiment}
@@ -92,7 +92,7 @@ function Bestellen() {
                 <p className="text-ash">Das Support-Konto bestellt nicht.</p>
               ) : (
                 <AuftragKarte
-                  key={`${stand.runde.id}|${stand.runde.status}`}
+                  key={`auftrag|${stand.runde.id}|${stand.runde.status}`}
                   runde={stand.runde}
                   mitglied={mitglied.id}
                   name={mitglied.name}
@@ -144,7 +144,7 @@ function SortimentAnsicht({ liste }: { liste: Array<SortimentArtikel> }) {
                 <img
                   src={src}
                   alt={a.name}
-                  className="bg-coal aspect-[4/3] w-full object-cover"
+                  className="bg-coal aspect-[4/3] w-full object-contain"
                 />
               ) : (
                 <div className="bg-coal text-smoke flex aspect-[4/3] items-center justify-center">

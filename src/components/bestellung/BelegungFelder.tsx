@@ -72,7 +72,7 @@ export function BelegungFelder({
                   </Kachel>
                 )}
                 {waehlbareMotive(d, motive).map((m) => {
-                  const src = bildPfad(m, '200x200')
+                  const src = bildPfad(m, '200x200f')
                   return (
                     <Kachel
                       key={m.id}
@@ -83,7 +83,7 @@ export function BelegungFelder({
                         <img
                           src={src}
                           alt=""
-                          className="bg-coal aspect-square w-full object-cover"
+                          className="bg-coal aspect-square w-full object-contain"
                         />
                       ) : (
                         <span className="bg-coal text-smoke flex aspect-square items-center justify-center">
