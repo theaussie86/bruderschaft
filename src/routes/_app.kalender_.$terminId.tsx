@@ -23,8 +23,8 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { ART_NAME, ladeTermin, tagTeile, zeitText } from '@/lib/termine'
 
 // Ein Termin mit allen Angaben, bei Veranstaltungen mit den Bildern, bei
-// Stammtischen mit dem Protokoll. Admins
-// bearbeiten, kopieren, sagen ab oder löschen ihn; gelöscht werden nur falsch
+// Stammtischen mit dem Protokoll. Admins finden ganz oben die Knöpfe zum
+// Verschieben, Bearbeiten, Kopieren, Absagen und Löschen; gelöscht werden nur falsch
 // angelegte Termine.
 export const Route = createFileRoute('/_app/kalender_/$terminId')({
   component: TerminSeite,
@@ -124,65 +124,8 @@ function TerminSeite() {
         />
       ) : (
         <>
-          {termin.abgesagt && (
-            <div className="border-rust/50 bg-rust/10 mb-4 flex items-start gap-3 rounded-2xl border p-4">
-              <Ban className="text-rust-hi mt-0.5 size-5 shrink-0" />
-              <div>
-                <div className="font-semibold">Abgesagt</div>
-                <div className="text-ash text-[15px]">
-                  Der Termin findet nicht statt. Er bleibt sichtbar, damit die
-                  Absage auch im Kalender-Abo ankommt.
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="card space-y-3.5 p-5">
-            <Markierung ton={termin.art === 'stammtisch' ? 'brass' : 'patina'}>
-              {ART_NAME[termin.art]}
-            </Markierung>
-            <div className="flex items-start gap-3">
-              <CalendarClock className="text-brass mt-0.5 size-5 shrink-0" />
-              <div
-                className={
-                  termin.abgesagt ? 'decoration-rust line-through' : ''
-                }
-              >
-                <div className="font-semibold">
-                  {tagTeile(termin.beginn).lang}
-                </div>
-                <div className="tnum text-ash text-[15px]">
-                  {zeitText(termin)}
-                </div>
-              </div>
-            </div>
-            {termin.ort && (
-              <div className="flex items-start gap-3">
-                <MapPin className="text-brass mt-0.5 size-5 shrink-0" />
-                <div className="font-semibold">{termin.ort}</div>
-              </div>
-            )}
-            {termin.infotext && (
-              <p className="border-line/60 text-bone/90 border-t pt-3.5 text-[16px] leading-relaxed whitespace-pre-line">
-                {termin.infotext}
-              </p>
-            )}
-          </div>
-
-          {termin.art === 'veranstaltung' && (
-            <Bilder termin={termin} mitglied={mitglied} />
-          )}
-
-          {termin.art === 'stammtisch' && (
-            <Protokoll
-              termin={termin}
-              admin={mitglied.admin}
-              onGeaendert={setTermin}
-            />
-          )}
-
           {mitglied.admin && (
-            <section className="mt-8" aria-label="Admin">
+            <section className="mb-6" aria-label="Admin">
               <h2 className="eyebrow mb-3">Admin</h2>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -190,7 +133,7 @@ function TerminSeite() {
                   className={KNOPF}
                   onClick={() => setBearbeiten(true)}
                 >
-                  <Pencil className="size-4" /> Bearbeiten
+                  <Pencil className="size-4" /> Verschieben / Bearbeiten
                 </button>
                 <Link
                   to="/kalender/neu"
@@ -249,6 +192,62 @@ function TerminSeite() {
                 </div>
               )}
             </section>
+          )}
+          {termin.abgesagt && (
+            <div className="border-rust/50 bg-rust/10 mb-4 flex items-start gap-3 rounded-2xl border p-4">
+              <Ban className="text-rust-hi mt-0.5 size-5 shrink-0" />
+              <div>
+                <div className="font-semibold">Abgesagt</div>
+                <div className="text-ash text-[15px]">
+                  Der Termin findet nicht statt. Er bleibt sichtbar, damit die
+                  Absage auch im Kalender-Abo ankommt.
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="card space-y-3.5 p-5">
+            <Markierung ton={termin.art === 'stammtisch' ? 'brass' : 'patina'}>
+              {ART_NAME[termin.art]}
+            </Markierung>
+            <div className="flex items-start gap-3">
+              <CalendarClock className="text-brass mt-0.5 size-5 shrink-0" />
+              <div
+                className={
+                  termin.abgesagt ? 'decoration-rust line-through' : ''
+                }
+              >
+                <div className="font-semibold">
+                  {tagTeile(termin.beginn).lang}
+                </div>
+                <div className="tnum text-ash text-[15px]">
+                  {zeitText(termin)}
+                </div>
+              </div>
+            </div>
+            {termin.ort && (
+              <div className="flex items-start gap-3">
+                <MapPin className="text-brass mt-0.5 size-5 shrink-0" />
+                <div className="font-semibold">{termin.ort}</div>
+              </div>
+            )}
+            {termin.infotext && (
+              <p className="border-line/60 text-bone/90 border-t pt-3.5 text-[16px] leading-relaxed whitespace-pre-line">
+                {termin.infotext}
+              </p>
+            )}
+          </div>
+
+          {termin.art === 'veranstaltung' && (
+            <Bilder termin={termin} mitglied={mitglied} />
+          )}
+
+          {termin.art === 'stammtisch' && (
+            <Protokoll
+              termin={termin}
+              admin={mitglied.admin}
+              onGeaendert={setTermin}
+            />
           )}
         </>
       )}
