@@ -29,10 +29,10 @@ describe('Zahlungshinweis', () => {
     ).toBe('10.12.2026')
   })
 
-  test('nach dem Bestelldatum heißt die Frist zeitnah', () => {
+  test('nach dem Bestelldatum gibt es keine Frist mehr, nur zeitnah', () => {
     expect(
       zahlungshinweis({ ...ABGESCHICKT, heute: '2026-12-14' })?.frist,
-    ).toBe('zeitnah')
+    ).toBeNull()
   })
 
   test('nach dem Abschluss bekommt ihn ein mitbestellter Auftrag', () => {

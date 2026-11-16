@@ -53,7 +53,8 @@ export function AuftragAbgeschlossen({
   const laden = useCallback(async () => {
     const [auftrag, einstellungen] = await Promise.all([
       ladeAuftrag(runde.id, mitglied),
-      ladeEinstellungen(),
+      // Ohne Einstellungen fehlt nur der Zahlungshinweis, nicht der Auftrag.
+      ladeEinstellungen().catch(() => null),
     ])
     setStand({ ...auftrag, einstellungen })
   }, [runde.id, mitglied])

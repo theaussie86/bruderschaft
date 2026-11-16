@@ -16,7 +16,7 @@ export function ZahlungshinweisKasten({
       </div>
       <p className="text-bone/90 text-[15px] leading-relaxed">
         Bitte überweise <strong className="tnum">{hinweis.betrag}</strong>{' '}
-        {hinweis.frist === 'zeitnah' ? (
+        {hinweis.frist === null ? (
           'zeitnah'
         ) : (
           <>

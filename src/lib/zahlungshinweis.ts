@@ -6,7 +6,8 @@ import { euro } from '@/lib/geld'
 // Verwendungszweck und die Bankverbindung aus den Einstellungen.
 export type Zahlungshinweis = {
   betrag: string
-  frist: string // "10.12.2026" oder "zeitnah", wenn das Bestelldatum vorbei ist
+  // "10.12.2026", oder null, wenn das Bestelldatum vorbei ist: dann zeitnah.
+  frist: string | null
   verwendungszweck: string
   bankverbindung: string
 }
@@ -33,7 +34,7 @@ export function zahlungshinweis(eingabe: {
   const vorbei = tagAus(eingabe.bestelldatum) < eingabe.heute
   return {
     betrag: euro(eingabe.summe),
-    frist: vorbei ? 'zeitnah' : tagAnzeigen(eingabe.bestelldatum),
+    frist: vorbei ? null : tagAnzeigen(eingabe.bestelldatum),
     verwendungszweck: `${eingabe.mitglied}, ${eingabe.rundenname}`,
     bankverbindung,
   }

@@ -28,7 +28,7 @@ function EinstellungenSeite() {
   const [einstellungen, setEinstellungen] = useState<
     Einstellungen | null | undefined
   >(undefined)
-  const [bank, setBank] = useState('')
+  const [bankverbindung, setBankverbindung] = useState('')
   const [meldung, setMeldung] = useState<Meldung>(null)
   const [laeuft, setLaeuft] = useState(false)
 
@@ -36,7 +36,7 @@ function EinstellungenSeite() {
     ladeEinstellungen()
       .then((e) => {
         setEinstellungen(e)
-        setBank(e?.bankverbindung ?? '')
+        setBankverbindung(e?.bankverbindung ?? '')
       })
       .catch((err: unknown) =>
         setMeldung({
@@ -57,7 +57,7 @@ function EinstellungenSeite() {
     try {
       const neu = await createBrowserPocketBase()
         .collection('einstellungen')
-        .update<Einstellungen>(einstellungen.id, { bankverbindung: bank })
+        .update<Einstellungen>(einstellungen.id, { bankverbindung })
       setEinstellungen(neu)
       setMeldung({ text: 'Bankverbindung gespeichert.', fehler: false })
     } catch (err) {
@@ -85,10 +85,10 @@ function EinstellungenSeite() {
             <textarea
               className="field min-h-32 leading-relaxed"
               maxLength={2000}
-              value={bank}
+              value={bankverbindung}
               disabled={!einstellungen}
               placeholder={'Kontoinhaber\nIBAN\nBank'}
-              onChange={(e) => setBank(e.target.value)}
+              onChange={(e) => setBankverbindung(e.target.value)}
             />
             <span className="text-ash mt-1.5 block text-[13px]">
               Steht im Zahlungshinweis, den Mitglieder unter ihrem abgeschickten

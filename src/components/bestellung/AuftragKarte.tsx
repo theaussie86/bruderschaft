@@ -115,7 +115,8 @@ function OffenerAuftrag({
   const laden = useCallback(async () => {
     const [stand, geladeneEinstellungen] = await Promise.all([
       ladeAuftrag(runde.id, mitglied),
-      ladeEinstellungen(),
+      // Ohne Einstellungen fehlt nur der Zahlungshinweis, nicht der Auftrag.
+      ladeEinstellungen().catch(() => null),
     ])
     setEinstellungen(geladeneEinstellungen)
     setAuftrag(stand.auftrag)
