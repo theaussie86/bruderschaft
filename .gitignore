@@ -16,3 +16,9 @@ club-assets/
 
 # Lokales PocketBase (Binary und Daten), siehe scripts/pb-dev.sh
 .pocketbase/
+
+# Agents
+.agents/
+.claude/
+.codex/
+.gemini/
