@@ -14,6 +14,7 @@ import type { Wahl } from '@/lib/belegung'
 import type {
   Auftrag,
   Bestellrunde,
+  Einstellungen,
   Position,
   PositionsBelegung,
 } from '@/lib/bestellung'
@@ -24,6 +25,7 @@ import { NichtVerfuegbar } from '@/components/NichtVerfuegbar'
 import { AdminFelder } from '@/components/bestellung/AdminFelder'
 import { AuftragAbgeschlossen } from '@/components/bestellung/AuftragAbgeschlossen'
 import { BelegungFelder } from '@/components/bestellung/BelegungFelder'
+import { ZahlungshinweisKasten } from '@/components/bestellung/ZahlungshinweisKasten'
 import { auftragsSumme, stueckpreis } from '@/lib/auftrag'
 import {
   belegteDruckstellen,
@@ -34,11 +36,12 @@ import {
   wahlAus,
   wahlSpeichern,
 } from '@/lib/belegung'
-import { ladeAuftrag, tagAnzeigen } from '@/lib/bestellung'
-import { fehlertext } from '@/lib/geburtstag'
+import { ladeAuftrag, ladeEinstellungen, tagAnzeigen } from '@/lib/bestellung'
+import { fehlertext, heute } from '@/lib/geburtstag'
 import { euro, euroMitVorzeichen } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
+import { zahlungshinweis } from '@/lib/zahlungshinweis'
 
 const STATUS_TEXT = {
   in_arbeit: 'in Arbeit',
@@ -70,6 +73,8 @@ async function belegungenSpeichern(
 type AuftragKarteProps = {
   runde: Bestellrunde
   mitglied: string
+  // Name des Mitglieds, für den Verwendungszweck im Zahlungshinweis.
+  name: string
   sortiment: Array<SortimentArtikel>
   motive: Array<Motiv>
   fuer?: string
@@ -93,6 +98,7 @@ export function AuftragKarte(props: AuftragKarteProps) {
 function OffenerAuftrag({
   runde,
   mitglied,
+  name,
   sortiment,
   motive,
   fuer,
@@ -100,13 +106,18 @@ function OffenerAuftrag({
   const [auftrag, setAuftrag] = useState<Auftrag | null>(null)
   const [positionen, setPositionen] = useState<Array<Position>>([])
   const [belegungen, setBelegungen] = useState<Array<PositionsBelegung>>([])
+  const [einstellungen, setEinstellungen] = useState<Einstellungen | null>(null)
   const [druckOffen, setDruckOffen] = useState<string | null>(null)
   const [geladen, setGeladen] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
   const [laeuft, setLaeuft] = useState(false)
 
   const laden = useCallback(async () => {
-    const stand = await ladeAuftrag(runde.id, mitglied)
+    const [stand, geladeneEinstellungen] = await Promise.all([
+      ladeAuftrag(runde.id, mitglied),
+      ladeEinstellungen(),
+    ])
+    setEinstellungen(geladeneEinstellungen)
     setAuftrag(stand.auftrag)
     setPositionen(stand.positionen)
     setBelegungen(stand.belegungen)
@@ -188,6 +199,20 @@ function OffenerAuftrag({
     ]
   })
   const unvollstaendig = zeilen.some((z) => z.fehlend.length > 0)
+  const summe = auftragsSumme(zeilen, auftrag?.korrektur_betrag ?? 0)
+  const hinweis =
+    auftrag && !fuer
+      ? zahlungshinweis({
+          auftrag,
+          rundeOffen: true,
+          rundenname: runde.name,
+          bestelldatum: runde.bestelldatum,
+          summe,
+          mitglied: name,
+          bankverbindung: einstellungen?.bankverbindung ?? '',
+          heute: heute(),
+        })
+      : null
 
   return (
     <section
@@ -391,11 +416,7 @@ function OffenerAuftrag({
                 )}
                 <div className="flex items-baseline justify-between">
                   <span className="font-semibold">Summe</span>
-                  <span className="tnum text-xl font-bold">
-                    {euro(
-                      auftragsSumme(zeilen, auftrag?.korrektur_betrag ?? 0),
-                    )}
-                  </span>
+                  <span className="tnum text-xl font-bold">{euro(summe)}</span>
                 </div>
               </div>
             )}
@@ -464,6 +485,7 @@ function OffenerAuftrag({
                 >
                   <RotateCcw className="size-4" /> Wieder öffnen
                 </Button>
+                {hinweis && <ZahlungshinweisKasten hinweis={hinweis} />}
               </div>
             ) : (
               <div className="grid gap-2">

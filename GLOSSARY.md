@@ -67,8 +67,16 @@ Ein Betrag mit Begründung, den ein Admin auf einen Auftrag aufschlägt oder abz
 _Avoid_: Rabatt (als Oberbegriff), Gutschrift
 
 **Bezahlt**:
-Vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Konto der Bruderschaft eingegangen ist.
+Freiwilliger, vom Admin manuell gesetzter Vermerk, dass die Summe eines abgeschickten Auftrags auf dem Konto der Bruderschaft eingegangen ist. Niemand muss ihn setzen; wer ihn setzt, blendet beim Mitglied den Zahlungshinweis aus.
 _Avoid_: beglichen, Zahlung
+
+**Zahlungshinweis**:
+Die Bitte an ein Mitglied, die Summe seines Auftrags zu überweisen, mit Betrag, Frist, Verwendungszweck und der Bankverbindung der Bruderschaft. Erscheint, sobald der Auftrag abgeschickt ist, und bleibt stehen, bis er als bezahlt vermerkt ist.
+_Avoid_: Rechnung, Zahlungsaufforderung
+
+**Kassierer**:
+Das Mitglied, das die Kasse der Bruderschaft führt und die Rechnung des Druckers bezahlt. Er ist Admin und behält über die Übersicht der Runde im Blick, wer was zu zahlen hat; offene Beträge klärt er persönlich.
+_Avoid_: Kassenwart, Schatzmeister
 
 **Sammelbestellung**:
 Die zusammengeführten Aufträge einer abgeschlossenen Bestellrunde, als Dokument für den Drucker: Summen pro Artikel, Größe und Belegung der Druckstellen, die Zahl der Drucke pro Motiv, die Textdrucke und eine Liste pro Mitglied mit Anmerkung. Preise und Zahlungsstand stehen nicht darin. Enthält die abgeschickten Aufträge; ob noch nicht abgeschickte mit hineinkommen, entscheidet der Admin beim Abschließen. Nur Admins rufen sie ab und geben sie selbst an den Drucker weiter.

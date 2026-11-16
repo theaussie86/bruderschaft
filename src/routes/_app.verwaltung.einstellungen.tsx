@@ -11,8 +11,8 @@ import { aboLink } from '@/lib/kalender-abo'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { ladeStartseite } from '@/lib/startseite'
 
-// Verwaltung > Einstellungen: der Zahlungshinweis, den Mitglieder unter ihrem
-// Auftrag sehen, sobald die Runde abgeschlossen ist, der Text der öffentlichen
+// Verwaltung > Einstellungen: die Bankverbindung für den Zahlungshinweis, den
+// Mitglieder unter ihrem abgeschickten Auftrag sehen, der Text der öffentlichen
 // Startseite und der Link des Kalender-Abos. Nur Admins ändern sie (ADR 0002).
 export const Route = createFileRoute('/_app/verwaltung/einstellungen')({
   beforeLoad: ({ context }) => {
@@ -28,7 +28,7 @@ function EinstellungenSeite() {
   const [einstellungen, setEinstellungen] = useState<
     Einstellungen | null | undefined
   >(undefined)
-  const [hinweis, setHinweis] = useState('')
+  const [bank, setBank] = useState('')
   const [meldung, setMeldung] = useState<Meldung>(null)
   const [laeuft, setLaeuft] = useState(false)
 
@@ -36,7 +36,7 @@ function EinstellungenSeite() {
     ladeEinstellungen()
       .then((e) => {
         setEinstellungen(e)
-        setHinweis(e?.zahlungshinweis ?? '')
+        setBank(e?.bankverbindung ?? '')
       })
       .catch((err: unknown) =>
         setMeldung({
@@ -57,14 +57,14 @@ function EinstellungenSeite() {
     try {
       const neu = await createBrowserPocketBase()
         .collection('einstellungen')
-        .update<Einstellungen>(einstellungen.id, { zahlungshinweis: hinweis })
+        .update<Einstellungen>(einstellungen.id, { bankverbindung: bank })
       setEinstellungen(neu)
-      setMeldung({ text: 'Zahlungshinweis gespeichert.', fehler: false })
+      setMeldung({ text: 'Bankverbindung gespeichert.', fehler: false })
     } catch (err) {
       setMeldung({
         text: fehlertext(
           err,
-          'Der Zahlungshinweis konnte nicht gespeichert werden.',
+          'Die Bankverbindung konnte nicht gespeichert werden.',
         ),
         fehler: true,
       })
@@ -81,18 +81,20 @@ function EinstellungenSeite() {
       ) : (
         <form className="space-y-3" onSubmit={speichern}>
           <label className="block">
-            <span className="eyebrow mb-2 block">Zahlungshinweis</span>
+            <span className="eyebrow mb-2 block">Bankverbindung</span>
             <textarea
               className="field min-h-32 leading-relaxed"
               maxLength={2000}
-              value={hinweis}
+              value={bank}
               disabled={!einstellungen}
-              placeholder="Bankverbindung und Verwendungszweck, z. B. Name und Runde"
-              onChange={(e) => setHinweis(e.target.value)}
+              placeholder={'Kontoinhaber\nIBAN\nBank'}
+              onChange={(e) => setBank(e.target.value)}
             />
             <span className="text-ash mt-1.5 block text-[13px]">
-              Sehen Mitglieder unter ihrem Auftrag, sobald die Runde
-              abgeschlossen ist. Änderung wirkt sofort.
+              Steht im Zahlungshinweis, den Mitglieder unter ihrem abgeschickten
+              Auftrag sehen. Betrag, Frist und Verwendungszweck setzt die App
+              selbst dazu. Leer heißt: kein Zahlungshinweis. Änderung wirkt
+              sofort.
             </span>
           </label>
           {meldung && (

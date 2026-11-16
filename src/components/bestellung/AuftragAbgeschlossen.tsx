@@ -1,4 +1,4 @@
-import { Check, Coins, Lock } from 'lucide-react'
+import { Check, Lock } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import type {
@@ -12,12 +12,14 @@ import type { Motiv, SortimentArtikel } from '@/lib/sortiment'
 import { Markierung } from '@/components/Markierung'
 import { NichtVerfuegbar } from '@/components/NichtVerfuegbar'
 import { AdminFelder } from '@/components/bestellung/AdminFelder'
+import { ZahlungshinweisKasten } from '@/components/bestellung/ZahlungshinweisKasten'
 import { belegungsText } from '@/lib/belegung'
 import { ladeAuftrag, ladeEinstellungen, tagAnzeigen } from '@/lib/bestellung'
-import { fehlertext } from '@/lib/geburtstag'
+import { fehlertext, heute } from '@/lib/geburtstag'
 import { euro, euroMitVorzeichen } from '@/lib/geld'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import { positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
+import { zahlungshinweis } from '@/lib/zahlungshinweis'
 
 // Ein Auftrag in einer abgeschlossenen Bestellrunde, nur lesend. Ein
 // mitbestellter Auftrag zeigt die festgehaltenen Preise, die Summe, bezahlt
@@ -27,12 +29,14 @@ import { positionNichtVerfuegbar } from '@/lib/verfuegbarkeit'
 export function AuftragAbgeschlossen({
   runde,
   mitglied,
+  name,
   sortiment,
   motive,
   fuer,
 }: {
   runde: Bestellrunde
   mitglied: string
+  name: string
   sortiment: Array<SortimentArtikel>
   motive: Array<Motiv>
   fuer?: string
@@ -115,7 +119,19 @@ export function AuftragAbgeschlossen({
   })
   const korrektur = auftrag?.korrektur_betrag ?? 0
   const summe = auftrag?.summe ?? 0
-  const hinweis = einstellungen?.zahlungshinweis.trim() ?? ''
+  const hinweis =
+    auftrag && !fuer
+      ? zahlungshinweis({
+          auftrag,
+          rundeOffen: false,
+          rundenname: runde.name,
+          bestelldatum: runde.bestelldatum,
+          summe,
+          mitglied: name,
+          bankverbindung: einstellungen?.bankverbindung ?? '',
+          heute: heute(),
+        })
+      : null
 
   return (
     <section
@@ -225,16 +241,7 @@ export function AuftragAbgeschlossen({
               </div>
             )}
 
-            {mitbestellt && !fuer && !auftrag.bezahlt && hinweis && (
-              <div className="border-brass/25 bg-brass/[0.06] mt-4 rounded-2xl border p-4">
-                <div className="eyebrow mb-1.5 flex items-center gap-2">
-                  <Coins className="size-4" /> Zahlungshinweis
-                </div>
-                <p className="text-bone/90 text-[15px] leading-relaxed whitespace-pre-line">
-                  {hinweis}
-                </p>
-              </div>
-            )}
+            {hinweis && <ZahlungshinweisKasten hinweis={hinweis} />}
 
             {fuer && mitbestellt && (
               <AdminFelder

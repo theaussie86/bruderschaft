@@ -133,7 +133,7 @@ export async function rundeOeffnen(runde: string) {
 
 export type Einstellungen = {
   id: string
-  zahlungshinweis: string
+  bankverbindung: string
   kalender_token: string
 }
 

@@ -95,6 +95,7 @@ function Bestellen() {
                   key={`${stand.runde.id}|${stand.runde.status}`}
                   runde={stand.runde}
                   mitglied={mitglied.id}
+                  name={mitglied.name}
                   sortiment={stand.sortiment}
                   motive={stand.motive}
                 />
