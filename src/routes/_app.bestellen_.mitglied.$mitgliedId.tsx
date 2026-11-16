@@ -85,6 +85,7 @@ function AuftragEinesMitglieds() {
           <AuftragKarte
             runde={stand.runde}
             mitglied={stand.mitglied.id}
+            name={stand.mitglied.name}
             sortiment={stand.sortiment}
             motive={stand.motive}
             fuer={stand.mitglied.name}

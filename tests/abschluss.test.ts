@@ -394,23 +394,25 @@ describe('Wieder öffnen', () => {
 })
 
 describe('Einstellungen', () => {
-  test('alle Mitglieder lesen den Zahlungshinweis, nur Admins ändern ihn', async () => {
+  test('alle Mitglieder lesen die Bankverbindung, nur Admins ändern sie', async () => {
     const mitglied = await anmelden(await neuesMitglied())
     const liste = await app(EINSTELLUNGEN, { cookie: mitglied })
     const [einstellungen] = (await liste.json()).items
     const pfad = `${EINSTELLUNGEN}/${einstellungen.id}`
 
     const vomMitglied = await patch(pfad, mitglied, {
-      zahlungshinweis: 'falsch',
+      bankverbindung: 'falsch',
     })
     const vomAdmin = await patch(pfad, await admin(), {
-      zahlungshinweis: 'Bitte überweisen',
+      bankverbindung: 'IBAN DE00 1234',
     })
     const anonym = await app(EINSTELLUNGEN)
 
     expect(vomMitglied.ok).toBe(false)
     expect(vomAdmin.status).toBe(200)
-    expect((await app(pfad, { cookie: mitglied })).status).toBe(200)
+    const gelesen = await app(pfad, { cookie: mitglied })
+    expect(gelesen.status).toBe(200)
+    expect((await gelesen.json()).bankverbindung).toBe('IBAN DE00 1234')
     expect((await anonym.json()).items ?? []).toEqual([])
   })
 })

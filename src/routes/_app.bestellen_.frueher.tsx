@@ -70,6 +70,7 @@ function FruehereRunden() {
               <AuftragKarte
                 runde={r}
                 mitglied={mitglied.id}
+                name={mitglied.name}
                 sortiment={stand.sortiment}
                 motive={stand.motive}
               />
