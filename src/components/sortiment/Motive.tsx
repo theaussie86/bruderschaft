@@ -59,6 +59,11 @@ export function Motive({
               />
               <Vorschau eintrag={m} />
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 font-semibold">
+                {m.nummer && (
+                  <span className="text-brass tabular-nums">
+                    Nr. {m.nummer}
+                  </span>
+                )}
                 {m.name}
                 {m.ausgeblendet && (
                   <Markierung ton="neutral">
@@ -155,6 +160,18 @@ function MotivFormular({
           required
           defaultValue={motiv?.name}
           placeholder="z. B. Brotherhood"
+        />
+      </label>
+      <label className="block">
+        <span className="text-ash mb-1 block text-xs">
+          Nummer (optional, steht im Ausdruck für den Drucker)
+        </span>
+        <input
+          className="field"
+          name="nummer"
+          maxLength={20}
+          defaultValue={motiv?.nummer}
+          placeholder="z. B. 12"
         />
       </label>
       <label className="block">

@@ -215,8 +215,24 @@ describe('Dokument-Modell der Sammelbestellung', () => {
 
   test('Drucke pro Motiv über alle Artikel, mit Anzahl', () => {
     expect(sammelbestellung(daten()).motive).toEqual([
-      { motiv: 'Logo', drucke: 3 },
-      { motiv: 'Adler', drucke: 1 },
+      { nummer: '', motiv: 'Logo', drucke: 3 },
+      { nummer: '', motiv: 'Adler', drucke: 1 },
+    ])
+  })
+
+  test('mit Motivnummer steht in der Belegung die Nummer statt des Namens', () => {
+    const d = daten()
+    d.motive = d.motive.map((m) =>
+      m.id === 'logo' ? { ...m, nummer: ' 12 ' } : m,
+    )
+    const modell = sammelbestellung(d)
+    const belegungen = modell.summen.map((z) => z.belegung)
+    expect(belegungen).toContain('vorne: Nr. 12 · hinten: Text')
+    expect(belegungen).toContain('vorne: Adler')
+    expect(belegungen.join(' ')).not.toContain('Logo')
+    expect(modell.motive).toEqual([
+      { nummer: '12', motiv: 'Logo', drucke: 3 },
+      { nummer: '', motiv: 'Adler', drucke: 1 },
     ])
   })
 

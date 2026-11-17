@@ -41,6 +41,7 @@ export type Motiv = {
   id: string
   collectionId: string
   name: string
+  nummer: string
   bild: string
   sortierung: number
   ausgeblendet: boolean

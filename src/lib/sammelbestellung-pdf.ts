@@ -202,11 +202,12 @@ export async function sammelbestellungPdf(
   else
     satz.tabelle(
       [
-        { titel: 'Motiv', anteil: 4 },
+        { titel: 'Nr.', anteil: 1.2 },
+        { titel: 'Motiv', anteil: 6 },
         { titel: 'Drucke', anteil: 1, rechts: true },
-        { titel: '', anteil: 9 },
+        { titel: '', anteil: 5.8 },
       ],
-      modell.motive.map((m) => [m.motiv, String(m.drucke), '']),
+      modell.motive.map((m) => [m.nummer, m.motiv, String(m.drucke), '']),
     )
 
   satz.ueberschrift('Textdrucke')

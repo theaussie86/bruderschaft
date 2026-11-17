@@ -19,7 +19,7 @@ export type Rundendaten = {
   druckstellen: Array<
     Sortiert & { artikel: string; name: string; art: 'motiv' | 'text' }
   >
-  motive: Array<Sortiert & { name: string }>
+  motive: Array<Sortiert & { name: string; nummer?: string }>
   mitglieder: Array<{ id: string; name: string }>
   auftraege: Array<{
     id: string
@@ -72,7 +72,7 @@ export type Sammelbestellung = {
     stuecke: number
   }
   summen: Array<Summenzeile>
-  motive: Array<{ motiv: string; drucke: number }>
+  motive: Array<{ nummer: string; motiv: string; drucke: number }>
   textdrucke: Array<Textdruck>
   mitglieder: Array<{
     name: string
@@ -150,11 +150,21 @@ export function sammelbestellung(d: Rundendaten): Sammelbestellung {
 
   type Pos = (typeof positionen)[number]
 
+  // Für den Drucker zählt die kurze Nummer; ohne Nummer bleibt der Name.
+  function motivKurz(m: Rundendaten['motive'][number]) {
+    const nummer = m.nummer?.trim()
+    return nummer ? `Nr. ${nummer}` : m.name
+  }
+
   function belegung(p: Pos, mitText: boolean) {
     if (p.belegungen.length === 0) return OHNE_DRUCK
     return p.belegungen
       .map((b) => {
-        const inhalt = b.motiv ? b.motiv.name : mitText ? `„${b.text}“` : 'Text'
+        const inhalt = b.motiv
+          ? motivKurz(b.motiv)
+          : mitText
+            ? `„${b.text}“`
+            : 'Text'
         return `${b.druckstelle.name}: ${inhalt}`
       })
       .join(' · ')
@@ -215,7 +225,11 @@ export function sammelbestellung(d: Rundendaten): Sammelbestellung {
       if (b.motiv) drucke.set(b.motiv, (drucke.get(b.motiv) ?? 0) + p.anzahl)
   const motive = [...drucke]
     .sort(([x], [y]) => (motivRang.get(x) ?? 0) - (motivRang.get(y) ?? 0))
-    .map(([m, anzahl]) => ({ motiv: m.name, drucke: anzahl }))
+    .map(([m, anzahl]) => ({
+      nummer: m.nummer?.trim() ?? '',
+      motiv: m.name,
+      drucke: anzahl,
+    }))
 
   const mitgliedVon = (p: Pos) => {
     const auftrag = auftraege.find((a) => a.id === p.auftrag)
