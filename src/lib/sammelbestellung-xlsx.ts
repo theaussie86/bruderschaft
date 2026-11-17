@@ -67,10 +67,12 @@ export async function sammelbestellungXlsx(
     )
 
   const motive = blatt(mappe, 'Motive', [
-    { header: 'Motiv', width: 30 },
+    { header: 'Nr.', width: 8 },
+    { header: 'Motiv', width: 40 },
     { header: 'Drucke', width: 10 },
   ])
-  for (const m of modell.motive) motive.addRow([m.motiv, m.drucke])
+  for (const m of modell.motive)
+    motive.addRow(zeile([m.nummer, m.motiv, m.drucke]))
 
   const texte = blatt(mappe, 'Textdrucke', [
     { header: 'Artikel', width: 24 },

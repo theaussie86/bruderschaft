@@ -153,8 +153,8 @@ describe('Download der Sammelbestellung', () => {
       ['Hoodie', 'H-100', 'XL', 'vorne: Logo · hinten: Text', 3],
     ])
     expect(blattZeilen(mappe, 'Motive')).toEqual([
-      ['Motiv', 'Drucke'],
-      ['Logo', 3],
+      ['Nr.', 'Motiv', 'Drucke'],
+      [undefined, 'Logo', 3],
     ])
     expect(blattZeilen(mappe, 'Textdrucke')).toEqual([
       [

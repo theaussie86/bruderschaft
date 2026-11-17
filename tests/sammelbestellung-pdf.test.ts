@@ -25,7 +25,7 @@ function modell(): Sammelbestellung {
       stuecke: 160,
     },
     summen: [{ ...position, belegung: 'vorne: Logo · hinten: Text' }],
-    motive: [{ motiv: 'Logo', drucke: 160 }],
+    motive: [{ nummer: '7', motiv: 'Logo', drucke: 160 }],
     textdrucke: [
       {
         artikel: 'Hoodie',
