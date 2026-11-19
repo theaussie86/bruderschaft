@@ -123,8 +123,7 @@ function EinstellungenSeite() {
   )
 }
 
-// Der Text, den Besucher auf der öffentlichen Startseite über dem Login-Link
-// lesen.
+// Der Absatz über die Hahna Brothers auf der öffentlichen Startseite (Rocknacht).
 function StartseiteText() {
   const [startseite, setStartseite] = useState<Startseite | null | undefined>(
     undefined,
@@ -178,7 +177,7 @@ function StartseiteText() {
     <form className="mt-10 space-y-3" onSubmit={speichern}>
       <label className="block">
         <span className="eyebrow mb-2 block">
-          Text der öffentlichen Startseite
+          Startseite: Absatz über die Hahna Brothers
         </span>
         <textarea
           className="field min-h-32 leading-relaxed"
@@ -188,8 +187,9 @@ function StartseiteText() {
           onChange={(e) => setText(e.target.value)}
         />
         <span className="text-ash mt-1.5 block text-[13px]">
-          Sieht jeder, der die App aufruft, auch ohne Anmeldung. Keine
-          Mitgliederdaten eintragen.
+          Steht auf der öffentlichen Rocknacht-Seite unter dem Logo. Sieht
+          jeder, auch ohne Anmeldung. Keine Mitgliederdaten eintragen. Leer
+          lassen für den Vorgabesatz.
         </span>
       </label>
       {meldung && (
