@@ -26,6 +26,17 @@ export function PublicFooter() {
   return (
     <footer className="mt-auto pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] lg:pb-14">
       <RechtlicheLinks />
+      <p className="text-smoke mt-4 text-center text-xs">
+        Erstellt von{' '}
+        <a
+          href="https://weissteiner-automation.com"
+          target="_blank"
+          rel="noopener"
+          className="hover:text-bone underline underline-offset-2"
+        >
+          Weißteiner Automation
+        </a>
+      </p>
     </footer>
   )
 }
