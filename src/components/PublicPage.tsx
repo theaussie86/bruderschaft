@@ -34,7 +34,7 @@ export function PublicFooter() {
           rel="noopener"
           className="hover:text-bone underline underline-offset-2"
         >
-          Weißteiner Automation
+          Weissteiner Automation
         </a>
       </p>
     </footer>
