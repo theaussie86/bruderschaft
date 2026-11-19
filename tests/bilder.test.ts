@@ -83,6 +83,18 @@ describe('Bilder hochladen', () => {
     expect(res.ok).toBe(false)
   })
 
+  test('Mitglied lädt ein Bild zu einem Urlaub hoch', async () => {
+    const mitglied = await neuesMitglied()
+    const termin = await veranstaltung({
+      art: 'urlaub',
+      ende: '2025-06-08 12:00:00.000Z',
+    })
+
+    const res = await hochladen(termin.id, mitglied, await anmelden(mitglied))
+
+    expect(res.status).toBe(200)
+  })
+
   test('Upload zu einem Stammtisch wird abgelehnt', async () => {
     const mitglied = await neuesMitglied()
     const termin = await veranstaltung({ art: 'stammtisch' })

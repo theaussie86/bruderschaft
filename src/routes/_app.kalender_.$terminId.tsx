@@ -20,9 +20,15 @@ import { Protokoll } from '@/components/termin/Protokoll'
 import { TerminFormular } from '@/components/termin/TerminFormular'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
-import { ART_NAME, ladeTermin, tagTeile, zeitText } from '@/lib/termine'
+import {
+  ART_NAME,
+  ladeTermin,
+  mitBildern,
+  tagTeile,
+  zeitText,
+} from '@/lib/termine'
 
-// Ein Termin mit allen Angaben, bei Veranstaltungen mit den Bildern, bei
+// Ein Termin mit allen Angaben, bei Veranstaltungen und Urlauben mit den Bildern, bei
 // Stammtischen mit dem Protokoll. Admins finden ganz oben die Knöpfe zum
 // Verschieben, Bearbeiten, Kopieren, Absagen und Löschen; gelöscht werden nur falsch
 // angelegte Termine.
@@ -238,7 +244,7 @@ function TerminSeite() {
             )}
           </div>
 
-          {termin.art === 'veranstaltung' && (
+          {mitBildern(termin.art) && (
             <Bilder termin={termin} mitglied={mitglied} />
           )}
 

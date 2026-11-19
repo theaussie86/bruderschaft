@@ -3,7 +3,12 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 // Termine im Kalender (Spec #17). PocketBase speichert Zeitpunkte in UTC, der
 // Die Bruderschaft lebt in deutscher Zeit. Alle Umrechnungen laufen deshalb fest über
 // Europe/Berlin, damit Server-Rendering und Browser dasselbe zeigen.
-export type TerminArt = 'stammtisch' | 'veranstaltung'
+export type TerminArt = 'stammtisch' | 'veranstaltung' | 'urlaub'
+
+// Zu Veranstaltungen und Urlauben gibt es Bilder, und sie gehen ins Archiv ein.
+export function mitBildern(art: TerminArt) {
+  return art === 'veranstaltung' || art === 'urlaub'
+}
 
 export type Termin = {
   id: string
@@ -22,6 +27,7 @@ export type Termin = {
 export const ART_NAME: Record<TerminArt, string> = {
   stammtisch: 'Stammtisch',
   veranstaltung: 'Veranstaltung',
+  urlaub: 'Urlaub',
 }
 
 const ZEITZONE = 'Europe/Berlin'
@@ -194,7 +200,8 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
     .sort((a, b) => alsDate(a.beginn).getTime() - alsDate(b.beginn).getTime())
 }
 
-// Das Archiv: vergangene, nicht abgesagte Veranstaltungen, auch ohne Bilder,
+// Das Archiv: vergangene, nicht abgesagte Veranstaltungen und Urlaube, auch
+// ohne Bilder,
 // und vergangene, nicht abgesagte Stammtische mit Protokoll. Vergangen ist ein
 // Termin nach seinem letzten Tag. Neueste zuerst.
 export function archivTermine(termine: Array<Termin>, jetzt = new Date()) {
@@ -202,18 +209,19 @@ export function archivTermine(termine: Array<Termin>, jetzt = new Date()) {
   return termine
     .filter(
       (t) =>
-        (t.art === 'veranstaltung' || (t.protokoll?.length ?? 0) > 0) &&
+        (mitBildern(t.art) || (t.protokoll?.length ?? 0) > 0) &&
         !t.abgesagt &&
         berlinTag(t.ende || t.beginn) < heute,
     )
     .sort((a, b) => alsDate(b.beginn).getTime() - alsDate(a.beginn).getTime())
 }
 
-// Bilder lassen sich hochladen, sobald eine Veranstaltung begonnen hat, und
+// Bilder lassen sich hochladen, sobald eine Veranstaltung oder ein Urlaub
+// begonnen hat, und
 // nur, wenn sie nicht abgesagt ist. Dieselbe Regel prüft PocketBase.
 export function bilderErlaubt(t: Termin, jetzt = new Date()) {
   return (
-    t.art === 'veranstaltung' &&
+    mitBildern(t.art) &&
     !t.abgesagt &&
     alsDate(t.beginn).getTime() <= jetzt.getTime()
   )
@@ -241,7 +249,7 @@ export async function ladeTermin(id: string): Promise<Termin> {
 
 // Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.
 export const ARCHIV_FILTER =
-  "(art = 'veranstaltung' || (art = 'stammtisch' && protokoll:length > 0)) && abgesagt = false"
+  "(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && protokoll:length > 0)) && abgesagt = false"
 
 export async function ladeArchiv(jetzt = new Date()) {
   const pb = createBrowserPocketBase()

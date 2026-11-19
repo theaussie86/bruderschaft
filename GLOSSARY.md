@@ -127,7 +127,7 @@ _Avoid_: gelöscht, deaktiviert, archiviert
 ## Leben der Bruderschaft
 
 **Termin**:
-Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch und Veranstaltung sind Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
+Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Veranstaltung und Urlaub sind die Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
 _Avoid_: Event, Eintrag, Serie
 
 **Abgesagter Termin**:
@@ -138,8 +138,12 @@ _Avoid_: gelöschter Termin, ausgefallener Termin
 Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder dazu hochladen.
 _Avoid_: Event, Party
 
+**Urlaub**:
+Ein mehrtägiger Termin, an dem Mitglieder der Bruderschaft gemeinsam wegfahren, vom großen Urlaub bis zur Wochenend-Ausfahrt. Er hat immer ein Ende. Wie bei einer Veranstaltung können Mitglieder Bilder dazu hochladen, und er geht danach ins Archiv ein. Wer mitfährt, hält die App nicht fest. Die Urlaube einzelner Mitglieder gehören nicht dazu.
+_Avoid_: Reise, Trip, Ausflug, Ausfahrt (als eigene Art)
+
 **Archiv**:
-Die vergangenen, nicht abgesagten Veranstaltungen der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
+Die vergangenen, nicht abgesagten Veranstaltungen und Urlaube der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
 _Avoid_: Galerie, Veranstaltungsgalerie, Chronik
 
 **Stammtisch**:

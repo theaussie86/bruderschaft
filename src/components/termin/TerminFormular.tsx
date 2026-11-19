@@ -28,6 +28,8 @@ export function TerminFormular({
   const [art, setArt] = useState<TerminArt>(start?.art ?? 'stammtisch')
   const [ganztaegig, setGanztaegig] = useState(start?.ganztaegig ?? false)
   const [fehler, setFehler] = useState<string | null>(null)
+  // Ein Urlaub hat immer ein Ende, PocketBase prüft das auch.
+  const urlaub = art === 'urlaub'
   const [laeuft, setLaeuft] = useState(false)
 
   async function speichern(e: React.FormEvent<HTMLFormElement>) {
@@ -67,8 +69,8 @@ export function TerminFormular({
     <form className="space-y-5" onSubmit={speichern}>
       <fieldset>
         <legend className="mb-1.5 block text-sm font-semibold">Art</legend>
-        <div className="border-line/70 grid grid-cols-2 gap-1 rounded-xl border p-1">
-          {(['stammtisch', 'veranstaltung'] as const).map((a) => (
+        <div className="border-line/70 grid grid-cols-3 gap-1 rounded-xl border p-1">
+          {(['stammtisch', 'veranstaltung', 'urlaub'] as const).map((a) => (
             <label
               key={a}
               className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg text-[15px] font-semibold ${
@@ -81,7 +83,11 @@ export function TerminFormular({
                 value={a}
                 className="sr-only"
                 checked={art === a}
-                onChange={() => setArt(a)}
+                onChange={() => {
+                  setArt(a)
+                  // Ein neuer Urlaub geht meist über ganze Tage.
+                  if (a === 'urlaub' && !termin) setGanztaegig(true)
+                }}
               />
               {ART_NAME[a]}
             </label>
@@ -126,11 +132,12 @@ export function TerminFormular({
               defaultValue={start?.von ?? ''}
             />
           </Feld>
-          <Feld label="Ende (optional)">
+          <Feld label={urlaub ? 'Ende' : 'Ende (optional)'}>
             <input
               className="field"
               name="bis"
               type="time"
+              required={urlaub}
               defaultValue={start?.bis ?? ''}
             />
           </Feld>
@@ -138,15 +145,18 @@ export function TerminFormular({
       )}
       <Feld
         label={
-          ganztaegig
-            ? 'Letzter Tag (optional)'
-            : 'Ende an einem anderen Tag (optional)'
+          urlaub
+            ? 'Letzter Tag'
+            : ganztaegig
+              ? 'Letzter Tag (optional)'
+              : 'Ende an einem anderen Tag (optional)'
         }
       >
         <input
           className="field"
           name="endeTag"
           type="date"
+          required={urlaub}
           defaultValue={start?.endeTag ?? ''}
         />
       </Feld>

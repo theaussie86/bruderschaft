@@ -247,6 +247,20 @@ describe('Termine: Archiv', () => {
     expect(bilderErlaubt({ ...fest, abgesagt: true }, jetzt)).toBe(false)
     expect(bilderErlaubt({ ...fest, art: 'stammtisch' }, jetzt)).toBe(false)
   })
+
+  test('ein Urlaub kommt nach seinem letzten Tag ins Archiv und hat Bilder', () => {
+    const urlaub = termin({
+      art: 'urlaub',
+      beginn: '2026-12-01 12:00:00.000Z',
+      ende: '2026-12-08 12:00:00.000Z',
+      ganztaegig: true,
+    })
+
+    expect(archivTermine([urlaub], jetzt)).toHaveLength(1)
+    expect(archivTermine([{ ...urlaub, abgesagt: true }], jetzt)).toEqual([])
+    expect(bilderErlaubt(urlaub, jetzt)).toBe(true)
+    expect(bilderErlaubt(urlaub, new Date('2026-11-30T10:00:00Z'))).toBe(false)
+  })
 })
 
 describe('Kalender mit Geburtstagen', () => {

@@ -1,6 +1,6 @@
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
-// Bilder zu Veranstaltungen (Spec #17). Vor dem Upload kodiert der Browser
+// Bilder zu Veranstaltungen und Urlauben (Spec #17). Vor dem Upload kodiert der Browser
 // jedes Bild neu als JPEG mit höchstens 2000 px an der längsten Kante. Das
 // wandelt HEIC und wirft EXIF samt GPS-Standort weg, weil das Canvas nur die
 // Pixel kennt.

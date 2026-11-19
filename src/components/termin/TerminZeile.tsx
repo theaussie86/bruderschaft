@@ -1,13 +1,19 @@
 import { Link } from '@tanstack/react-router'
 import { Ban, ChevronRight, FileText, Images, MapPin } from 'lucide-react'
 
-import type { Termin } from '@/lib/termine'
+import type { Termin, TerminArt } from '@/lib/termine'
 import { Markierung } from '@/components/Markierung'
 import { ART_NAME, tagTeile, zeitText } from '@/lib/termine'
 
+const TON = {
+  stammtisch: 'brass',
+  veranstaltung: 'patina',
+  urlaub: 'copper',
+} as const satisfies Record<TerminArt, string>
+
 // Ein Termin in der Liste: Kalenderblatt, Art, Titel, Zeit und Ort. Abgesagte
 // bleiben sichtbar, durchgestrichen und markiert. Im Archiv steht bei
-// Veranstaltungen die Zahl der Bilder dabei, bei Stammtischen das Protokoll.
+// Veranstaltungen und Urlauben die Zahl der Bilder dabei, bei Stammtischen das Protokoll.
 export function TerminZeile({
   termin: t,
   bilder,
@@ -38,9 +44,7 @@ export function TerminZeile({
       <div className="min-w-0 flex-1 px-4 py-3">
         <div className="mb-1 flex flex-wrap items-center gap-1.5">
           {t.titel !== ART_NAME[t.art] && (
-            <Markierung ton={t.art === 'stammtisch' ? 'brass' : 'patina'}>
-              {ART_NAME[t.art]}
-            </Markierung>
+            <Markierung ton={TON[t.art]}>{ART_NAME[t.art]}</Markierung>
           )}
           {t.abgesagt && (
             <Markierung ton="neutral">

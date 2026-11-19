@@ -1,6 +1,7 @@
 const TOENE = {
   brass: 'border-brass/40 text-brass',
   patina: 'border-patina/40 text-patina',
+  copper: 'border-copper/50 text-copper',
   neutral: 'border-line text-ash',
 }
 

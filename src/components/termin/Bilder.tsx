@@ -7,7 +7,7 @@ import { bildHochladen, bildLoeschen, bildPfad, ladeBilder } from '@/lib/bilder'
 import { fehlertext } from '@/lib/geburtstag'
 import { bilderErlaubt } from '@/lib/termine'
 
-// Bilder einer Veranstaltung: Raster mit Upload vom Handy und Vollbild.
+// Bilder einer Veranstaltung oder eines Urlaubs: Raster mit Upload vom Handy und Vollbild.
 // Mitglieder löschen ihre eigenen Bilder, Admins jedes. Wer ein Bild
 // hochgeladen hat, sehen nur Admins.
 export function Bilder({
@@ -97,8 +97,8 @@ export function Bilder({
       {!erlaubt && anzahl === 0 ? (
         <div className="card text-ash p-5 text-[15px]">
           {termin.abgesagt
-            ? 'Die Veranstaltung ist abgesagt, Bilder gibt es dazu nicht.'
-            : 'Sobald die Veranstaltung begonnen hat, könnt ihr hier Bilder hochladen.'}
+            ? `${termin.art === 'urlaub' ? 'Der Urlaub' : 'Die Veranstaltung'} ist abgesagt, Bilder gibt es dazu nicht.`
+            : `Sobald ${termin.art === 'urlaub' ? 'der Urlaub' : 'die Veranstaltung'} begonnen hat, könnt ihr hier Bilder hochladen.`}
         </div>
       ) : bilder === null ? (
         !fehler && <p className="text-ash">Lädt …</p>

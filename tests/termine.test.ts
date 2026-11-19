@@ -112,6 +112,41 @@ describe('Termine: Admin pflegt den Kalender', () => {
     expect(res.status).toBe(200)
   })
 
+  test('Admin legt einen Urlaub über mehrere Tage an', async () => {
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+
+    const res = await app(TERMINE, {
+      ...json({
+        titel: 'Ausfahrt Gardasee',
+        art: 'urlaub',
+        beginn: '2027-05-14 12:00:00.000Z',
+        ende: '2027-05-16 12:00:00.000Z',
+        ganztaegig: true,
+      }),
+      cookie,
+    })
+
+    expect(res.status).toBe(200)
+  })
+
+  test('Ein Urlaub ohne Ende wird abgelehnt', async () => {
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+
+    const res = await app(TERMINE, {
+      ...json({
+        titel: 'Ausfahrt Gardasee',
+        art: 'urlaub',
+        beginn: '2027-05-14 12:00:00.000Z',
+        ganztaegig: true,
+      }),
+      cookie,
+    })
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.data.ende.code).toBe('urlaub_ohne_ende')
+  })
+
   test('Admin löscht einen falsch angelegten Termin', async () => {
     const cookie = await anmelden(await neuesMitglied({ admin: true }))
     const termin = await terminVomSuperuser()
