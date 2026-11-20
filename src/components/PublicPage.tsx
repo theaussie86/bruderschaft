@@ -3,11 +3,18 @@ import type { ReactNode } from 'react'
 
 // Impressum, Datenschutz und Cookies: vor dem Login im Footer, danach im
 // Profil (Issue #42).
-export function RechtlicheLinks({ className = '' }: { className?: string }) {
+// appZugang hängt als letzten Punkt den Weg in die Mitglieder-App an.
+export function RechtlicheLinks({
+  className = '',
+  appZugang,
+}: {
+  className?: string
+  appZugang?: 'app' | 'login'
+}) {
   return (
     <nav
       aria-label="Rechtliches"
-      className={`text-smoke flex justify-center gap-6 text-sm ${className}`}
+      className={`text-smoke flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm ${className}`}
     >
       <Link to="/impressum" className="hover:text-bone">
         Impressum
@@ -18,6 +25,14 @@ export function RechtlicheLinks({ className = '' }: { className?: string }) {
       <Link to="/cookies" className="hover:text-bone">
         Cookies
       </Link>
+      {appZugang && (
+        <Link
+          to={appZugang === 'app' ? '/kalender' : '/login'}
+          className="hover:text-bone"
+        >
+          {appZugang === 'app' ? 'Zur App' : 'Mitglieder-Login'}
+        </Link>
+      )}
     </nav>
   )
 }
@@ -27,7 +42,7 @@ export function RechtlicheLinks({ className = '' }: { className?: string }) {
 export function PublicFooter({ appZugang }: { appZugang?: 'app' | 'login' }) {
   return (
     <footer className="mt-auto pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] lg:pb-14">
-      <RechtlicheLinks />
+      <RechtlicheLinks appZugang={appZugang} />
       <p className="text-smoke mt-4 text-center text-xs">
         Erstellt von{' '}
         <a
@@ -38,17 +53,6 @@ export function PublicFooter({ appZugang }: { appZugang?: 'app' | 'login' }) {
         >
           Weissteiner Automation
         </a>
-        {appZugang && (
-          <>
-            {' · '}
-            <Link
-              to={appZugang === 'app' ? '/kalender' : '/login'}
-              className="hover:text-bone"
-            >
-              {appZugang === 'app' ? 'Zur App' : 'Mitglieder'}
-            </Link>
-          </>
-        )}
       </p>
     </footer>
   )
