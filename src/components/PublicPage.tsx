@@ -22,7 +22,9 @@ export function RechtlicheLinks({ className = '' }: { className?: string }) {
   )
 }
 
-export function PublicFooter() {
+// appZugang: auf der Startseite ein dezenter Weg in die Mitglieder-App,
+// angemeldet direkt in die App, sonst zum Login.
+export function PublicFooter({ appZugang }: { appZugang?: 'app' | 'login' }) {
   return (
     <footer className="mt-auto pt-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] lg:pb-14">
       <RechtlicheLinks />
@@ -36,6 +38,17 @@ export function PublicFooter() {
         >
           Weissteiner Automation
         </a>
+        {appZugang && (
+          <>
+            {' · '}
+            <Link
+              to={appZugang === 'app' ? '/kalender' : '/login'}
+              className="hover:text-bone"
+            >
+              {appZugang === 'app' ? 'Zur App' : 'Mitglieder'}
+            </Link>
+          </>
+        )}
       </p>
     </footer>
   )

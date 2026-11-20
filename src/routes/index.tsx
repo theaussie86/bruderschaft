@@ -44,7 +44,7 @@ function Startseite() {
           maskImage: 'linear-gradient(to bottom, black 40%, transparent)',
         }}
       />
-      <Kopf mitgliedAngemeldet={!!mitglied} className="relative" />
+      <Kopf className="relative" />
 
       <main className="relative flex-1">
         <section className="mx-auto max-w-xl px-5 pt-16 pb-12 text-center">
@@ -142,7 +142,7 @@ function Startseite() {
         </section>
       </main>
 
-      <PublicFooter />
+      <PublicFooter appZugang={mitglied ? 'app' : 'login'} />
       <style>{`@keyframes lauf { to { transform: translateX(-50%); } }`}</style>
     </div>
   )
