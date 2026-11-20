@@ -21,7 +21,7 @@ const ladeText = createServerFn({ method: 'GET' }).handler(async () => {
 
 // Öffentliche Startseite: gehört der Rocknacht Ottobeuren, der Login ist eine
 // eigene Seite. Scheinwerferkegel von oben, im Zentrum ein Ticket mit dem
-// nächsten Termin, darunter ein Lauftext mit allen Bands bisher.
+// nächsten Termin, darunter ein Lauftext mit dem Line-up.
 export const Route = createFileRoute('/')({
   loader: () => ladeText(),
   component: Startseite,
@@ -30,7 +30,9 @@ export const Route = createFileRoute('/')({
 function Startseite() {
   const text = Route.useLoaderData()
   const { mitglied } = Route.useRouteContext()
-  const alleBands = [...new Set([...R.letzte.bands, ...R.premiere.bands])]
+  const lauftext = R.naechste.bands.length
+    ? R.naechste.bands
+    : ['Line-up coming soon']
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden">
       <div
@@ -42,7 +44,7 @@ function Startseite() {
           maskImage: 'linear-gradient(to bottom, black 40%, transparent)',
         }}
       />
-      <Kopf mitgliedAngemeldet={!!mitglied} className="relative" />
+      <Kopf className="relative" />
 
       <main className="relative flex-1">
         <section className="mx-auto max-w-xl px-5 pt-16 pb-12 text-center">
@@ -79,20 +81,22 @@ function Startseite() {
         </section>
 
         <section
-          aria-label="Bands bisher"
+          aria-label={`Line-up ${R.naechste.jahr}`}
           className="border-line bg-coal/60 overflow-hidden border-y py-5"
         >
           <div className="flex w-max animate-[lauf_30s_linear_infinite] gap-10 motion-reduce:animate-none">
-            {[...alleBands, ...alleBands].map((band, i) => (
-              <span
-                key={i}
-                aria-hidden={i >= alleBands.length}
-                className="font-display text-ash flex items-center gap-10 text-4xl font-black whitespace-nowrap uppercase"
-              >
-                {band}
-                <span className="text-rust">✦</span>
-              </span>
-            ))}
+            {Array.from({ length: 4 }, () => lauftext)
+              .flat()
+              .map((band, i) => (
+                <span
+                  key={i}
+                  aria-hidden={i >= lauftext.length}
+                  className="font-display text-ash flex items-center gap-10 text-4xl font-black whitespace-nowrap uppercase"
+                >
+                  {band}
+                  <span className="text-rust">✦</span>
+                </span>
+              ))}
           </div>
         </section>
 
@@ -107,6 +111,7 @@ function Startseite() {
           </div>
           <dl className="card divide-line divide-y self-start">
             <Zeile titel="Zuletzt">{R.letzte.datum}</Zeile>
+            <Zeile titel="Bands">{R.letzte.bands.join(', ')}</Zeile>
             <Zeile titel="Ablauf">
               Einlass {R.letzte.einlass}, Bühne ab {R.letzte.beginn}
             </Zeile>
@@ -137,7 +142,7 @@ function Startseite() {
         </section>
       </main>
 
-      <PublicFooter />
+      <PublicFooter appZugang={mitglied ? 'app' : 'login'} />
       <style>{`@keyframes lauf { to { transform: translateX(-50%); } }`}</style>
     </div>
   )

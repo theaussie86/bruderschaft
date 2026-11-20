@@ -1,6 +1,6 @@
 // Fakten zur Rocknacht Ottobeuren für die öffentliche Startseite. Quellen:
 // Ottobeuren Life 07/2026 (Marktgemeinde), Kurier-Verlag 23.08.2026,
-// rock-heavensgate.de. Steht der Termin 2027 fest, hier eintragen.
+// rock-heavensgate.de. Steht das Line-up 2027 fest, bei naechste.bands eintragen.
 
 export const ROCKNACHT = {
   name: 'Rocknacht Ottobeuren',
@@ -8,7 +8,9 @@ export const ROCKNACHT = {
   naechste: {
     jahr: 2027,
     // null, solange kein Termin bekannt ist
-    datum: null as string | null,
+    datum: 'Samstag, 17. Juli 2027' as string | null,
+    // leer, solange das Line-up nicht feststeht: dann läuft "Line-up coming soon"
+    bands: [] as Array<string>,
   },
   letzte: {
     jahr: 2026,
