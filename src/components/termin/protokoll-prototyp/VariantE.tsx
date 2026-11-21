@@ -10,12 +10,12 @@ import {
   ListOrdered,
   NotebookPen,
   Radio,
+  Save,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
 import { SichtUmschalter, Zustand, uhrzeit } from './gemeinsam'
 import type { ReactNode } from 'react'
-
 
 // PROTOTYP, wegwerfen. Variante E "Mitschreiben als Dokument" (C2): Der
 // Vollbild-Modus aus C, aber mit Tiptap-Editor statt Einzeleinträgen. Ein
@@ -40,8 +40,10 @@ const START = `
 `
 
 // Typografie für Editor und Lese-Ansicht, ohne Typography-Plugin.
+// Überschriften in der Display-Schrift, größer und mit Linie darunter,
+// damit sie sich klar von Fettschrift abheben.
 const DOKUMENT =
-  'text-[16px] leading-relaxed [&_h3]:mt-5 [&_h3]:mb-1 [&_h3]:font-semibold [&_h3]:text-bone [&_h3:first-child]:mt-0 [&_h3_strong]:text-brass [&_h3_strong]:tnum [&_h3_strong]:mr-2 [&_p]:my-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-6 [&_ul_ul]:list-[circle] [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_li::marker]:text-smoke'
+  'text-[16px] leading-relaxed [&_h3]:font-display [&_h3]:mt-7 [&_h3]:mb-2 [&_h3]:border-b [&_h3]:border-line [&_h3]:pb-1.5 [&_h3]:text-[1.45em] [&_h3]:leading-tight [&_h3]:font-bold [&_h3]:tracking-wide [&_h3]:uppercase [&_h3]:text-bone [&_h3:first-child]:mt-0 [&_h3_strong]:text-brass [&_h3_strong]:tnum [&_h3_strong]:mr-2 [&_p]:my-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-6 [&_ul_ul]:list-[circle] [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_li::marker]:text-smoke'
 
 function Knopf({
   aktiv,
@@ -75,6 +77,19 @@ export function VariantE() {
   const [offen, setOffen] = useState(false)
   const [laeuft, setLaeuft] = useState(true)
   const [html, setHtml] = useState(START)
+  const [gespeichert, setGespeichert] = useState({ html: START, um: '20:41' })
+  const [schliessenFragen, setSchliessenFragen] = useState(false)
+  const ungespeichert = html !== gespeichert.html
+
+  function speichern() {
+    setGespeichert({ html, um: uhrzeit() })
+  }
+
+  function schliessen() {
+    setSchliessenFragen(false)
+    setOffen(false)
+    setLaeuft(false)
+  }
 
   const editor = useEditor({
     extensions: [StarterKit.configure({ heading: { levels: [3] } })],
@@ -82,6 +97,15 @@ export function VariantE() {
     immediatelyRender: false,
     onUpdate: ({ editor: e }) => setHtml(e.getHTML()),
     editorProps: {
+      // Strg/Cmd+S speichert wie der Knopf.
+      handleKeyDown: (_view, ev) => {
+        if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') {
+          ev.preventDefault()
+          document.getElementById('protokoll-speichern')?.click()
+          return true
+        }
+        return false
+      },
       attributes: {
         class: `${DOKUMENT} min-h-full text-xl outline-none`,
       },
@@ -136,7 +160,7 @@ export function VariantE() {
 
       <div
         className={`card p-5 ${DOKUMENT}`}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: gespeichert.html }}
       />
 
       {/* Der Editor bleibt immer im Baum, damit sein Inhalt nicht verloren
@@ -151,17 +175,66 @@ export function VariantE() {
               In Listen: Tab rückt ein, Shift+Tab rückt aus
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setOffen(false)
-              setLaeuft(false)
-            }}
-            className="border-line flex min-h-11 items-center gap-2 rounded-xl border px-4 font-semibold"
-          >
-            <X className="size-4" /> Fertig
-          </button>
+          <div className="flex items-center gap-3">
+            <span
+              className={`hidden text-sm sm:inline ${
+                ungespeichert ? 'text-rust-hi font-semibold' : 'text-ash'
+              }`}
+            >
+              {ungespeichert
+                ? 'Nicht gespeichert'
+                : `Gespeichert um ${gespeichert.um}`}
+            </span>
+            <button
+              id="protokoll-speichern"
+              type="button"
+              onClick={speichern}
+              disabled={!ungespeichert}
+              className="bg-rust text-bone hover:bg-rust-hi disabled:bg-slate disabled:text-smoke flex min-h-12 items-center gap-2 rounded-xl px-5 text-[16px] font-semibold"
+            >
+              <Save className="size-5" /> Speichern
+            </button>
+            <button
+              type="button"
+              aria-label="Schließen"
+              onClick={() =>
+                ungespeichert ? setSchliessenFragen(true) : schliessen()
+              }
+              className="border-line flex min-h-12 min-w-12 items-center justify-center rounded-xl border"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
         </header>
+
+        {schliessenFragen && (
+          <div className="border-rust/50 bg-rust/10 flex flex-wrap items-center gap-3 border-b px-5 py-3">
+            <span className="flex-1 font-semibold">
+              Deine Änderungen sind noch nicht gespeichert.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                speichern()
+                schliessen()
+              }}
+              className="bg-rust text-bone min-h-11 rounded-xl px-4 font-semibold"
+            >
+              Speichern und schließen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                editor?.commands.setContent(gespeichert.html)
+                setHtml(gespeichert.html)
+                schliessen()
+              }}
+              className="text-ash min-h-11 px-3 font-semibold"
+            >
+              Verwerfen
+            </button>
+          </div>
+        )}
 
         <div className="border-line/60 flex flex-wrap items-center gap-1 border-b px-3 py-2">
           <Knopf
@@ -226,7 +299,7 @@ export function VariantE() {
         </div>
       </div>
 
-      <Zustand wert={{ laeuftGerade: laeuft, html }} />
+      <Zustand wert={{ laeuftGerade: laeuft, gespeichert }} />
     </section>
   )
 }
