@@ -190,3 +190,30 @@ describe('Termine: Admin pflegt den Kalender', () => {
     expect(res.status).toBe(400)
   })
 })
+
+describe('Termine: Farbe', () => {
+  test('Admin hinterlegt eine Farbe, ohne Farbe bleibt sie leer', async () => {
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+
+    const blau = await app(TERMINE, {
+      ...json({ ...STAMMTISCH, titel: 'GHS', farbe: 'blau' }),
+      cookie,
+    })
+    const ohne = await app(TERMINE, { ...json(STAMMTISCH), cookie })
+
+    expect(blau.status).toBe(200)
+    expect(await blau.json()).toMatchObject({ titel: 'GHS', farbe: 'blau' })
+    expect(await ohne.json()).toMatchObject({ farbe: '' })
+  })
+
+  test('Eine Farbe außerhalb der Auswahl wird abgelehnt', async () => {
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+
+    const res = await app(TERMINE, {
+      ...json({ ...STAMMTISCH, farbe: '#ff00ff' }),
+      cookie,
+    })
+
+    expect(res.status).toBe(400)
+  })
+})

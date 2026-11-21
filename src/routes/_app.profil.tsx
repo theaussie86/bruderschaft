@@ -5,6 +5,7 @@ import {
   ChevronRight,
   KeyRound,
   LogOut,
+  Printer,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
@@ -88,6 +89,21 @@ function Profil() {
         >
           <KalenderAbo />
         </Zeile>
+        <li>
+          <Link
+            to="/jahreskalender"
+            className="hover:bg-slate/40 flex min-h-16 w-full items-center gap-3.5 px-5"
+          >
+            <Printer className="text-brass size-5" strokeWidth={1.8} />
+            <span className="flex-1">
+              <span className="block font-semibold">Jahreskalender</span>
+              <span className="text-ash block text-[13px]">
+                Zum Ausdrucken oder als PDF, A4 oder A3
+              </span>
+            </span>
+            <ChevronRight className="text-smoke size-5" />
+          </Link>
+        </li>
         <Zeile
           icon={KeyRound}
           label="Passwort ändern"

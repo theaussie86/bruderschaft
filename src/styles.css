@@ -188,3 +188,140 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Jahreskalender zum Ausdrucken: bewusst im Look der alten Excel-Liste,
+   Arial, dünne schwarze Linien, kräftige Farben. Alle Maße laufen über
+   --mm: am Bildschirm ein Millimeter, im Druck ein 283stel der Papierbreite.
+   So füllt das Blatt A4 wie A3 quer. */
+.jahresblatt {
+  --mm: 1mm;
+  --blatt-samstag: #fcd5ac;
+  --blatt-frei: #f6a33f;
+  --blatt-wochenende: #fde6d2;
+  width: calc(283 * var(--mm));
+  min-width: calc(283 * var(--mm));
+  margin: 0 auto;
+  padding: calc(3 * var(--mm));
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.jahresblatt header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(14 * var(--mm));
+}
+.jahresblatt header img {
+  height: calc(13.5 * var(--mm));
+}
+.jahresblatt h1 {
+  font-size: calc(10 * var(--mm));
+  font-weight: 700;
+  letter-spacing: calc(-0.2 * var(--mm));
+}
+.jahresblatt table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: calc(2.2 * var(--mm));
+  line-height: 1;
+}
+.jahresblatt col.nr {
+  width: calc(4.2 * var(--mm));
+}
+.jahresblatt col.wt {
+  width: calc(4.6 * var(--mm));
+}
+.jahresblatt th {
+  border: calc(0.2 * var(--mm)) solid #000;
+  font-size: calc(3.2 * var(--mm));
+  font-weight: 700;
+  text-align: left;
+  padding: calc(0.5 * var(--mm)) var(--mm);
+}
+.jahresblatt td {
+  border: calc(0.14 * var(--mm)) solid #000;
+  height: calc(5.1 * var(--mm));
+  padding: 0;
+  vertical-align: middle;
+}
+.jahresblatt td.nr,
+.jahresblatt td.wt {
+  text-align: center;
+  font-weight: 700;
+}
+.jahresblatt td.samstag {
+  background: var(--blatt-samstag);
+}
+.jahresblatt td.frei {
+  background: var(--blatt-frei);
+}
+.jahresblatt td.was.samstag,
+.jahresblatt td.was.frei {
+  background: var(--blatt-wochenende);
+}
+/* Lange Titel brechen auf zwei Zeilen um, mehr passt nicht in die Zelle.
+   Mehrere Einträge am Tag teilen sich die Höhe. */
+.jahresblatt td.was > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(2.35 * var(--mm));
+  padding: 0 calc(0.5 * var(--mm));
+  text-align: center;
+  font-weight: 700;
+}
+.jahresblatt td.was > div:only-child {
+  height: calc(5.1 * var(--mm));
+}
+.jahresblatt td.was > div > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.jahresblatt footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: calc(2 * var(--mm));
+  margin-top: calc(2 * var(--mm));
+  font-size: calc(3.2 * var(--mm));
+  font-weight: 700;
+}
+.jahresblatt footer span {
+  border: calc(0.2 * var(--mm)) solid #000;
+  padding: calc(0.8 * var(--mm)) calc(10 * var(--mm));
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 6mm 7mm;
+  }
+  html,
+  body {
+    background: #fff;
+    color-scheme: light;
+  }
+  /* Der Cookie-Hinweis schafft sich unten Platz, auf Papier nicht. */
+  body {
+    padding-bottom: 0 !important;
+  }
+  .nicht-drucken {
+    display: none !important;
+  }
+  .jahresblatt-rahmen {
+    padding: 0;
+    overflow: visible;
+  }
+  .jahresblatt {
+    --mm: calc(100vw / 283);
+    padding: 0;
+    margin: 0;
+  }
+}

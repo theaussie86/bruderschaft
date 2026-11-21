@@ -16,6 +16,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as GeburtstagRouteImport } from './routes/geburtstag'
 import { Route as ImpressumRouteImport } from './routes/impressum'
+import { Route as JahreskalenderRouteImport } from './routes/jahreskalender'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PasswortSetzenRouteImport } from './routes/passwort-setzen'
 import { Route as PasswortVergessenRouteImport } from './routes/passwort-vergessen'
@@ -68,6 +69,11 @@ const GeburtstagRoute = GeburtstagRouteImport.update({
 const ImpressumRoute = ImpressumRouteImport.update({
   id: '/impressum',
   path: '/impressum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JahreskalenderRoute = JahreskalenderRouteImport.update({
+  id: '/jahreskalender',
+  path: '/jahreskalender',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
+  '/jahreskalender': typeof JahreskalenderRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
+  '/jahreskalender': typeof JahreskalenderRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/datenschutz': typeof DatenschutzRoute
   '/geburtstag': typeof GeburtstagRoute
   '/impressum': typeof ImpressumRoute
+  '/jahreskalender': typeof JahreskalenderRoute
   '/login': typeof LoginRoute
   '/passwort-setzen': typeof PasswortSetzenRoute
   '/passwort-vergessen': typeof PasswortVergessenRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
+    | '/jahreskalender'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
+    | '/jahreskalender'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/geburtstag'
     | '/impressum'
+    | '/jahreskalender'
     | '/login'
     | '/passwort-setzen'
     | '/passwort-vergessen'
@@ -346,6 +358,7 @@ export interface RootRouteChildren {
   DatenschutzRoute: typeof DatenschutzRoute
   GeburtstagRoute: typeof GeburtstagRoute
   ImpressumRoute: typeof ImpressumRoute
+  JahreskalenderRoute: typeof JahreskalenderRoute
   LoginRoute: typeof LoginRoute
   PasswortSetzenRoute: typeof PasswortSetzenRoute
   PasswortVergessenRoute: typeof PasswortVergessenRoute
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/impressum'
       fullPath: '/impressum'
       preLoaderRoute: typeof ImpressumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jahreskalender': {
+      id: '/jahreskalender'
+      path: '/jahreskalender'
+      fullPath: '/jahreskalender'
+      preLoaderRoute: typeof JahreskalenderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -581,6 +601,7 @@ const rootRouteChildren: RootRouteChildren = {
   DatenschutzRoute: DatenschutzRoute,
   GeburtstagRoute: GeburtstagRoute,
   ImpressumRoute: ImpressumRoute,
+  JahreskalenderRoute: JahreskalenderRoute,
   LoginRoute: LoginRoute,
   PasswortSetzenRoute: PasswortSetzenRoute,
   PasswortVergessenRoute: PasswortVergessenRoute,

@@ -130,6 +130,10 @@ _Avoid_: gelöscht, deaktiviert, archiviert
 Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Veranstaltung und Urlaub sind die Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
 _Avoid_: Event, Eintrag, Serie
 
+**Farbe**:
+Die Farbe, in der ein Termin im Jahreskalender steht und in der App markiert ist, aus einer festen Auswahl. Ohne eigene Farbe sind Stammtische grau und alle anderen Termine gelb ("Hahna Äktschn"). Rot gehört den Geburtstagen. So lassen sich z. B. der große Stammtisch (GHS) blau vom kleinen (KHS) unterscheiden.
+_Avoid_: Kategorie, Label
+
 **Abgesagter Termin**:
 Ein Termin, der nicht stattfindet, aber sichtbar bleibt, damit die Absage auch im Kalender-Abo ankommt. Gelöscht werden nur falsch angelegte Termine.
 _Avoid_: gelöschter Termin, ausgefallener Termin
@@ -157,6 +161,10 @@ _Avoid_: Notiz, Mitschrift
 **Kalender-Abo**:
 Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen Kalender holen. Ein Admin kann ihn erneuern, dann gilt der alte nicht mehr.
 _Avoid_: Export, Feed
+
+**Jahreskalender**:
+Das ganze Jahr auf einem Blatt quer zum Ausdrucken, A4 oder A3, im Look der alten Excel-Liste: Termine in ihrer Farbe, Geburtstage, Wochenenden und Feiertage in Bayern, unten eine Legende. Abgesagte Termine stehen nicht drauf. Jedes Mitglied druckt ihn selbst oder speichert ihn als PDF, zu finden im Profil.
+_Avoid_: Wandkalender, Export, Druckansicht
 
 **Drucker**:
 Der regionale Textildruck-Betrieb, der die Sammelbestellung bedruckt und liefert.

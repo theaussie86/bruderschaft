@@ -3,7 +3,7 @@ import { Ban, ChevronRight, FileText, Images, MapPin } from 'lucide-react'
 
 import type { Termin, TerminArt } from '@/lib/termine'
 import { Markierung } from '@/components/Markierung'
-import { ART_NAME, tagTeile, zeitText } from '@/lib/termine'
+import { ART_NAME, FARBWERT, tagTeile, zeitText } from '@/lib/termine'
 
 const TON = {
   stammtisch: 'brass',
@@ -28,7 +28,15 @@ export function TerminZeile({
       params={{ terminId: t.id }}
       className={`card group hover:border-brass/30 flex items-stretch overflow-hidden transition-all ${t.abgesagt ? 'opacity-70' : ''}`}
     >
-      <div className="border-line/60 bg-coal/40 flex w-[72px] shrink-0 flex-col items-center justify-center border-r py-3">
+      <div
+        className="border-line/60 bg-coal/40 flex w-[72px] shrink-0 flex-col items-center justify-center border-r py-3"
+        // Eine hinterlegte Farbe zeigt sich als Streifen am Kalenderblatt.
+        style={
+          t.farbe
+            ? { boxShadow: `inset 4px 0 0 ${FARBWERT[t.farbe]}` }
+            : undefined
+        }
+      >
         <span className="text-ash text-[12px] font-semibold tracking-wider uppercase">
           {tag.wochentag}
         </span>

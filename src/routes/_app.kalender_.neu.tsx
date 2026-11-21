@@ -37,6 +37,7 @@ function TerminNeu() {
         setVorlage({
           titel: t.titel,
           art: t.art,
+          farbe: t.farbe,
           ort: t.ort,
           infotext: t.infotext,
           ...formularAusTermin(t),
