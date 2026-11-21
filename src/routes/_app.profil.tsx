@@ -10,6 +10,7 @@ import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/Button'
+import { PasswortFeld } from '@/components/PasswortFeld'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
 import { KalenderAbo } from '@/components/KalenderAbo'
 import { PageHeader } from '@/components/PageHeader'
@@ -229,29 +230,23 @@ function PasswortFormular({
 
   return (
     <form className="space-y-3" onSubmit={aendern}>
-      <input
-        className="field"
+      <PasswortFeld
         name="alt"
-        type="password"
         placeholder="Aktuelles Passwort"
         aria-label="Aktuelles Passwort"
         autoComplete="current-password"
         required
       />
-      <input
-        className="field"
+      <PasswortFeld
         name="neu"
-        type="password"
         placeholder="Neues Passwort"
         aria-label="Neues Passwort"
         autoComplete="new-password"
         minLength={MINDESTLAENGE}
         required
       />
-      <input
-        className="field"
+      <PasswortFeld
         name="wiederholung"
-        type="password"
         placeholder="Neues Passwort wiederholen"
         aria-label="Neues Passwort wiederholen"
         autoComplete="new-password"

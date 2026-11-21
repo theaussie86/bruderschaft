@@ -43,3 +43,30 @@ onRecordDelete((e) => {
   }
   e.next()
 }, 'mitglieder')
+
+// Mails sind klein geschrieben gespeichert, egal wie der Admin sie eintippt.
+// Sonst steht "Stefan@..." in der Liste und "stefan@..." scheitert beim
+// Anmelden, weil PocketBase die Adresse genau vergleicht.
+function mailKlein(e) {
+  const email = e.record.email()
+  const klein = email.trim().toLowerCase()
+  if (email !== klein) e.record.setEmail(klein)
+  e.next()
+}
+onRecordCreate(mailKlein, 'mitglieder')
+onRecordUpdate(mailKlein, 'mitglieder')
+
+// Beim Anmelden zählt die Schreibweise der Mail nicht.
+onRecordAuthWithPasswordRequest((e) => {
+  if (!e.record && (!e.identityField || e.identityField === 'email')) {
+    try {
+      e.record = e.app.findAuthRecordByEmail(
+        'mitglieder',
+        String(e.identity).trim().toLowerCase(),
+      )
+    } catch {
+      // Unbekannte Mail: PocketBase lehnt wie gewohnt ab.
+    }
+  }
+  e.next()
+}, 'mitglieder')

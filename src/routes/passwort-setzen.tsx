@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Button } from '@/components/Button'
+import { PasswortFeld } from '@/components/PasswortFeld'
 import { PublicPage } from '@/components/PublicPage'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
@@ -75,10 +76,8 @@ function PasswortSetzen() {
       <form className="space-y-4" onSubmit={setzen}>
         <label className="block">
           <span className="text-ash mb-1.5 block text-sm">Neues Passwort</span>
-          <input
-            className="field"
+          <PasswortFeld
             name="passwort"
-            type="password"
             autoComplete="new-password"
             minLength={MINDESTLAENGE}
             required
@@ -91,10 +90,8 @@ function PasswortSetzen() {
           <span className="text-ash mb-1.5 block text-sm">
             Passwort wiederholen
           </span>
-          <input
-            className="field"
+          <PasswortFeld
             name="wiederholung"
-            type="password"
             autoComplete="new-password"
             minLength={MINDESTLAENGE}
             required
