@@ -1,3 +1,4 @@
+import type { ProtokollKnoten } from '@/lib/protokoll'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
 // Termine im Kalender (Spec #17). PocketBase speichert Zeitpunkte in UTC, der
@@ -54,6 +55,11 @@ export type Termin = {
   abgesagt: boolean
   // Dateinamen des Protokolls. PocketBase liefert sie nur bei Stammtischen.
   protokoll?: Array<string>
+  // Geschriebenes Protokoll als Tiptap/ProseMirror-JSON und der Zeitpunkt der
+  // letzten Speicherung. Ebenfalls nur bei Stammtischen, nur auf der
+  // Terminseite geladen.
+  protokolltext?: ProtokollKnoten | null
+  protokoll_gespeichert?: string
 }
 
 export const ART_NAME: Record<TerminArt, string> = {
@@ -274,9 +280,12 @@ export async function ladeKommendeTermine(jetzt = new Date()) {
   return kommendeTermine(termine, jetzt)
 }
 
+// Den Protokolltext braucht nur die Seite des Termins, nicht die Listen.
 export async function ladeTermin(id: string): Promise<Termin> {
   const pb = createBrowserPocketBase()
-  return pb.collection('termine').getOne<Termin>(id, { fields: FELDER })
+  return pb.collection('termine').getOne<Termin>(id, {
+    fields: `${FELDER},protokolltext,protokoll_gespeichert`,
+  })
 }
 
 // Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.

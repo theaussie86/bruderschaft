@@ -15,11 +15,36 @@ onRecordValidate((e) => {
   e.next()
 }, 'termine')
 
-// Ein Protokoll gehört nur zum Stammtisch. Wechselt die Art, bleibt es
-// gespeichert, ist aber weder im Datensatz noch als Datei zu sehen, bis die
-// Art zurückgeändert wird.
+// Ändert sich der Protokolltext, hält PocketBase selbst fest, wann. So kann
+// niemand einen falschen Zeitpunkt mitschicken.
+onRecordCreate((e) => {
+  // Ein leeres JSON-Feld liest sich als "null".
+  const text = e.record.getString('protokolltext')
+  e.record.set(
+    'protokoll_gespeichert',
+    text && text !== 'null' ? new DateTime() : '',
+  )
+  e.next()
+}, 'termine')
+
+onRecordUpdate((e) => {
+  const alt = e.record.original()
+  e.record.set(
+    'protokoll_gespeichert',
+    e.record.getString('protokolltext') !== alt.getString('protokolltext')
+      ? new DateTime()
+      : alt.get('protokoll_gespeichert'),
+  )
+  e.next()
+}, 'termine')
+
+// Ein Protokoll (Dateien und Text) gehört nur zum Stammtisch. Wechselt die
+// Art, bleibt es gespeichert, ist aber weder im Datensatz noch als Datei zu
+// sehen, bis die Art zurückgeändert wird.
 onRecordEnrich((e) => {
-  if (e.record.get('art') !== 'stammtisch') e.record.hide('protokoll')
+  if (e.record.get('art') !== 'stammtisch') {
+    e.record.hide('protokoll', 'protokolltext', 'protokoll_gespeichert')
+  }
   e.next()
 }, 'termine')
 

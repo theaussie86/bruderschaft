@@ -1,17 +1,22 @@
-import { FilePlus, FileText, Trash2 } from 'lucide-react'
+import { FilePlus, FileText, NotebookPen, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 import type { Termin } from '@/lib/termine'
+import { Mitschreiben } from '@/components/termin/Mitschreiben'
+import { ProtokollText } from '@/components/termin/ProtokollText'
 import { fehlertext } from '@/lib/geburtstag'
 import {
   protokollBezeichnung,
   protokollDateiLoeschen,
   protokollHochladen,
   protokollPfad,
+  protokollTextLeer,
+  zuletztGespeichert,
 } from '@/lib/protokoll'
 
-// Das Protokoll eines Stammtischs: alle Mitglieder öffnen die Dateien, Admins
-// laden weitere hoch und löschen einzelne.
+// Das Protokoll eines Stammtischs: alle Mitglieder lesen den gespeicherten
+// Text und öffnen die Dateien darunter. Admins schreiben im Vollbild mit,
+// laden Dateien hoch und löschen einzelne.
 export function Protokoll({
   termin,
   admin,
@@ -24,10 +29,12 @@ export function Protokoll({
   const [fehler, setFehler] = useState<string | null>(null)
   const [laeuft, setLaeuft] = useState(false)
   const [loeschenFragen, setLoeschenFragen] = useState<string | null>(null)
+  const [schreiben, setSchreiben] = useState(false)
   const eingabe = useRef<HTMLInputElement>(null)
   const dateien = termin.protokoll ?? []
-
-  if (!admin && dateien.length === 0) return null
+  const text = protokollTextLeer(termin.protokolltext)
+    ? null
+    : termin.protokolltext
 
   async function ausfuehren(aktion: () => Promise<Termin>, meldung: string) {
     setFehler(null)
@@ -52,11 +59,35 @@ export function Protokoll({
         </p>
       )}
 
-      {dateien.length === 0 ? (
+      {admin && (
+        <button
+          type="button"
+          onClick={() => setSchreiben(true)}
+          className="bg-rust text-bone hover:bg-rust-hi mb-3 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl text-lg font-semibold"
+        >
+          <NotebookPen className="size-6" />
+          {text ? 'Weiter mitschreiben' : 'Mitschreiben'}
+        </button>
+      )}
+
+      {text && (
+        <div className="card mb-3 p-5">
+          <ProtokollText text={text} />
+          {termin.protokoll_gespeichert && (
+            <p className="text-smoke border-line/60 mt-4 border-t pt-3 text-sm">
+              {zuletztGespeichert(termin.protokoll_gespeichert)}
+            </p>
+          )}
+        </div>
+      )}
+
+      {!text && dateien.length === 0 && (
         <div className="card text-ash p-5 text-[15px]">
           Zu diesem Stammtisch gibt es noch kein Protokoll.
         </div>
-      ) : (
+      )}
+
+      {dateien.length > 0 && (
         <ul className="card divide-line/60 divide-y">
           {dateien.map((d, i) => (
             <li key={d} className="flex items-center gap-2 px-4 py-1.5">
@@ -107,6 +138,14 @@ export function Protokoll({
             </li>
           ))}
         </ul>
+      )}
+
+      {schreiben && (
+        <Mitschreiben
+          termin={termin}
+          onGespeichert={onGeaendert}
+          onSchliessen={() => setSchreiben(false)}
+        />
       )}
 
       {admin && (

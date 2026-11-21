@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { anmelden, app, neuesMitglied, superuser } from './helpers'
+import { protokollTextLeer } from '@/lib/protokoll'
 import { ARCHIV_FILTER } from '@/lib/termine'
 
 const TERMINE = '/pb/api/collections/termine/records'
@@ -127,6 +128,195 @@ describe('Protokolle lesen', () => {
     expect((await app(dateiPfad(mitProtokoll, datei), { cookie })).status).toBe(
       200,
     )
+  })
+})
+
+// Ein Protokolltext, wie ihn der Editor als Tiptap/ProseMirror-JSON liefert.
+const TEXT = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: '14 da. Kasse stimmt.' }],
+    },
+  ],
+}
+
+function textSpeichern(terminId: string, cookie: string, text: unknown = TEXT) {
+  return app(`${TERMINE}/${terminId}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ protokolltext: text }),
+    cookie,
+  })
+}
+
+function zeitpunkt(wert: unknown) {
+  return new Date(String(wert).replace(' ', 'T')).getTime()
+}
+
+describe('Protokolltext', () => {
+  test('Admin speichert Text, jedes Mitglied liest ihn mit dem Zeitpunkt der Speicherung', async () => {
+    const termin = await stammtisch()
+    const vorher = Date.now()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+    expect(res.status).toBe(200)
+
+    const gelesen = await app(`${TERMINE}/${termin.id}`, {
+      cookie: await anmelden(await neuesMitglied()),
+    })
+    const daten = await gelesen.json()
+    expect(daten.protokolltext).toEqual(TEXT)
+    const gespeichert = zeitpunkt(daten.protokoll_gespeichert)
+    expect(gespeichert).toBeGreaterThanOrEqual(vorher - 1000)
+    expect(gespeichert).toBeLessThanOrEqual(Date.now() + 1000)
+  })
+
+  test('Mitglied kann keinen Protokolltext speichern', async () => {
+    const termin = await stammtisch()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied()),
+    )
+
+    expect(res.ok).toBe(false)
+    const pb = await superuser()
+    const gelesen = await pb.collection('termine').getOne(termin.id)
+    expect(gelesen.protokolltext).toBeNull()
+    expect(gelesen.protokoll_gespeichert).toBe('')
+  })
+
+  test('der Zeitpunkt folgt dem Text, nicht anderen Änderungen am Termin', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    const erst = await (await textSpeichern(termin.id, cookie)).json()
+
+    const verschoben = await app(`${TERMINE}/${termin.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ort: 'Wirtschaft',
+        protokoll_gespeichert: '2020-01-01 00:00:00.000Z',
+      }),
+      cookie,
+    })
+
+    expect((await verschoben.json()).protokoll_gespeichert).toBe(
+      erst.protokoll_gespeichert,
+    )
+  })
+
+  test('Admin ergänzt den Text eines vergangenen Stammtischs', async () => {
+    const termin = await stammtisch({ beginn: '2024-03-01 18:30:00.000Z' })
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+    const ergaenzt = {
+      type: 'doc',
+      content: [
+        ...TEXT.content,
+        { type: 'paragraph', content: [{ type: 'text', text: 'Nachtrag.' }] },
+      ],
+    }
+
+    const res = await textSpeichern(termin.id, cookie, ergaenzt)
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).protokolltext).toEqual(ergaenzt)
+  })
+
+  test('Text und Dateien hängen zusammen am Protokoll', async () => {
+    const termin = await stammtisch()
+    await alsAdminHochladen(termin.id)
+    await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    const res = await app(`${TERMINE}/${termin.id}`, {
+      cookie: await anmelden(await neuesMitglied()),
+    })
+
+    const daten = await res.json()
+    expect(daten.protokolltext).toEqual(TEXT)
+    expect(daten.protokoll).toHaveLength(1)
+  })
+
+  test('wechselt die Art weg von Stammtisch, ist der Text ausgeblendet, nicht gelöscht', async () => {
+    const termin = await stammtisch()
+    await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+    const cookie = await anmelden(await neuesMitglied())
+    const pb = await superuser()
+
+    await pb
+      .collection('termine')
+      .update(termin.id, { art: 'urlaub', ende: '2025-06-08 18:30:00.000Z' })
+    const ausgeblendet = await (
+      await app(`${TERMINE}/${termin.id}`, { cookie })
+    ).json()
+    expect(ausgeblendet.protokolltext ?? null).toBeNull()
+    expect(ausgeblendet.protokoll_gespeichert ?? '').toBe('')
+
+    await pb.collection('termine').update(termin.id, { art: 'stammtisch' })
+    const wieder = await (
+      await app(`${TERMINE}/${termin.id}`, { cookie })
+    ).json()
+    expect(wieder.protokolltext).toEqual(TEXT)
+    expect(wieder.protokoll_gespeichert).not.toBe('')
+  })
+})
+
+describe('Protokolltext ist leer', () => {
+  test.each([
+    ['nie gespeichert', null],
+    ['leeres Dokument', { type: 'doc', content: [] }],
+    ['ein leerer Absatz', { type: 'doc', content: [{ type: 'paragraph' }] }],
+    [
+      'nur Leerzeichen und leere Listen',
+      {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: '   ' }] },
+          {
+            type: 'bulletList',
+            content: [{ type: 'listItem', content: [{ type: 'paragraph' }] }],
+          },
+        ],
+      },
+    ],
+  ])('%s zählt als kein Text', (_, text) => {
+    expect(protokollTextLeer(text)).toBe(true)
+  })
+
+  test('ein Wort in einer Liste zählt als Text', () => {
+    expect(
+      protokollTextLeer({
+        type: 'doc',
+        content: [
+          {
+            type: 'bulletList',
+            content: [
+              {
+                type: 'listItem',
+                content: [
+                  {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: 'Kasse' }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toBe(false)
   })
 })
 
