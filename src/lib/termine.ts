@@ -153,7 +153,7 @@ export function zeitText(t: Termin) {
   return `${berlinZeit(t.beginn)} bis ${bis} Uhr`
 }
 
-const WOCHENTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+export const WOCHENTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 const WOCHENTAG_LANG = [
   'Sonntag',
   'Montag',
@@ -163,7 +163,7 @@ const WOCHENTAG_LANG = [
   'Freitag',
   'Samstag',
 ]
-const MONAT = [
+export const MONAT = [
   'Januar',
   'Februar',
   'März',
@@ -227,7 +227,7 @@ export function bilderErlaubt(t: Termin, jetzt = new Date()) {
   )
 }
 
-const FELDER =
+export const FELDER =
   'id,titel,art,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll'
 
 // Lädt grob ab vorgestern, den genauen Schnitt macht kommendeTermine.
@@ -308,9 +308,11 @@ export function geburtstagsZeitraum(jetzt = new Date()) {
   return { von, bis: bis.toISOString().slice(0, 10) }
 }
 
-export async function ladeGeburtstage(jetzt = new Date()) {
+export async function ladeGeburtstage(
+  zeitraum: { von: string; bis: string } = geburtstagsZeitraum(),
+) {
   const pb = createBrowserPocketBase()
   return pb.send<Array<Geburtstag>>('/api/club/geburtstage', {
-    query: geburtstagsZeitraum(jetzt),
+    query: zeitraum,
   })
 }

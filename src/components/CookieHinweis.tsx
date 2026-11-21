@@ -73,7 +73,7 @@ export function CookieHinweis() {
       role="region"
       aria-label="Hinweis zu Cookies"
       // Mobil über der Tab-Leiste der App-Shell (_app.tsx), ab lg ist dort keine.
-      className="card animate-rise fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md p-5 shadow-lg lg:bottom-3"
+      className="nicht-drucken card animate-rise fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md p-5 shadow-lg lg:bottom-3"
     >
       <h2 className="text-bone font-semibold">Nur das Nötigste</h2>
       <p className="text-ash mt-2 text-sm leading-relaxed">

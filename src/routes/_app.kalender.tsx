@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
+import { Plus, Printer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { KalenderEintrag } from '@/lib/termine'
@@ -87,12 +87,20 @@ function Kalender() {
     <>
       <PageHeader title="Kalender" />
       {mitglied.admin && (
-        <Link
-          to="/kalender/neu"
-          className="border-brass/40 text-brass hover:bg-brass/10 mb-5 flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-[15px] font-semibold"
-        >
-          <Plus className="size-4" /> Termin anlegen
-        </Link>
+        <div className="mb-5 flex gap-2">
+          <Link
+            to="/kalender/neu"
+            className="border-brass/40 text-brass hover:bg-brass/10 flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-[15px] font-semibold"
+          >
+            <Plus className="size-4" /> Termin anlegen
+          </Link>
+          <Link
+            to="/jahreskalender"
+            className="border-line/70 text-ash hover:bg-slate/50 flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-[15px]"
+          >
+            <Printer className="size-4" /> Jahr drucken
+          </Link>
+        </div>
       )}
       <Umschalter<Ansicht>
         wert={ansicht}

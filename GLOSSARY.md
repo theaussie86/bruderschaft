@@ -158,6 +158,10 @@ _Avoid_: Notiz, Mitschrift
 Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen Kalender holen. Ein Admin kann ihn erneuern, dann gilt der alte nicht mehr.
 _Avoid_: Export, Feed
 
+**Jahreskalender**:
+Das ganze Jahr auf einem A4-Blatt quer zum Ausdrucken, im Look der alten Excel-Liste: Termine, Geburtstage, Wochenenden und Feiertage in Bayern. Abgesagte Termine stehen nicht drauf. Nur Admins rufen ihn auf, wenn die wichtigen Termine fürs Jahr eingetragen sind.
+_Avoid_: Wandkalender, Export, Druckansicht
+
 **Drucker**:
 Der regionale Textildruck-Betrieb, der die Sammelbestellung bedruckt und liefert.
 _Avoid_: Hersteller, Lieferant
