@@ -16,6 +16,14 @@ _Avoid_: User, Member, Kunde
 Das Geburtsdatum eines Mitglieds, mit Jahr. Jedes Mitglied gibt ihn beim ersten Login an und ändert ihn selbst im Profil; ein Admin kann ihn korrigieren. Er steht jedes Jahr mit dem Alter, das das Mitglied wird, im Kalender und im Kalender-Abo, solange das Mitglied nicht ausgetreten ist, und ist kein Termin. Ein Geburtstag am 29. Februar steht in Nicht-Schaltjahren am 28. Februar.
 _Avoid_: Geburtstagstermin
 
+**Spitzname**:
+Der Name, unter dem ein Mitglied in der App überall erscheint, zum Beispiel in Listen und Aufträgen. Ihn legt der Admin beim Einladen an und nur ein Admin ändert ihn.
+_Avoid_: Benutzername, Anzeigename
+
+**Anschrift**:
+Voller Name (Vor- und Nachname), Straße mit Hausnummer, PLZ und Ort eines Mitglieds, für die Mitgliederliste des Schriftführers. Jedes Mitglied trägt sie freiwillig im Profil ein und ändert sie selbst; Admins sehen und korrigieren sie in der Verwaltung, andere Mitglieder sehen sie nicht. Die DSGVO-Löschung leert sie.
+_Avoid_: Adresse (für die Mail), Kontaktdaten
+
 **Eingeladenes Mitglied**:
 Ein Mitglied, das der Admin angelegt hat und das sein Passwort über den Einladungslink noch nicht gesetzt hat. Der Admin kann die Einladung erneut senden, dann gilt nur noch der neue Link.
 _Avoid_: inaktiv, unbestätigt

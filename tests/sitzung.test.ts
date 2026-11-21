@@ -22,6 +22,7 @@ describe('Sitzung verlängern (authRefresh in der Root-Route)', () => {
       admin: false,
       support: false,
       geburtstag: '',
+      anschrift: { voller_name: '', strasse: '', plz: '', ort: '' },
     })
   })
 

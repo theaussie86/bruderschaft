@@ -5,11 +5,13 @@ import {
   ChevronRight,
   KeyRound,
   LogOut,
+  MapPin,
   Printer,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
+import { AnschriftFormular } from '@/components/AnschriftFormular'
 import { Button } from '@/components/Button'
 import { PasswortFeld } from '@/components/PasswortFeld'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
@@ -17,6 +19,7 @@ import { KalenderAbo } from '@/components/KalenderAbo'
 import { PageHeader } from '@/components/PageHeader'
 import { RechtlicheLinks } from '@/components/PublicPage'
 import { VERWALTUNG_LINKS } from '@/components/verwaltung'
+import { anschriftZeile } from '@/lib/anschrift'
 import { fehlertext, geburtstagAnzeigen } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
@@ -24,7 +27,7 @@ export const Route = createFileRoute('/_app/profil')({ component: Profil })
 
 const MINDESTLAENGE = 8
 
-type Bereich = 'geburtstag' | 'passwort' | 'kalender'
+type Bereich = 'anschrift' | 'geburtstag' | 'passwort' | 'kalender'
 
 function Profil() {
   const { mitglied } = Route.useRouteContext()
@@ -45,9 +48,14 @@ function Profil() {
         <div className="font-display text-3xl leading-none font-extrabold uppercase">
           {mitglied.name}
         </div>
+        {mitglied.anschrift.voller_name && (
+          <div className="text-bone mt-1.5 truncate">
+            {mitglied.anschrift.voller_name}
+          </div>
+        )}
         <div className="text-ash mt-1 truncate">{mitglied.email}</div>
         <div className="text-smoke mt-1.5 text-[13px]">
-          Name und E-Mail ändert nur ein Admin.
+          Spitzname und E-Mail ändert nur ein Admin.
         </div>
       </div>
 
@@ -58,6 +66,24 @@ function Profil() {
       )}
 
       <ul className="card divide-line/60 mt-4 divide-y overflow-hidden">
+        <Zeile
+          icon={MapPin}
+          label="Name und Anschrift"
+          hinweis={anschriftZeile(mitglied.anschrift) || 'Noch nicht angegeben'}
+          offen={offen === 'anschrift'}
+          onClick={() => umschalten('anschrift')}
+        >
+          <AnschriftFormular
+            mitgliedId={mitglied.id}
+            wert={mitglied.anschrift}
+            hinweis="Sehen nur du und die Admins, für die Mitgliederliste."
+            onGespeichert={async () => {
+              await router.invalidate()
+              setOffen(null)
+              setMeldung('Name und Anschrift gespeichert.')
+            }}
+          />
+        </Zeile>
         <Zeile
           icon={Cake}
           label="Geburtstag"

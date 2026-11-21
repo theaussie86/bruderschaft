@@ -31,9 +31,13 @@ async function mitgliedMitSpuren(): Promise<
 > {
   const mitglied = await neuesMitglied({ name: 'Wird gelöscht' })
   const pb = await superuser()
-  await pb
-    .collection('mitglieder')
-    .update(mitglied.id, { geburtstag: '1980-05-17 12:00:00.000Z' })
+  await pb.collection('mitglieder').update(mitglied.id, {
+    geburtstag: '1980-05-17 12:00:00.000Z',
+    voller_name: 'Wird Gelöschter',
+    strasse: 'Löschweg 7',
+    plz: '87724',
+    ort: 'Löschingen',
+  })
   const runde = await offeneRunde()
   const auftrag = await pb.collection('auftraege').create({
     runde: runde.id,
@@ -69,6 +73,10 @@ describe('DSGVO-Löschung', () => {
       gesperrt: true,
       admin: false,
       geburtstag: '',
+      voller_name: '',
+      strasse: '',
+      plz: '',
+      ort: '',
     })
     expect(gespeichert.email).not.toBe(mitglied.email)
     expect(gespeichert.email).toMatch(/@[^@]+\.invalid$/)

@@ -3,9 +3,9 @@
 // DSGVO-Löschung (Spec #17, ADR 0002): Ein Admin löscht auf Wunsch die Daten
 // eines Mitglieds. Der Datensatz bleibt, damit Aufträge und Bilder ihre
 // Relation behalten, und läuft als "Ehemaliges Mitglied" weiter. Name, Mail,
-// Geburtstag und Passwort werden in einer Transaktion ersetzt; ein neues
-// Zufallspasswort erneuert auch den tokenKey, alte Sitzungen gelten nicht
-// mehr. Dass immer ein Admin bleibt, prüft mitglieder.pb.js.
+// Geburtstag, voller Name, Anschrift und Passwort werden in einer Transaktion
+// ersetzt; ein neues Zufallspasswort erneuert auch den tokenKey, alte
+// Sitzungen gelten nicht mehr. Dass immer ein Admin bleibt, prüft mitglieder.pb.js.
 routerAdd(
   'POST',
   '/api/club/mitglieder/{id}/daten-loeschen',
@@ -31,6 +31,8 @@ routerAdd(
       mitglied.setEmailVisibility(false)
       mitglied.setRandomPassword()
       mitglied.set('geburtstag', '')
+      for (const feld of ['voller_name', 'strasse', 'plz', 'ort'])
+        mitglied.set(feld, '')
       mitglied.set('admin', false)
       mitglied.set('gesperrt', true)
       mitglied.set('ehemalig', true)

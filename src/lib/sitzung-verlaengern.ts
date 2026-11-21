@@ -1,7 +1,9 @@
 import PocketBase from 'pocketbase'
 
+import { anschriftAus } from './anschrift'
 import { geburtstagAus } from './geburtstag'
 import { abmeldeCookie, sitzungsCookie, tokenAusCookieHeader } from './sitzung'
+import type { Anschrift } from './anschrift'
 
 export type AngemeldetesMitglied = {
   id: string
@@ -14,6 +16,8 @@ export type AngemeldetesMitglied = {
   // Geburtstag als JJJJ-MM-TT, leer, solange das Mitglied ihn noch nicht
   // angegeben hat. Dann führt die App zuerst durch den Pflichtschritt.
   geburtstag: string
+  // Voller Name und Anschrift, freiwillig, im Profil änderbar.
+  anschrift: Anschrift
 }
 
 // Verlängert die Sitzung mit authRefresh. Gesperrte Mitglieder und abgelaufene
@@ -38,6 +42,7 @@ export async function verlaengereSitzung(
         admin: record.admin === true || record.support === true,
         support: record.support === true,
         geburtstag: geburtstagAus(record.geburtstag),
+        anschrift: anschriftAus(record),
       },
     }
   } catch {
