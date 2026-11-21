@@ -7,6 +7,7 @@ import {
 import { useState } from 'react'
 
 import { Button } from '@/components/Button'
+import { PasswortFeld } from '@/components/PasswortFeld'
 import { PublicPage } from '@/components/PublicPage'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
@@ -59,10 +60,8 @@ function Login() {
         </label>
         <label className="block">
           <span className="text-ash mb-1.5 block text-sm">Passwort</span>
-          <input
-            className="field"
+          <PasswortFeld
             name="passwort"
-            type="password"
             autoComplete="current-password"
             required
           />

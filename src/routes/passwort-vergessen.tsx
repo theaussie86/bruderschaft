@@ -22,7 +22,7 @@ function PasswortVergessen() {
     try {
       await createBrowserPocketBase()
         .collection('mitglieder')
-        .requestPasswordReset(String(form.get('email')))
+        .requestPasswordReset(String(form.get('email')).trim().toLowerCase())
       setGesendet(true)
     } catch {
       setFehler('Das hat nicht geklappt. Versuche es bitte später noch einmal.')

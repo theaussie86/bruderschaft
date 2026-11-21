@@ -88,6 +88,30 @@ describe('Einladen', () => {
     expect(login.status).toBe(200)
   })
 
+  test('Groß- und Kleinschreibung der Mail spielt keine Rolle', async () => {
+    // Ein Admin hat "Stefan@..." angelegt, das Mitglied tippt "stefan@..."
+    // (und umgekehrt). Passwort setzen klappte, die Anmeldung nicht.
+    const admin = await neuesMitglied({ admin: true })
+    const u = randomUUID()
+    const res = await einladen(await anmelden(admin), `Gross-${u}@Test.invalid`)
+    const { id, email } = await res.json()
+    expect(email).toBe(`gross-${u}@test.invalid`)
+    await passwortSetzen(await linkToken(email), 'mein-neues-passwort')
+
+    for (const getippt of [
+      `gross-${u}@test.invalid`,
+      `Gross-${u}@test.invalid`,
+      ` GROSS-${u}@TEST.INVALID `,
+    ]) {
+      const login = await anmeldung({
+        id,
+        email: getippt,
+        password: 'mein-neues-passwort',
+      })
+      expect(login.status, getippt).toBe(200)
+    }
+  })
+
   test('der Link gilt 7 Tage', async () => {
     const admin = await neuesMitglied({ admin: true })
     const email = neueMail()
