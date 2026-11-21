@@ -18,7 +18,7 @@ const TON = {
 } as const satisfies Record<TerminArt, string>
 
 // Ein Termin in der Liste: Kalenderblatt, Art, Titel, Zeit und Ort. Abgesagte
-// bleiben sichtbar, durchgestrichen und markiert. Im Archiv steht die Zahl der
+// bleiben sichtbar, durchgestrichen und markiert. Unter Vergangen steht die Zahl der
 // Bilder dabei, bei Stammtischen mit Protokoll zusätzlich das Protokoll.
 export function TerminZeile({
   termin: t,

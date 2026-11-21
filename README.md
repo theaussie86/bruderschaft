@@ -1,6 +1,6 @@
 # Hahna Brothers
 
-Mitglieder-App der Bruderschaft: Bestellrunden für Brotherhood-Kleidung, Kalender, Archiv. Begriffe stehen in [GLOSSARY.md](GLOSSARY.md), Entscheidungen in [docs/adr/](docs/adr/).
+Mitglieder-App der Bruderschaft: Bestellrunden für Brotherhood-Kleidung, Kalender mit vergangenen Terminen. Begriffe stehen in [GLOSSARY.md](GLOSSARY.md), Entscheidungen in [docs/adr/](docs/adr/).
 
 ## Lokal entwickeln
 

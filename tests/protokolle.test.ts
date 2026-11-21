@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest'
 
 import { anmelden, app, neuesMitglied, superuser } from './helpers'
+import type { Termin } from '@/lib/termine'
 import { protokollDokument, protokollTextLeer } from '@/lib/protokoll'
-import { ARCHIV_FILTER } from '@/lib/termine'
+import { hatProtokoll } from '@/lib/termine'
 
 const TERMINE = '/pb/api/collections/termine/records'
 
@@ -426,59 +427,41 @@ describe('Protokolltext ist leer', () => {
   })
 })
 
-// Ein winziges, gültiges PNG (1x1 Pixel) als Bild zu einem Termin.
-const PNG = Uint8Array.from(
-  Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-    'base64',
-  ),
-)
-
-async function mitBild(terminId: string) {
-  const mitglied = await neuesMitglied()
-  const form = new FormData()
-  form.set('termin', terminId)
-  form.set('mitglied', mitglied.id)
-  form.set('datei', new File([PNG], 'foto.png', { type: 'image/png' }))
-  const pb = await superuser()
-  await pb.collection('bilder').create(form)
-}
-
-async function imArchiv(ids: Array<string>) {
+// Welche der Stammtische laut PocketBase ein Protokoll haben, so wie die
+// Liste es als Marke zeigt.
+async function habenProtokoll(ids: Array<string>) {
   const nurDiese = ids.map((id) => `id = '${id}'`).join(' || ')
-  const filter = `${ARCHIV_FILTER} && (${nurDiese})`
   const res = await app(
-    `${TERMINE}?filter=${encodeURIComponent(filter)}&fields=id&perPage=50`,
+    `${TERMINE}?filter=${encodeURIComponent(nurDiese)}&fields=id,protokoll,hat_protokolltext&perPage=50`,
     { cookie: await anmelden(await neuesMitglied()) },
   )
-  const items = (await res.json()).items as Array<{ id: string }>
-  return items.map((t) => t.id).sort()
+  const items = (await res.json()).items as Array<Termin>
+  return items
+    .filter(hatProtokoll)
+    .map((t) => t.id)
+    .sort()
 }
 
-describe('Stammtische im Archiv', () => {
-  test('ein Stammtisch ist mit Protokoll oder Bildern im Archiv, ohne beides nicht', async () => {
+describe('Protokoll-Marke am Stammtisch', () => {
+  test('ein Stammtisch hat mit Dateien ein Protokoll, ohne nicht', async () => {
     const ohne = await stammtisch()
-    const mitProtokoll = await stammtisch()
-    await alsAdminHochladen(mitProtokoll.id)
-    const mitBildern = await stammtisch()
-    await mitBild(mitBildern.id)
+    const mitDatei = await stammtisch()
+    await alsAdminHochladen(mitDatei.id)
 
-    const archiv = await imArchiv([ohne.id, mitProtokoll.id, mitBildern.id])
-
-    expect(archiv).toEqual([mitProtokoll.id, mitBildern.id].sort())
+    expect(await habenProtokoll([ohne.id, mitDatei.id])).toEqual([mitDatei.id])
   })
 
-  test('ein Stammtisch nur mit geschriebenem Protokoll ist im Archiv', async () => {
+  test('ein Stammtisch hat mit geschriebenem Text ein Protokoll', async () => {
     const mitText = await stammtisch()
     await textSpeichern(
       mitText.id,
       await anmelden(await neuesMitglied({ admin: true })),
     )
 
-    expect(await imArchiv([mitText.id])).toEqual([mitText.id])
+    expect(await habenProtokoll([mitText.id])).toEqual([mitText.id])
   })
 
-  test('ein Stammtisch mit leerem Dokument, ohne Dateien und Bilder ist nicht im Archiv', async () => {
+  test('ein Stammtisch mit leerem Dokument und ohne Dateien hat kein Protokoll', async () => {
     const leer = await stammtisch()
     await textSpeichern(
       leer.id,
@@ -491,10 +474,10 @@ describe('Stammtische im Archiv', () => {
       },
     )
 
-    expect(await imArchiv([leer.id])).toEqual([])
+    expect(await habenProtokoll([leer.id])).toEqual([])
   })
 
-  test('wird der Text wieder geleert, fällt der Stammtisch aus dem Archiv', async () => {
+  test('wird der Text wieder geleert, hat der Stammtisch kein Protokoll mehr', async () => {
     const termin = await stammtisch()
     const cookie = await anmelden(await neuesMitglied({ admin: true }))
     await textSpeichern(termin.id, cookie)
@@ -503,7 +486,7 @@ describe('Stammtische im Archiv', () => {
       content: [{ type: 'paragraph' }],
     })
 
-    expect(await imArchiv([termin.id])).toEqual([])
+    expect(await habenProtokoll([termin.id])).toEqual([])
   })
 
   test('ob es Text gibt, bestimmt PocketBase, nicht was mitgeschickt wird', async () => {
@@ -516,15 +499,6 @@ describe('Stammtische im Archiv', () => {
     })
     expect(res.status).toBe(200)
 
-    expect(await imArchiv([termin.id])).toEqual([])
-  })
-
-  test('ein abgesagter Stammtisch mit Bild ist nicht im Archiv', async () => {
-    const abgesagt = await stammtisch()
-    await mitBild(abgesagt.id)
-    const pb = await superuser()
-    await pb.collection('termine').update(abgesagt.id, { abgesagt: true })
-
-    expect(await imArchiv([abgesagt.id])).toEqual([])
+    expect(await habenProtokoll([termin.id])).toEqual([])
   })
 })
