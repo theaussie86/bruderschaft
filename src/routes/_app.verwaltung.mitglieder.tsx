@@ -1,18 +1,22 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Cake, Settings2, UserPlus } from 'lucide-react'
+import { Cake, MapPin, Settings2, UserPlus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+import type { Anschrift } from '@/lib/anschrift'
+import { AnschriftFormular } from '@/components/AnschriftFormular'
 import { Button } from '@/components/Button'
 import { GeburtstagFormular } from '@/components/GeburtstagFormular'
 import { Markierung } from '@/components/Markierung'
 import { MitgliedVerwalten } from '@/components/MitgliedVerwalten'
 import { PageHeader } from '@/components/PageHeader'
+import { anschriftAus, anschriftZeile } from '@/lib/anschrift'
 import { fehlertext, geburtstagAnzeigen, geburtstagAus } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
-// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag korrigieren,
-// Admin-Recht, Sperre, Mail, Löschen und DSGVO-Löschung. Die Rechte prüft
-// PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
+// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag und
+// Anschrift korrigieren, Admin-Recht, Sperre, Mail, Löschen und
+// DSGVO-Löschung. Die Rechte prüft PocketBase (ADR 0002), die Seite blendet
+// sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
@@ -29,6 +33,7 @@ type Eintrag = {
   gesperrt: boolean
   ehemalig: boolean
   geburtstag: string
+  anschrift: Anschrift
 }
 
 function Mitglieder() {
@@ -40,6 +45,7 @@ function Mitglieder() {
   const [formOffen, setFormOffen] = useState(false)
   const [laeuft, setLaeuft] = useState(false)
   const [geburtstagVon, setGeburtstagVon] = useState<string | null>(null)
+  const [anschriftVon, setAnschriftVon] = useState<string | null>(null)
   const [verwaltetVon, setVerwaltetVon] = useState<string | null>(null)
 
   const laden = useCallback(async () => {
@@ -48,7 +54,11 @@ function Mitglieder() {
         .collection('mitglieder')
         .getFullList<Eintrag>({ filter: 'support = false', sort: 'name' })
       setListe(
-        items.map((m) => ({ ...m, geburtstag: geburtstagAus(m.geburtstag) })),
+        items.map((m) => ({
+          ...m,
+          geburtstag: geburtstagAus(m.geburtstag),
+          anschrift: anschriftAus(m),
+        })),
       )
     } catch (err) {
       setMeldung({
@@ -206,6 +216,38 @@ function Mitglieder() {
                     />
                   </div>
                 )}
+                {!m.ehemalig && (
+                  <button
+                    type="button"
+                    className="text-ash hover:text-bone mt-0.5 flex items-start gap-1.5 text-left text-[13px]"
+                    aria-expanded={anschriftVon === m.id}
+                    onClick={() =>
+                      setAnschriftVon(anschriftVon === m.id ? null : m.id)
+                    }
+                  >
+                    <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                    <span>
+                      {anschriftZeile(m.anschrift) ||
+                        'Name und Anschrift fehlen'}
+                    </span>
+                  </button>
+                )}
+                {anschriftVon === m.id && (
+                  <div className="mt-3 mb-2">
+                    <AnschriftFormular
+                      mitgliedId={m.id}
+                      wert={m.anschrift}
+                      onGespeichert={async () => {
+                        setAnschriftVon(null)
+                        setMeldung({
+                          text: `Name und Anschrift von ${m.name} gespeichert.`,
+                          fehler: false,
+                        })
+                        await laden()
+                      }}
+                    />
+                  </div>
+                )}
                 <button
                   type="button"
                   className="text-ash hover:text-bone mt-0.5 flex items-center gap-1.5 text-[13px]"
@@ -223,6 +265,8 @@ function Mitglieder() {
                       mitglied={m}
                       onGeaendert={async (text) => {
                         setVerwaltetVon(null)
+                        setAnschriftVon(null)
+                        setGeburtstagVon(null)
                         setMeldung({ text, fehler: false })
                         await laden()
                       }}
