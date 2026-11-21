@@ -1,7 +1,15 @@
 import { randomUUID } from 'node:crypto'
 import { describe, expect, test } from 'vitest'
 
-import { anmelden, app, json, neuesMitglied, postfach } from './helpers'
+import {
+  anmelden,
+  anmeldung,
+  app,
+  json,
+  neuesMitglied,
+  postfach,
+  superuser,
+} from './helpers'
 
 describe('Mails', () => {
   test('"Passwort vergessen" kommt in der Club-Hülle mit Link auf die App', async () => {
@@ -34,6 +42,32 @@ describe('Mails', () => {
     expect(mail).toContain(neu)
     expect(mail).toMatch(/http:\/\/app\.test\/email-bestaetigen\?token=[\w.-]+/)
     expect(mail).not.toContain('/_/#/')
+  })
+
+  test('Mail-Änderung mit Großbuchstaben landet klein, Anmeldung klappt in jeder Schreibweise', async () => {
+    const mitglied = await neuesMitglied()
+    const u = randomUUID()
+    const getippt = `Neu-${u}@Test.invalid`
+
+    await app('/pb/api/collections/mitglieder/request-email-change', {
+      ...json({ newEmail: getippt }),
+      cookie: await anmelden(mitglied),
+    })
+    const [mail] = await postfach(getippt)
+    const token = /\/email-bestaetigen\?token=([\w.-]+)/.exec(mail)?.[1]
+    const res = await app(
+      '/pb/api/collections/mitglieder/confirm-email-change',
+      json({ token, password: mitglied.password }),
+    )
+    expect(res.status).toBe(204)
+
+    const pb = await superuser()
+    const record = await pb.collection('mitglieder').getOne(mitglied.id)
+    expect(record.email).toBe(`neu-${u}@test.invalid`)
+    for (const email of [getippt, `neu-${u}@test.invalid`]) {
+      const login = await anmeldung({ ...mitglied, email })
+      expect(login.status, email).toBe(200)
+    }
   })
 
   test('keine Login-Warnung bei Anmeldung von neuem Gerät', async () => {
