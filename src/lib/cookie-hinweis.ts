@@ -35,6 +35,14 @@ export const SPEICHERUNGEN: ReadonlyArray<Speicherung> = [
     dauer:
       'Bis du ihn auf der Cookie-Seite zurücksetzt oder die Browserdaten löschst.',
   },
+  {
+    name: 'protokoll-entwurf:…',
+    art: 'localStorage',
+    zweck:
+      'Nur bei Admins, die ein Protokoll mitschreiben: sichert den noch nicht gespeicherten Text pro Termin, damit er bei Netzausfall oder Absturz nicht verloren geht. Bleibt in deinem Browser und wird nie übertragen.',
+    dauer:
+      'Bis das Protokoll gespeichert oder der Entwurf verworfen ist, oder bis du die Browserdaten löschst.',
+  },
 ]
 
 type Speicher = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
