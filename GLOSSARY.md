@@ -163,7 +163,7 @@ Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen 
 _Avoid_: Export, Feed
 
 **Jahreskalender**:
-Das ganze Jahr auf einem Blatt quer zum Ausdrucken, A4 oder A3, im Look der alten Excel-Liste: Termine in ihrer Farbe, Geburtstage, Wochenenden und Feiertage in Bayern, unten eine Legende. Abgesagte Termine stehen nicht drauf. Nur Admins rufen ihn auf, wenn die wichtigen Termine fürs Jahr eingetragen sind.
+Das ganze Jahr auf einem Blatt quer zum Ausdrucken, A4 oder A3, im Look der alten Excel-Liste: Termine in ihrer Farbe, Geburtstage, Wochenenden und Feiertage in Bayern, unten eine Legende. Abgesagte Termine stehen nicht drauf. Jedes Mitglied druckt ihn selbst oder speichert ihn als PDF, zu finden im Profil.
 _Avoid_: Wandkalender, Export, Druckansicht
 
 **Drucker**:

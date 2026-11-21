@@ -8,8 +8,8 @@ import { ladeJahr, legende } from '@/lib/jahreskalender'
 import { FARBWERT } from '@/lib/termine'
 
 // Der Jahreskalender zum Ausdrucken für den Kühlschrank, im Look der alten
-// Excel-Liste: zwölf Monate nebeneinander auf einem Blatt quer. Nur Admins
-// drucken ihn, wenn die wichtigen Termine fürs Jahr eingetragen sind. Liegt
+// Excel-Liste: zwölf Monate nebeneinander auf einem Blatt quer. Jedes Mitglied
+// druckt ihn selbst oder speichert ihn als PDF (Link im Profil). Liegt
 // außerhalb der App-Shell, damit nur das Blatt aufs Papier kommt.
 export const Route = createFileRoute('/jahreskalender')({
   validateSearch: (s: Record<string, unknown>): { jahr?: number } => {
@@ -20,7 +20,6 @@ export const Route = createFileRoute('/jahreskalender')({
   },
   beforeLoad: ({ context }) => {
     if (!context.mitglied) throw redirect({ to: '/login' })
-    if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
   },
   component: Jahreskalender,
 })
@@ -66,8 +65,18 @@ function Jahreskalender() {
   return (
     <div className="jahreskalender-seite">
       <div className="nicht-drucken mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-4">
-        <Link to="/kalender" className={knopf}>
-          <ChevronLeft className="size-4" /> Kalender
+        {/* Admins kommen auch über den Kalender, deshalb zurück, woher man kam. */}
+        <Link
+          to="/profil"
+          className={knopf}
+          onClick={(e) => {
+            if (window.history.length > 1) {
+              e.preventDefault()
+              window.history.back()
+            }
+          }}
+        >
+          <ChevronLeft className="size-4" /> Zurück
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <Link
@@ -99,9 +108,9 @@ function Jahreskalender() {
           </button>
         </div>
         <p className="text-ash w-full text-[13px]">
-          Quer drucken, A4 oder A3. Damit die Farben mitkommen, im Druckdialog
-          „Hintergrundgrafiken“ einschalten. Abgesagte Termine stehen nicht
-          drauf.
+          Quer drucken, A4 oder A3, oder im Druckdialog „Als PDF speichern“.
+          Damit die Farben mitkommen, „Hintergrundgrafiken“ einschalten.
+          Abgesagte Termine stehen nicht drauf.
         </p>
       </div>
       {fehler ? (
