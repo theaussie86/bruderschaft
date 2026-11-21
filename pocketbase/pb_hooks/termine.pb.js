@@ -12,6 +12,27 @@ onRecordValidate((e) => {
   if (e.record.get('art') === 'urlaub' && ende.isZero()) {
     throw abgelehnt('ende', 'urlaub_ohne_ende', 'Ein Urlaub braucht ein Ende.')
   }
+  // Der Protokolltext ist ein Dokument, nie HTML (Spec #62).
+  const protokolltext = require(`${__hooks}/lib/protokolltext.js`)
+  if (!protokolltext.gueltig(e.record.getString('protokolltext'))) {
+    throw abgelehnt(
+      'protokolltext',
+      'protokolltext_kein_dokument',
+      'Der Protokolltext ist kein gültiges Dokument.',
+    )
+  }
+  // Mitgeschrieben wird nur beim Stammtisch. Ein vorhandener Text bleibt beim
+  // Wechsel der Art unverändert stehen und ist nur ausgeblendet.
+  if (
+    e.record.get('art') !== 'stammtisch' &&
+    protokolltext.geaendert(e.record)
+  ) {
+    throw abgelehnt(
+      'protokolltext',
+      'protokolltext_nur_stammtisch',
+      'Ein Protokoll gibt es nur beim Stammtisch.',
+    )
+  }
   e.next()
 }, 'termine')
 
@@ -20,32 +41,12 @@ onRecordValidate((e) => {
 // hält hat_protokolltext für den Archiv-Filter fest; auch das bestimmt nur
 // PocketBase.
 onRecordCreate((e) => {
-  // Ein leeres JSON-Feld liest sich als "null".
-  const text = e.record.getString('protokolltext')
-  e.record.set(
-    'protokoll_gespeichert',
-    text && text !== 'null' ? new DateTime() : '',
-  )
-  e.record.set(
-    'hat_protokolltext',
-    !require(`${__hooks}/lib/protokolltext.js`).leer(text),
-  )
+  require(`${__hooks}/lib/protokolltext.js`).festhalten(e.record)
   e.next()
 }, 'termine')
 
 onRecordUpdate((e) => {
-  const alt = e.record.original()
-  const text = e.record.getString('protokolltext')
-  e.record.set(
-    'protokoll_gespeichert',
-    text !== alt.getString('protokolltext')
-      ? new DateTime()
-      : alt.get('protokoll_gespeichert'),
-  )
-  e.record.set(
-    'hat_protokolltext',
-    !require(`${__hooks}/lib/protokolltext.js`).leer(text),
-  )
+  require(`${__hooks}/lib/protokolltext.js`).festhalten(e.record)
   e.next()
 }, 'termine')
 

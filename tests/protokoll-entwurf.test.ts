@@ -8,6 +8,7 @@ import {
   entwurfEntfernen,
   entwurfLesen,
   entwurfSichern,
+  entwurfVorhanden,
   speicherStatus,
   speichernMitEntwurf,
 } from '@/lib/protokoll-entwurf'
@@ -52,6 +53,16 @@ describe('Entwurf auf dem Gerät', () => {
 
     expect(entwurfLesen(s, 'termin1')).toBeNull()
     expect(entwurfLesen(s, 'termin2')).toEqual(dok('Kasse ok'))
+  })
+
+  test('was kein Dokument ist, gilt nicht als Entwurf', () => {
+    const s = speicher({
+      [`${ENTWURF_PRAEFIX}t1`]: JSON.stringify('<b>x</b>'),
+      [`${ENTWURF_PRAEFIX}t2`]: JSON.stringify({ type: 'paragraph' }),
+    })
+
+    expect(entwurfLesen(s, 't1')).toBeNull()
+    expect(entwurfLesen(s, 't2')).toBeNull()
   })
 
   test('gesperrter oder kaputter Speicher stört das Schreiben nicht', () => {
@@ -222,5 +233,22 @@ describe('Entwurf beim Öffnen anbieten', () => {
   test('wenn er vom gespeicherten Stand abweicht', () => {
     expect(entwurfAnbieten(dok('14 da.', 'Kasse ok'), dok('14 da.'))).toBe(true)
     expect(entwurfAnbieten(dok('14 da.'), null)).toBe(true)
+  })
+})
+
+describe('Hinweis im Protokoll-Bereich', () => {
+  test('zeigt einen abweichenden Entwurf auf diesem Gerät an', () => {
+    const s = speicher()
+    entwurfSichern(s, 't1', dok('14 da.', 'Kasse ok'))
+
+    expect(entwurfVorhanden(s, 't1', dok('14 da.'))).toBe(true)
+  })
+
+  test('schweigt ohne Entwurf, bei gleichem Stand und bei anderem Termin', () => {
+    const s = speicher()
+    entwurfSichern(s, 't1', dok('14 da.'))
+
+    expect(entwurfVorhanden(s, 't1', dok('14 da.'))).toBe(false)
+    expect(entwurfVorhanden(s, 't2', null)).toBe(false)
   })
 })

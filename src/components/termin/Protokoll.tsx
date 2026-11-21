@@ -1,5 +1,5 @@
 import { FilePlus, FileText, NotebookPen, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { Termin } from '@/lib/termine'
 import { Mitschreiben } from '@/components/termin/Mitschreiben'
@@ -8,11 +8,13 @@ import { fehlertext } from '@/lib/geburtstag'
 import {
   protokollBezeichnung,
   protokollDateiLoeschen,
+  protokollDokument,
   protokollHochladen,
   protokollPfad,
   protokollTextLeer,
   zuletztGespeichert,
 } from '@/lib/protokoll'
+import { entwurfVorhanden } from '@/lib/protokoll-entwurf'
 
 // Das Protokoll eines Stammtischs: alle Mitglieder lesen den gespeicherten
 // Text und öffnen die Dateien darunter. Admins schreiben im Vollbild mit,
@@ -32,9 +34,18 @@ export function Protokoll({
   const [schreiben, setSchreiben] = useState(false)
   const eingabe = useRef<HTMLInputElement>(null)
   const dateien = termin.protokoll ?? []
-  const text = protokollTextLeer(termin.protokolltext)
-    ? null
-    : termin.protokolltext
+  const dokument = protokollDokument(termin.protokolltext)
+  const text = protokollTextLeer(dokument) ? null : dokument
+  // Ein ungespeicherter Entwurf auf diesem Gerät (Issue #65). Den
+  // localStorage gibt es erst im Browser, und nach dem Mitschreiben kann
+  // der Entwurf weg oder neu sein.
+  const [entwurf, setEntwurf] = useState(false)
+  useEffect(() => {
+    if (!admin || schreiben) return
+    setEntwurf(
+      entwurfVorhanden(window.localStorage, termin.id, termin.protokolltext),
+    )
+  }, [admin, schreiben, termin.id, termin.protokolltext])
 
   async function ausfuehren(aktion: () => Promise<Termin>, meldung: string) {
     setFehler(null)
@@ -66,8 +77,26 @@ export function Protokoll({
           className="bg-rust text-bone hover:bg-rust-hi mb-3 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl text-lg font-semibold"
         >
           <NotebookPen className="size-6" />
-          {text ? 'Weiter mitschreiben' : 'Mitschreiben'}
+          {text || entwurf ? 'Weiter mitschreiben' : 'Mitschreiben'}
         </button>
+      )}
+
+      {admin && entwurf && !schreiben && (
+        <div
+          role="status"
+          className="border-brass/50 bg-brass/10 mb-3 flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3"
+        >
+          <span className="flex-1 text-[15px] font-semibold">
+            Auf diesem Gerät liegt ein Entwurf, der noch nicht gespeichert ist.
+          </span>
+          <button
+            type="button"
+            onClick={() => setSchreiben(true)}
+            className="bg-brass text-coal min-h-11 rounded-xl px-4 font-semibold"
+          >
+            Entwurf ansehen
+          </button>
+        </div>
       )}
 
       {text && (

@@ -1,6 +1,7 @@
 import type { ProtokollKnoten } from '@/lib/protokoll'
+import type { Speicher } from '@/lib/cookie-hinweis'
 import { fehlertext } from '@/lib/geburtstag'
-import { protokollTextLeer } from '@/lib/protokoll'
+import { protokollDokument, protokollTextLeer } from '@/lib/protokoll'
 import { berlinZeit } from '@/lib/termine'
 
 // Der Entwurf des Protokolltexts auf dem Gerät (Issue #65). Am Stammtisch ist
@@ -9,8 +10,6 @@ import { berlinZeit } from '@/lib/termine'
 // erfolgreichem Speichern fällt der Entwurf weg.
 
 export const ENTWURF_PRAEFIX = 'protokoll-entwurf:'
-
-type Speicher = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 function schluessel(terminId: string) {
   return `${ENTWURF_PRAEFIX}${terminId}`
@@ -35,7 +34,7 @@ export function entwurfLesen(
 ): ProtokollKnoten | null {
   try {
     const roh = speicher.getItem(schluessel(terminId))
-    return roh ? (JSON.parse(roh) as ProtokollKnoten) : null
+    return roh ? protokollDokument(JSON.parse(roh)) : null
   } catch {
     return null
   }
@@ -123,6 +122,17 @@ export function entwurfAnbieten(
   gespeichert: unknown,
 ): boolean {
   return entwurf !== null && !dokumenteGleich(entwurf, gespeichert)
+}
+
+// Für den Protokoll-Bereich der Terminseite: Liegt auf diesem Gerät ein
+// Entwurf, der vom gespeicherten Stand abweicht, sieht der Admin das schon
+// vor dem Öffnen des Editors.
+export function entwurfVorhanden(
+  speicher: Speicher,
+  terminId: string,
+  gespeichert: unknown,
+): boolean {
+  return entwurfAnbieten(entwurfLesen(speicher, terminId), gespeichert)
 }
 
 export function entwurfEntfernen(speicher: Speicher, terminId: string) {

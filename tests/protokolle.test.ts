@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { anmelden, app, neuesMitglied, superuser } from './helpers'
-import { protokollTextLeer } from '@/lib/protokoll'
+import { protokollDokument, protokollTextLeer } from '@/lib/protokoll'
 import { ARCHIV_FILTER } from '@/lib/termine'
 
 const TERMINE = '/pb/api/collections/termine/records'
@@ -211,6 +211,35 @@ describe('Protokolltext', () => {
     )
   })
 
+  test('ein mit leerem Dokument angelegter Stammtisch hat keinen Zeitpunkt', async () => {
+    const termin = await stammtisch({
+      protokolltext: { type: 'doc', content: [{ type: 'paragraph' }] },
+    })
+
+    expect(termin.protokoll_gespeichert).toBe('')
+  })
+
+  test('derselbe Text in anderer Schlüssel-Reihenfolge ändert den Zeitpunkt nicht', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    const erst = await (await textSpeichern(termin.id, cookie)).json()
+
+    const umsortiert = {
+      content: [
+        {
+          content: [{ text: '14 da. Kasse stimmt.', type: 'text' }],
+          type: 'paragraph',
+        },
+      ],
+      type: 'doc',
+    }
+    const res = await textSpeichern(termin.id, cookie, umsortiert)
+
+    expect((await res.json()).protokoll_gespeichert).toBe(
+      erst.protokoll_gespeichert,
+    )
+  })
+
   test('Admin ergänzt den Text eines vergangenen Stammtischs', async () => {
     const termin = await stammtisch({ beginn: '2024-03-01 18:30:00.000Z' })
     const cookie = await anmelden(await neuesMitglied({ admin: true }))
@@ -270,6 +299,83 @@ describe('Protokolltext', () => {
     ).json()
     expect(wieder.protokolltext).toEqual(TEXT)
     expect(wieder.protokoll_gespeichert).not.toBe('')
+  })
+})
+
+describe('Protokolltext prüft PocketBase', () => {
+  test.each([
+    ['HTML als Zeichenkette', '<b>x</b>'],
+    ['eine Zahl', 42],
+    ['eine Liste', [TEXT]],
+    ['ein Knoten, der kein Dokument ist', { type: 'paragraph' }],
+  ])('%s wird abgelehnt', async (_, text) => {
+    const termin = await stammtisch()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+      text,
+    )
+
+    expect(res.status).toBe(400)
+    const pb = await superuser()
+    expect(
+      (await pb.collection('termine').getOne(termin.id)).protokolltext,
+    ).toBeNull()
+  })
+
+  test('an einem Termin, der kein Stammtisch ist, wird Text abgelehnt', async () => {
+    const termin = await stammtisch({ art: 'veranstaltung' })
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    expect(res.status).toBe(400)
+    const pb = await superuser()
+    expect(
+      (await pb.collection('termine').getOne(termin.id)).protokolltext,
+    ).toBeNull()
+  })
+
+  test('ein Termin, der kein Stammtisch ist, wird nicht mit Text angelegt', async () => {
+    const pb = await superuser()
+
+    await expect(
+      pb.collection('termine').create({
+        titel: 'Ausflug',
+        art: 'veranstaltung',
+        beginn: '2025-06-01 18:30:00.000Z',
+        protokolltext: TEXT,
+      }),
+    ).rejects.toMatchObject({ status: 400 })
+  })
+
+  test('geleert werden darf der Text', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+
+    const res = await textSpeichern(termin.id, cookie, null)
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).protokolltext ?? null).toBeNull()
+  })
+})
+
+describe('Protokolltext für den Editor', () => {
+  test('ein Dokument geht an den Editor', () => {
+    expect(protokollDokument(TEXT)).toEqual(TEXT)
+  })
+
+  test.each([
+    ['nie gespeichert', null],
+    ['HTML als Zeichenkette', '<b>x</b>'],
+    ['eine Liste', [TEXT]],
+    ['ein Knoten, der kein Dokument ist', { type: 'paragraph' }],
+  ])('%s geht nicht an den Editor', (_, wert) => {
+    expect(protokollDokument(wert)).toBeNull()
   })
 })
 

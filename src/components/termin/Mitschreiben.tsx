@@ -9,7 +9,7 @@ import {
   PROTOKOLL_SCHEMA,
 } from '@/components/termin/protokoll-schema'
 import { Werkzeugleiste } from '@/components/termin/Werkzeugleiste'
-import { protokollTextSpeichern } from '@/lib/protokoll'
+import { protokollDokument, protokollTextSpeichern } from '@/lib/protokoll'
 import {
   entwurfAnbieten,
   entwurfEntfernen,
@@ -26,7 +26,9 @@ import {
 //
 // Schutz vor Textverlust (Issue #65): Der Kopf zeigt, ob gespeichert ist.
 // Jeder Tastendruck landet als Entwurf im Browser, der beim nächsten Öffnen
-// angeboten wird. Wer mit ungespeicherten Änderungen schließt, wird gefragt.
+// angeboten wird. Bis der Admin den Entwurf übernimmt oder verwirft, ist der
+// Editor gesperrt, damit nichts Getipptes ungesichert verloren geht. Wer mit
+// ungespeicherten Änderungen schließt, wird gefragt.
 export function Mitschreiben({
   termin,
   onGespeichert,
@@ -47,12 +49,11 @@ export function Mitschreiben({
   }>({ text: termin.protokolltext, um: termin.protokoll_gespeichert })
   const [dokument, setDokument] = useState<unknown>(termin.protokolltext)
   const [angebot, setAngebot] = useState<ProtokollKnoten | null>(null)
-  // Solange ein alter Entwurf angeboten wird, überschreibt Tippen ihn nicht.
-  const angebotOffen = useRef(false)
 
   const editor = useEditor({
     extensions: PROTOKOLL_SCHEMA,
-    content: termin.protokolltext ?? '',
+    // Nur ein geprüftes Dokument, eine Zeichenkette läse Tiptap als HTML.
+    content: protokollDokument(termin.protokolltext),
     immediatelyRender: false,
     autofocus: 'end',
     onCreate: ({ editor: e }) => {
@@ -61,16 +62,14 @@ export function Mitschreiben({
       setDokument(geladen)
       const entwurf = entwurfLesen(window.localStorage, termin.id)
       if (entwurfAnbieten(entwurf, geladen)) {
-        angebotOffen.current = true
+        e.setEditable(false)
         setAngebot(entwurf)
       }
     },
     onUpdate: ({ editor: e }) => {
       const jetzt = e.getJSON() as ProtokollKnoten
       setDokument(jetzt)
-      if (!angebotOffen.current) {
-        entwurfSichern(window.localStorage, termin.id, jetzt)
-      }
+      entwurfSichern(window.localStorage, termin.id, jetzt)
     },
     editorProps: {
       attributes: {
@@ -109,17 +108,18 @@ export function Mitschreiben({
 
   function entwurfUebernehmen() {
     if (!editor || !angebot) return
-    angebotOffen.current = false
     setAngebot(null)
+    editor.setEditable(true)
     editor.commands.setContent(angebot)
     setDokument(editor.getJSON())
     editor.commands.focus('end')
   }
 
   function entwurfVerwerfen() {
-    angebotOffen.current = false
     setAngebot(null)
     entwurfEntfernen(window.localStorage, termin.id)
+    editor?.setEditable(true)
+    editor?.commands.focus('end')
   }
 
   function schliessen() {
@@ -265,7 +265,7 @@ export function Mitschreiben({
         </p>
       )}
 
-      <Werkzeugleiste editor={editor} />
+      {!angebot && <Werkzeugleiste editor={editor} />}
 
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="mx-auto h-full max-w-3xl">

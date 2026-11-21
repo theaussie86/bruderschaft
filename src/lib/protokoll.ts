@@ -16,6 +16,17 @@ export type ProtokollKnoten = {
   content?: Array<ProtokollKnoten>
 }
 
+// Der Editor liest eine Zeichenkette als HTML. Er bekommt deshalb nur, was
+// wirklich ein Dokument ist, sonst nichts.
+export function protokollDokument(wert: unknown): ProtokollKnoten | null {
+  return wert &&
+    typeof wert === 'object' &&
+    !Array.isArray(wert) &&
+    (wert as { type?: unknown }).type === 'doc'
+    ? (wert as ProtokollKnoten)
+    : null
+}
+
 // Ein Dokument ohne sichtbaren Text gilt als kein Protokolltext.
 export function protokollTextLeer(text: unknown): boolean {
   if (!text || typeof text !== 'object') return true
