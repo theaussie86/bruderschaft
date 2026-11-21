@@ -158,6 +158,10 @@ _Avoid_: Sitzung, Meeting, Versammlung
 Die Niederschrift eines Stammtischs, für alle Mitglieder lesbar. Ein Admin schreibt sie direkt in der App, oft live während des Stammtischs, und kann Dateien anhängen. Ein Stammtisch hat höchstens ein Protokoll; Mitglieder sehen den zuletzt gespeicherten Stand.
 _Avoid_: Notiz, Mitschrift
 
+**Entwurf**:
+Der noch nicht gespeicherte Stand eines Protokolls, den der Admin gerade schreibt. Er bleibt nur auf seinem Gerät, damit beim Mitschreiben nichts verloren geht, und ist für Mitglieder nicht sichtbar. Beim Speichern wird er zum Protokoll, der Admin kann ihn auch verwerfen.
+_Avoid_: Zwischenstand, Backup
+
 **Kalender-Abo**:
 Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen Kalender holen. Ein Admin kann ihn erneuern, dann gilt der alte nicht mehr.
 _Avoid_: Export, Feed
