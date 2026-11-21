@@ -39,7 +39,9 @@ function Datenschutz() {
             <li>hochgeladene Bilder und Protokoll-Dateien</li>
             <li>
               die geschriebenen Protokolle der Stammtische, die Admins direkt in
-              der App verfassen, mit dem Zeitpunkt der letzten Speicherung
+              der App verfassen, mit dem Zeitpunkt der letzten Speicherung.
+              Solange ein Admin noch nicht gespeichert hat, liegt sein Entwurf
+              nur in seinem Browser auf dem Gerät und wird nicht übertragen.
             </li>
             <li>
               ein geheimer Schlüssel für dein Kalender-Abo, falls du es nutzt
@@ -85,7 +87,8 @@ function Datenschutz() {
             ist. Dafür braucht es keine Einwilligung (§ 25 Abs. 2 Nr. 2 TDDDG).
             Es gibt keine Analyse, kein Tracking und keine Inhalte von
             Drittanbietern, Schriften liegen auf unserem eigenen Server. Einen
-            Service Worker oder Offline-Speicher nutzt die App nicht.
+            Service Worker nutzt die App nicht. Offline gesichert wird nur der
+            Entwurf eines Protokolls, das ein Admin gerade mitschreibt.
           </p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {SPEICHERUNGEN.map((s) => (
