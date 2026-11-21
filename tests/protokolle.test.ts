@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { anmelden, app, neuesMitglied, superuser } from './helpers'
+import { protokollDokument, protokollTextLeer } from '@/lib/protokoll'
 import { ARCHIV_FILTER } from '@/lib/termine'
 
 const TERMINE = '/pb/api/collections/termine/records'
@@ -130,18 +131,400 @@ describe('Protokolle lesen', () => {
   })
 })
 
-describe('Protokolle im Archiv', () => {
-  test('ein Stammtisch ohne Protokoll ist nicht im Archiv', async () => {
-    const ohne = await stammtisch()
-    const mit = await stammtisch()
-    await alsAdminHochladen(mit.id)
-    const filter = `${ARCHIV_FILTER} && (id = '${ohne.id}' || id = '${mit.id}')`
+// Ein Protokolltext, wie ihn der Editor als Tiptap/ProseMirror-JSON liefert.
+const TEXT = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: '14 da. Kasse stimmt.' }],
+    },
+  ],
+}
 
-    const res = await app(
-      `${TERMINE}?filter=${encodeURIComponent(filter)}&fields=id`,
-      { cookie: await anmelden(await neuesMitglied()) },
+function textSpeichern(terminId: string, cookie: string, text: unknown = TEXT) {
+  return app(`${TERMINE}/${terminId}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ protokolltext: text }),
+    cookie,
+  })
+}
+
+function zeitpunkt(wert: unknown) {
+  return new Date(String(wert).replace(' ', 'T')).getTime()
+}
+
+describe('Protokolltext', () => {
+  test('Admin speichert Text, jedes Mitglied liest ihn mit dem Zeitpunkt der Speicherung', async () => {
+    const termin = await stammtisch()
+    const vorher = Date.now()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+    expect(res.status).toBe(200)
+
+    const gelesen = await app(`${TERMINE}/${termin.id}`, {
+      cookie: await anmelden(await neuesMitglied()),
+    })
+    const daten = await gelesen.json()
+    expect(daten.protokolltext).toEqual(TEXT)
+    const gespeichert = zeitpunkt(daten.protokoll_gespeichert)
+    expect(gespeichert).toBeGreaterThanOrEqual(vorher - 1000)
+    expect(gespeichert).toBeLessThanOrEqual(Date.now() + 1000)
+  })
+
+  test('Mitglied kann keinen Protokolltext speichern', async () => {
+    const termin = await stammtisch()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied()),
     )
 
-    expect((await res.json()).items).toEqual([{ id: mit.id }])
+    expect(res.ok).toBe(false)
+    const pb = await superuser()
+    const gelesen = await pb.collection('termine').getOne(termin.id)
+    expect(gelesen.protokolltext).toBeNull()
+    expect(gelesen.protokoll_gespeichert).toBe('')
+  })
+
+  test('der Zeitpunkt folgt dem Text, nicht anderen Änderungen am Termin', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    const erst = await (await textSpeichern(termin.id, cookie)).json()
+
+    const verschoben = await app(`${TERMINE}/${termin.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ort: 'Wirtschaft',
+        protokoll_gespeichert: '2020-01-01 00:00:00.000Z',
+      }),
+      cookie,
+    })
+
+    expect((await verschoben.json()).protokoll_gespeichert).toBe(
+      erst.protokoll_gespeichert,
+    )
+  })
+
+  test('ein mit leerem Dokument angelegter Stammtisch hat keinen Zeitpunkt', async () => {
+    const termin = await stammtisch({
+      protokolltext: { type: 'doc', content: [{ type: 'paragraph' }] },
+    })
+
+    expect(termin.protokoll_gespeichert).toBe('')
+  })
+
+  test('derselbe Text in anderer Schlüssel-Reihenfolge ändert den Zeitpunkt nicht', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    const erst = await (await textSpeichern(termin.id, cookie)).json()
+
+    const umsortiert = {
+      content: [
+        {
+          content: [{ text: '14 da. Kasse stimmt.', type: 'text' }],
+          type: 'paragraph',
+        },
+      ],
+      type: 'doc',
+    }
+    const res = await textSpeichern(termin.id, cookie, umsortiert)
+
+    expect((await res.json()).protokoll_gespeichert).toBe(
+      erst.protokoll_gespeichert,
+    )
+  })
+
+  test('Admin ergänzt den Text eines vergangenen Stammtischs', async () => {
+    const termin = await stammtisch({ beginn: '2024-03-01 18:30:00.000Z' })
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+    const ergaenzt = {
+      type: 'doc',
+      content: [
+        ...TEXT.content,
+        { type: 'paragraph', content: [{ type: 'text', text: 'Nachtrag.' }] },
+      ],
+    }
+
+    const res = await textSpeichern(termin.id, cookie, ergaenzt)
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).protokolltext).toEqual(ergaenzt)
+  })
+
+  test('Text und Dateien hängen zusammen am Protokoll', async () => {
+    const termin = await stammtisch()
+    await alsAdminHochladen(termin.id)
+    await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    const res = await app(`${TERMINE}/${termin.id}`, {
+      cookie: await anmelden(await neuesMitglied()),
+    })
+
+    const daten = await res.json()
+    expect(daten.protokolltext).toEqual(TEXT)
+    expect(daten.protokoll).toHaveLength(1)
+  })
+
+  test('wechselt die Art weg von Stammtisch, ist der Text ausgeblendet, nicht gelöscht', async () => {
+    const termin = await stammtisch()
+    await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+    const cookie = await anmelden(await neuesMitglied())
+    const pb = await superuser()
+
+    await pb
+      .collection('termine')
+      .update(termin.id, { art: 'urlaub', ende: '2025-06-08 18:30:00.000Z' })
+    const ausgeblendet = await (
+      await app(`${TERMINE}/${termin.id}`, { cookie })
+    ).json()
+    expect(ausgeblendet.protokolltext ?? null).toBeNull()
+    expect(ausgeblendet.protokoll_gespeichert ?? '').toBe('')
+
+    await pb.collection('termine').update(termin.id, { art: 'stammtisch' })
+    const wieder = await (
+      await app(`${TERMINE}/${termin.id}`, { cookie })
+    ).json()
+    expect(wieder.protokolltext).toEqual(TEXT)
+    expect(wieder.protokoll_gespeichert).not.toBe('')
+  })
+})
+
+describe('Protokolltext prüft PocketBase', () => {
+  test.each([
+    ['HTML als Zeichenkette', '<b>x</b>'],
+    ['eine Zahl', 42],
+    ['eine Liste', [TEXT]],
+    ['ein Knoten, der kein Dokument ist', { type: 'paragraph' }],
+  ])('%s wird abgelehnt', async (_, text) => {
+    const termin = await stammtisch()
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+      text,
+    )
+
+    expect(res.status).toBe(400)
+    const pb = await superuser()
+    expect(
+      (await pb.collection('termine').getOne(termin.id)).protokolltext,
+    ).toBeNull()
+  })
+
+  test('an einem Termin, der kein Stammtisch ist, wird Text abgelehnt', async () => {
+    const termin = await stammtisch({ art: 'veranstaltung' })
+
+    const res = await textSpeichern(
+      termin.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    expect(res.status).toBe(400)
+    const pb = await superuser()
+    expect(
+      (await pb.collection('termine').getOne(termin.id)).protokolltext,
+    ).toBeNull()
+  })
+
+  test('ein Termin, der kein Stammtisch ist, wird nicht mit Text angelegt', async () => {
+    const pb = await superuser()
+
+    await expect(
+      pb.collection('termine').create({
+        titel: 'Ausflug',
+        art: 'veranstaltung',
+        beginn: '2025-06-01 18:30:00.000Z',
+        protokolltext: TEXT,
+      }),
+    ).rejects.toMatchObject({ status: 400 })
+  })
+
+  test('geleert werden darf der Text', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+
+    const res = await textSpeichern(termin.id, cookie, null)
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).protokolltext ?? null).toBeNull()
+  })
+})
+
+describe('Protokolltext für den Editor', () => {
+  test('ein Dokument geht an den Editor', () => {
+    expect(protokollDokument(TEXT)).toEqual(TEXT)
+  })
+
+  test.each([
+    ['nie gespeichert', null],
+    ['HTML als Zeichenkette', '<b>x</b>'],
+    ['eine Liste', [TEXT]],
+    ['ein Knoten, der kein Dokument ist', { type: 'paragraph' }],
+  ])('%s geht nicht an den Editor', (_, wert) => {
+    expect(protokollDokument(wert)).toBeNull()
+  })
+})
+
+describe('Protokolltext ist leer', () => {
+  test.each([
+    ['nie gespeichert', null],
+    ['leeres Dokument', { type: 'doc', content: [] }],
+    ['ein leerer Absatz', { type: 'doc', content: [{ type: 'paragraph' }] }],
+    [
+      'nur Leerzeichen und leere Listen',
+      {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: '   ' }] },
+          {
+            type: 'bulletList',
+            content: [{ type: 'listItem', content: [{ type: 'paragraph' }] }],
+          },
+        ],
+      },
+    ],
+  ])('%s zählt als kein Text', (_, text) => {
+    expect(protokollTextLeer(text)).toBe(true)
+  })
+
+  test('ein Wort in einer Liste zählt als Text', () => {
+    expect(
+      protokollTextLeer({
+        type: 'doc',
+        content: [
+          {
+            type: 'bulletList',
+            content: [
+              {
+                type: 'listItem',
+                content: [
+                  {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: 'Kasse' }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toBe(false)
+  })
+})
+
+// Ein winziges, gültiges PNG (1x1 Pixel) als Bild zu einem Termin.
+const PNG = Uint8Array.from(
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  ),
+)
+
+async function mitBild(terminId: string) {
+  const mitglied = await neuesMitglied()
+  const form = new FormData()
+  form.set('termin', terminId)
+  form.set('mitglied', mitglied.id)
+  form.set('datei', new File([PNG], 'foto.png', { type: 'image/png' }))
+  const pb = await superuser()
+  await pb.collection('bilder').create(form)
+}
+
+async function imArchiv(ids: Array<string>) {
+  const nurDiese = ids.map((id) => `id = '${id}'`).join(' || ')
+  const filter = `${ARCHIV_FILTER} && (${nurDiese})`
+  const res = await app(
+    `${TERMINE}?filter=${encodeURIComponent(filter)}&fields=id&perPage=50`,
+    { cookie: await anmelden(await neuesMitglied()) },
+  )
+  const items = (await res.json()).items as Array<{ id: string }>
+  return items.map((t) => t.id).sort()
+}
+
+describe('Stammtische im Archiv', () => {
+  test('ein Stammtisch ist mit Protokoll oder Bildern im Archiv, ohne beides nicht', async () => {
+    const ohne = await stammtisch()
+    const mitProtokoll = await stammtisch()
+    await alsAdminHochladen(mitProtokoll.id)
+    const mitBildern = await stammtisch()
+    await mitBild(mitBildern.id)
+
+    const archiv = await imArchiv([ohne.id, mitProtokoll.id, mitBildern.id])
+
+    expect(archiv).toEqual([mitProtokoll.id, mitBildern.id].sort())
+  })
+
+  test('ein Stammtisch nur mit geschriebenem Protokoll ist im Archiv', async () => {
+    const mitText = await stammtisch()
+    await textSpeichern(
+      mitText.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    expect(await imArchiv([mitText.id])).toEqual([mitText.id])
+  })
+
+  test('ein Stammtisch mit leerem Dokument, ohne Dateien und Bilder ist nicht im Archiv', async () => {
+    const leer = await stammtisch()
+    await textSpeichern(
+      leer.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+      {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: '  ' }] },
+        ],
+      },
+    )
+
+    expect(await imArchiv([leer.id])).toEqual([])
+  })
+
+  test('wird der Text wieder geleert, fällt der Stammtisch aus dem Archiv', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+    await textSpeichern(termin.id, cookie, {
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    })
+
+    expect(await imArchiv([termin.id])).toEqual([])
+  })
+
+  test('ob es Text gibt, bestimmt PocketBase, nicht was mitgeschickt wird', async () => {
+    const termin = await stammtisch()
+    const res = await app(`${TERMINE}/${termin.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ort: 'Wirtschaft', hat_protokolltext: true }),
+      cookie: await anmelden(await neuesMitglied({ admin: true })),
+    })
+    expect(res.status).toBe(200)
+
+    expect(await imArchiv([termin.id])).toEqual([])
+  })
+
+  test('ein abgesagter Stammtisch mit Bild ist nicht im Archiv', async () => {
+    const abgesagt = await stammtisch()
+    await mitBild(abgesagt.id)
+    const pb = await superuser()
+    await pb.collection('termine').update(abgesagt.id, { abgesagt: true })
+
+    expect(await imArchiv([abgesagt.id])).toEqual([])
   })
 })

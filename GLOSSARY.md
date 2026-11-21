@@ -127,7 +127,7 @@ _Avoid_: gelöscht, deaktiviert, archiviert
 ## Leben der Bruderschaft
 
 **Termin**:
-Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Veranstaltung und Urlaub sind die Arten von Termin. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
+Ein Eintrag im Kalender der Bruderschaft mit Titel, Beginn, optionalem Ende, Ort und Infotext. Stammtisch, Veranstaltung und Urlaub sind die Arten von Termin; zu jeder Art können Mitglieder Bilder hochladen. Nur Admins legen Termine an; jeder Termin steht für sich, es gibt keine Serien.
 _Avoid_: Event, Eintrag, Serie
 
 **Farbe**:
@@ -147,16 +147,20 @@ Ein mehrtägiger Termin, an dem Mitglieder der Bruderschaft gemeinsam wegfahren,
 _Avoid_: Reise, Trip, Ausflug, Ausfahrt (als eigene Art)
 
 **Archiv**:
-Die vergangenen, nicht abgesagten Veranstaltungen und Urlaube der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische mit Protokoll. Stammtische ohne Protokoll und abgesagte Termine gehören nicht dazu.
+Die vergangenen, nicht abgesagten Veranstaltungen und Urlaube der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische, die ein Protokoll oder Bilder haben. Stammtische ohne beides und abgesagte Termine gehören nicht dazu.
 _Avoid_: Galerie, Veranstaltungsgalerie, Chronik
 
 **Stammtisch**:
-Das regelmäßige Treffen der Bruderschaft. An einem Stammtisch kann ein Protokoll hängen.
+Das regelmäßige Treffen der Bruderschaft. Wie bei jedem Termin können Mitglieder Bilder dazu hochladen; zusätzlich kann an einem Stammtisch ein Protokoll hängen.
 _Avoid_: Sitzung, Meeting, Versammlung
 
 **Protokoll**:
-Die Niederschrift eines Stammtischs, von einem Admin hochgeladen, für alle Mitglieder lesbar. Ein Stammtisch hat höchstens ein Protokoll, das aus mehreren Dateien bestehen kann.
+Die Niederschrift eines Stammtischs, für alle Mitglieder lesbar. Ein Admin schreibt sie direkt in der App, oft live während des Stammtischs, und kann Dateien anhängen. Ein Stammtisch hat höchstens ein Protokoll; Mitglieder sehen den zuletzt gespeicherten Stand.
 _Avoid_: Notiz, Mitschrift
+
+**Entwurf**:
+Der noch nicht gespeicherte Stand eines Protokolls, den der Admin gerade schreibt. Er bleibt nur auf seinem Gerät, damit beim Mitschreiben nichts verloren geht, und ist für Mitglieder nicht sichtbar. Beim Speichern wird er zum Protokoll, der Admin kann ihn auch verwerfen.
+_Avoid_: Zwischenstand, Backup
 
 **Kalender-Abo**:
 Der gemeinsame geheime Link, über den Mitglieder alle Termine in ihren eigenen Kalender holen. Ein Admin kann ihn erneuern, dann gilt der alte nicht mehr.

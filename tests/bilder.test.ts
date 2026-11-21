@@ -95,13 +95,29 @@ describe('Bilder hochladen', () => {
     expect(res.status).toBe(200)
   })
 
-  test('Upload zu einem Stammtisch wird abgelehnt', async () => {
+  test('Mitglied lädt ein Bild zu einem vergangenen Stammtisch hoch', async () => {
     const mitglied = await neuesMitglied()
     const termin = await veranstaltung({ art: 'stammtisch' })
 
     const res = await hochladen(termin.id, mitglied, await anmelden(mitglied))
 
-    expect(res.ok).toBe(false)
+    expect(res.status).toBe(200)
+  })
+
+  test('Upload zu einem künftigen oder abgesagten Stammtisch wird abgelehnt', async () => {
+    const mitglied = await neuesMitglied()
+    const cookie = await anmelden(mitglied)
+    const kuenftig = await veranstaltung({
+      art: 'stammtisch',
+      beginn: KUENFTIG,
+    })
+    const abgesagt = await veranstaltung({ art: 'stammtisch', abgesagt: true })
+
+    const zuKuenftig = await hochladen(kuenftig.id, mitglied, cookie)
+    const zuAbgesagt = await hochladen(abgesagt.id, mitglied, cookie)
+
+    expect(zuKuenftig.ok).toBe(false)
+    expect(zuAbgesagt.ok).toBe(false)
   })
 
   test('Mitglied lädt kein Bild im Namen eines anderen hoch', async () => {
@@ -156,26 +172,19 @@ describe('Bilder ansehen', () => {
     expect(thumb.headers.get('content-type')).toMatch(/^image\//)
   })
 
-  test('wechselt die Art weg von Veranstaltung, sind die Bilder ausgeblendet, nicht gelöscht', async () => {
+  test('nach einem Wechsel der Art bleiben die Bilder sichtbar', async () => {
     const termin = await veranstaltung()
-    const bild = await bildVon(await neuesMitglied(), termin.id)
+    await bildVon(await neuesMitglied(), termin.id)
     const cookie = await anmelden(await neuesMitglied())
     const pb = await superuser()
 
     await pb.collection('termine').update(termin.id, { art: 'stammtisch' })
-    const ausgeblendet = await app(
+    const res = await app(
       `${BILDER}?filter=${encodeURIComponent(`termin='${termin.id}'`)}`,
       { cookie },
     )
-    expect((await ausgeblendet.json()).items).toEqual([])
-    expect(await pb.collection('bilder').getOne(bild.id)).toBeTruthy()
 
-    await pb.collection('termine').update(termin.id, { art: 'veranstaltung' })
-    const wieder = await app(
-      `${BILDER}?filter=${encodeURIComponent(`termin='${termin.id}'`)}`,
-      { cookie },
-    )
-    expect((await wieder.json()).items).toHaveLength(1)
+    expect((await res.json()).items).toHaveLength(1)
   })
 })
 
@@ -214,6 +223,31 @@ describe('Bilder löschen', () => {
     })
 
     expect(res.status).toBe(204)
+  })
+
+  test('beim Stammtisch löscht ein Mitglied nur eigene Bilder, ein Admin jedes', async () => {
+    const termin = await veranstaltung({ art: 'stammtisch' })
+    const mitglied = await neuesMitglied()
+    const eigenes = await bildVon(mitglied, termin.id)
+    const fremdes = await bildVon(await neuesMitglied(), termin.id)
+    const cookie = await anmelden(mitglied)
+
+    const eigenesLoeschen = await app(`${BILDER}/${eigenes.id}`, {
+      method: 'DELETE',
+      cookie,
+    })
+    const fremdesLoeschen = await app(`${BILDER}/${fremdes.id}`, {
+      method: 'DELETE',
+      cookie,
+    })
+    const alsAdmin = await app(`${BILDER}/${fremdes.id}`, {
+      method: 'DELETE',
+      cookie: await anmelden(await neuesMitglied({ admin: true })),
+    })
+
+    expect(eigenesLoeschen.status).toBe(204)
+    expect(fremdesLoeschen.ok).toBe(false)
+    expect(alsAdmin.status).toBe(204)
   })
 
   test('niemand tauscht ein Bild nachträglich aus', async () => {

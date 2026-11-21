@@ -19,3 +19,18 @@ describe.each(['impressum.tsx', 'datenschutz.tsx'])('%s', (datei) => {
     expect(text).not.toMatch(/\[[^\]]*\]/)
   })
 })
+
+// Issue #66: Protokolle schreibt ein Admin auch direkt in die App.
+test('die Datenschutzerklärung nennt geschriebenen Protokolltext', () => {
+  expect(seitentext('datenschutz.tsx').replace(/\s+/g, ' ')).toMatch(
+    /geschriebene[n]? Protokoll/,
+  )
+})
+
+// Issue #65: Der Entwurf beim Mitschreiben bleibt nur auf dem Gerät.
+test('die Datenschutzerklärung nennt den Entwurf auf dem Gerät', () => {
+  const text = seitentext('datenschutz.tsx').replace(/\s+/g, ' ')
+
+  expect(text).toMatch(/Entwurf/)
+  expect(text).not.toMatch(/Offline-Speicher nutzt die App nicht/)
+})

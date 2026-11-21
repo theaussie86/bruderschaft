@@ -1,3 +1,5 @@
+import { ENTWURF_PRAEFIX } from '@/lib/protokoll-entwurf'
+
 // Cookie-Hinweis (Issue #42). Die App speichert nur technisch Notwendiges,
 // eine Einwilligung braucht es dafür nicht (§ 25 Abs. 2 Nr. 2 TDDDG). Der
 // Hinweis informiert deshalb nur und merkt sich, dass er gelesen wurde.
@@ -5,6 +7,9 @@
 // Kommt etwas Einwilligungspflichtiges dazu (Analyse, Einbettungen), bekommt
 // es hier eine eigene Kategorie mit Schalter, und HINWEIS_VERSION steigt.
 // Dann fragt der Hinweis alle erneut.
+
+// Der Teil von localStorage, den die App nutzt. In Tests reicht eine Map.
+export type Speicher = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 export const HINWEIS_SCHLUESSEL = 'cookie-hinweis'
 export const HINWEIS_VERSION = 1
@@ -35,9 +40,15 @@ export const SPEICHERUNGEN: ReadonlyArray<Speicherung> = [
     dauer:
       'Bis du ihn auf der Cookie-Seite zurücksetzt oder die Browserdaten löschst.',
   },
+  {
+    name: `${ENTWURF_PRAEFIX}…`,
+    art: 'localStorage',
+    zweck:
+      'Nur bei Admins, die ein Protokoll mitschreiben: sichert den noch nicht gespeicherten Text pro Termin, damit er bei Netzausfall oder Absturz nicht verloren geht. Bleibt in deinem Browser und wird nie übertragen.',
+    dauer:
+      'Bis das Protokoll gespeichert oder der Entwurf verworfen ist, oder bis du die Browserdaten löschst.',
+  },
 ]
-
-type Speicher = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 export function hinweisBestaetigt(speicher: Speicher): boolean {
   try {
