@@ -19,3 +19,10 @@ describe.each(['impressum.tsx', 'datenschutz.tsx'])('%s', (datei) => {
     expect(text).not.toMatch(/\[[^\]]*\]/)
   })
 })
+
+// Issue #66: Protokolle schreibt ein Admin auch direkt in die App.
+test('die Datenschutzerklärung nennt geschriebenen Protokolltext', () => {
+  expect(seitentext('datenschutz.tsx').replace(/\s+/g, ' ')).toMatch(
+    /geschriebene[n]? Protokoll/,
+  )
+})

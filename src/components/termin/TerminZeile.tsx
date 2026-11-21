@@ -3,7 +3,13 @@ import { Ban, ChevronRight, FileText, Images, MapPin } from 'lucide-react'
 
 import type { Termin, TerminArt } from '@/lib/termine'
 import { Markierung } from '@/components/Markierung'
-import { ART_NAME, FARBWERT, tagTeile, zeitText } from '@/lib/termine'
+import {
+  ART_NAME,
+  FARBWERT,
+  hatProtokoll,
+  tagTeile,
+  zeitText,
+} from '@/lib/termine'
 
 const TON = {
   stammtisch: 'brass',
@@ -77,7 +83,7 @@ export function TerminZeile({
         </div>
         {bilder !== undefined && (
           <div className="text-ash mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
-            {t.art === 'stammtisch' && (t.protokoll?.length ?? 0) > 0 && (
+            {t.art === 'stammtisch' && hatProtokoll(t) && (
               <span className="flex items-center gap-1.5">
                 <FileText className="size-3.5" /> Protokoll
               </span>

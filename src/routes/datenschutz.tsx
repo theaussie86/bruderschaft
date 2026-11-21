@@ -36,7 +36,11 @@ function Datenschutz() {
           <ul className="list-disc space-y-1 pl-5">
             <li>Name, E-Mail-Adresse und Geburtstag eines Mitglieds</li>
             <li>Aufträge in den Bestellrunden samt Anmerkungen</li>
-            <li>hochgeladene Bilder und Protokolle</li>
+            <li>hochgeladene Bilder und Protokoll-Dateien</li>
+            <li>
+              die geschriebenen Protokolle der Stammtische, die Admins direkt in
+              der App verfassen, mit dem Zeitpunkt der letzten Speicherung
+            </li>
             <li>
               ein geheimer Schlüssel für dein Kalender-Abo, falls du es nutzt
             </li>
