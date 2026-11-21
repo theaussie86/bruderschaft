@@ -8,6 +8,7 @@ import {
   DOKUMENT,
   PROTOKOLL_SCHEMA,
 } from '@/components/termin/protokoll-schema'
+import { Werkzeugleiste } from '@/components/termin/Werkzeugleiste'
 import { protokollTextSpeichern } from '@/lib/protokoll'
 import {
   entwurfAnbieten,
@@ -263,6 +264,8 @@ export function Mitschreiben({
           {fehler}
         </p>
       )}
+
+      <Werkzeugleiste editor={editor} />
 
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="mx-auto h-full max-w-3xl">
