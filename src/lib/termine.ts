@@ -55,6 +55,8 @@ export type Termin = {
   // Terminseite geladen.
   protokolltext?: ProtokollKnoten | null
   protokoll_gespeichert?: string
+  // Ob es sichtbaren Protokolltext gibt. Setzt nur PocketBase.
+  hat_protokolltext?: boolean
 }
 
 export const ART_NAME: Record<TerminArt, string> = {
@@ -233,6 +235,17 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
     .sort((a, b) => alsDate(a.beginn).getTime() - alsDate(b.beginn).getTime())
 }
 
+// Ein Stammtisch hat ein Protokoll, wenn es Text oder Dateien gibt (Spec
+// #62). Ob der Text leer ist, entscheidet PocketBase beim Speichern und hält
+// es in hat_protokolltext fest. HAT_PROTOKOLL_FILTER ist dieselbe Prüfung für
+// PocketBase.
+export function hatProtokoll(t: Termin) {
+  return (t.protokoll?.length ?? 0) > 0 || t.hat_protokolltext === true
+}
+
+export const HAT_PROTOKOLL_FILTER =
+  '(protokoll:length > 0 || hat_protokolltext = true)'
+
 // Das Archiv: vergangene, nicht abgesagte Veranstaltungen und Urlaube, auch
 // ohne Bilder, und vergangene, nicht abgesagte Stammtische mit Protokoll oder
 // Bildern. Vergangen ist ein Termin nach seinem letzten Tag. Neueste zuerst.
@@ -244,9 +257,7 @@ export function archivTermine(
 ) {
   const heute = berlinTag(jetzt)
   const gehoertDazu = (t: Termin) =>
-    t.art !== 'stammtisch' ||
-    (t.protokoll?.length ?? 0) > 0 ||
-    (bilder.get(t.id) ?? 0) > 0
+    t.art !== 'stammtisch' || hatProtokoll(t) || (bilder.get(t.id) ?? 0) > 0
   return termine
     .filter(
       (t) =>
@@ -262,7 +273,7 @@ export function bilderErlaubt(t: Termin, jetzt = new Date()) {
 }
 
 export const FELDER =
-  'id,titel,art,farbe,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll'
+  'id,titel,art,farbe,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll,hat_protokolltext'
 
 // Lädt grob ab vorgestern, den genauen Schnitt macht kommendeTermine.
 export async function ladeKommendeTermine(jetzt = new Date()) {
@@ -287,8 +298,7 @@ export async function ladeTermin(id: string): Promise<Termin> {
 // Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.
 // Ein Stammtisch braucht ein Protokoll oder mindestens ein Bild (Rückbeziehung
 // der Bilder auf den Termin).
-export const ARCHIV_FILTER =
-  "(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && (protokoll:length > 0 || bilder_via_termin.id ?!= ''))) && abgesagt = false"
+export const ARCHIV_FILTER = `(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && (${HAT_PROTOKOLL_FILTER} || bilder_via_termin.id ?!= ''))) && abgesagt = false`
 
 // bilder ist die Zahl der Bilder pro Termin, die die Archiv-Ansicht ohnehin lädt.
 export async function ladeArchiv(

@@ -362,6 +362,57 @@ describe('Stammtische im Archiv', () => {
     expect(archiv).toEqual([mitProtokoll.id, mitBildern.id].sort())
   })
 
+  test('ein Stammtisch nur mit geschriebenem Protokoll ist im Archiv', async () => {
+    const mitText = await stammtisch()
+    await textSpeichern(
+      mitText.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+    )
+
+    expect(await imArchiv([mitText.id])).toEqual([mitText.id])
+  })
+
+  test('ein Stammtisch mit leerem Dokument, ohne Dateien und Bilder ist nicht im Archiv', async () => {
+    const leer = await stammtisch()
+    await textSpeichern(
+      leer.id,
+      await anmelden(await neuesMitglied({ admin: true })),
+      {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: '  ' }] },
+        ],
+      },
+    )
+
+    expect(await imArchiv([leer.id])).toEqual([])
+  })
+
+  test('wird der Text wieder geleert, fällt der Stammtisch aus dem Archiv', async () => {
+    const termin = await stammtisch()
+    const cookie = await anmelden(await neuesMitglied({ admin: true }))
+    await textSpeichern(termin.id, cookie)
+    await textSpeichern(termin.id, cookie, {
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    })
+
+    expect(await imArchiv([termin.id])).toEqual([])
+  })
+
+  test('ob es Text gibt, bestimmt PocketBase, nicht was mitgeschickt wird', async () => {
+    const termin = await stammtisch()
+    const res = await app(`${TERMINE}/${termin.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ort: 'Wirtschaft', hat_protokolltext: true }),
+      cookie: await anmelden(await neuesMitglied({ admin: true })),
+    })
+    expect(res.status).toBe(200)
+
+    expect(await imArchiv([termin.id])).toEqual([])
+  })
+
   test('ein abgesagter Stammtisch mit Bild ist nicht im Archiv', async () => {
     const abgesagt = await stammtisch()
     await mitBild(abgesagt.id)

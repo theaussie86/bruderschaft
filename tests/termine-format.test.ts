@@ -233,6 +233,27 @@ describe('Termine: Archiv', () => {
     expect(liste.map((t) => t.id)).toEqual(['bilder', 'protokoll'])
   })
 
+  test('ein vergangener Stammtisch nur mit geschriebenem Protokoll ist im Archiv, mit leerem nicht', () => {
+    const liste = archivTermine(
+      [
+        termin({
+          id: 'text',
+          beginn: '2026-11-12 18:30:00.000Z',
+          hat_protokolltext: true,
+        }),
+        termin({
+          id: 'leer',
+          beginn: '2026-11-19 18:30:00.000Z',
+          hat_protokolltext: false,
+        }),
+      ],
+      KEINE_BILDER,
+      jetzt,
+    )
+
+    expect(liste.map((t) => t.id)).toEqual(['text'])
+  })
+
   test('ein mehrtägiger Termin kommt erst nach seinem letzten Tag ins Archiv', () => {
     const wochenende = termin({
       art: 'veranstaltung',

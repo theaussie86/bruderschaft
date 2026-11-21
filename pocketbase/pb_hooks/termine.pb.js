@@ -16,7 +16,9 @@ onRecordValidate((e) => {
 }, 'termine')
 
 // Ändert sich der Protokolltext, hält PocketBase selbst fest, wann. So kann
-// niemand einen falschen Zeitpunkt mitschicken.
+// niemand einen falschen Zeitpunkt mitschicken. Ob es sichtbaren Text gibt,
+// hält hat_protokolltext für den Archiv-Filter fest; auch das bestimmt nur
+// PocketBase.
 onRecordCreate((e) => {
   // Ein leeres JSON-Feld liest sich als "null".
   const text = e.record.getString('protokolltext')
@@ -24,16 +26,25 @@ onRecordCreate((e) => {
     'protokoll_gespeichert',
     text && text !== 'null' ? new DateTime() : '',
   )
+  e.record.set(
+    'hat_protokolltext',
+    !require(`${__hooks}/lib/protokolltext.js`).leer(text),
+  )
   e.next()
 }, 'termine')
 
 onRecordUpdate((e) => {
   const alt = e.record.original()
+  const text = e.record.getString('protokolltext')
   e.record.set(
     'protokoll_gespeichert',
-    e.record.getString('protokolltext') !== alt.getString('protokolltext')
+    text !== alt.getString('protokolltext')
       ? new DateTime()
       : alt.get('protokoll_gespeichert'),
+  )
+  e.record.set(
+    'hat_protokolltext',
+    !require(`${__hooks}/lib/protokolltext.js`).leer(text),
   )
   e.next()
 }, 'termine')
@@ -43,7 +54,12 @@ onRecordUpdate((e) => {
 // sehen, bis die Art zurückgeändert wird.
 onRecordEnrich((e) => {
   if (e.record.get('art') !== 'stammtisch') {
-    e.record.hide('protokoll', 'protokolltext', 'protokoll_gespeichert')
+    e.record.hide(
+      'protokoll',
+      'protokolltext',
+      'protokoll_gespeichert',
+      'hat_protokolltext',
+    )
   }
   e.next()
 }, 'termine')
