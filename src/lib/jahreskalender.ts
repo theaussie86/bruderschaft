@@ -1,6 +1,7 @@
-import type { Geburtstag, Termin, TerminArt } from '@/lib/termine'
+import type { Geburtstag, Termin, TerminArt, TerminFarbe } from '@/lib/termine'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 import {
+  ART_FARBE,
   FELDER,
   MONAT,
   WOCHENTAG,
@@ -14,9 +15,12 @@ import {
 // Ein Eintrag in der Zelle eines Tages. Mehrtägige Termine stehen an jedem
 // Tag; der Titel steht nur am ersten Tag und am Ersten jedes Monats, die
 // übrigen Tage sind Fortsetzung und werden nur eingefärbt.
+export type BlattFarbe = TerminFarbe | 'rot'
+
 export type BlattEintrag = {
   text: string
   art: TerminArt | 'geburtstag'
+  farbe: BlattFarbe
   fortsetzung: boolean
 }
 
@@ -93,6 +97,7 @@ export function jahresblatt(
     eintragen(g.datum, {
       text: `${g.name} Geb.`,
       art: 'geburtstag',
+      farbe: 'rot',
       fortsetzung: false,
     })
   }
@@ -109,6 +114,7 @@ export function jahresblatt(
       eintragen(tag, {
         text: t.titel,
         art: t.art,
+        farbe: t.farbe || ART_FARBE[t.art],
         fortsetzung: tag !== erster && !tag.endsWith('-01'),
       })
     }
@@ -134,6 +140,39 @@ export function jahresblatt(
     })
     return { name, tage }
   })
+}
+
+const REIHENFOLGE: Array<BlattFarbe> = [
+  'grau',
+  'gelb',
+  'blau',
+  'gruen',
+  'lila',
+  'rot',
+]
+
+// Die Legende unter dem Blatt: immer Stammtisch, Hahna Äktschn und
+// Geburtstag, dazu die Titel der Termine, die eine andere Farbe als ihre Art
+// tragen, z. B. "GHS" in Blau.
+export function legende(
+  blatt: Array<BlattMonat>,
+): Array<{ farbe: BlattFarbe; text: string }> {
+  const texte = new Map<BlattFarbe, Array<string>>([
+    ['grau', ['Stammtisch']],
+    ['gelb', ['Hahna Äktschn']],
+    ['rot', ['Geburtstag']],
+  ])
+  const eintraege = blatt.flatMap((m) => m.tage.flatMap((t) => t.eintraege))
+  for (const e of eintraege) {
+    if (e.art === 'geburtstag' || e.farbe === ART_FARBE[e.art]) continue
+    const liste = texte.get(e.farbe) ?? []
+    if (!liste.includes(e.text)) liste.push(e.text)
+    texte.set(e.farbe, liste)
+  }
+  return REIHENFOLGE.filter((f) => texte.has(f)).map((farbe) => ({
+    farbe,
+    text: (texte.get(farbe) ?? []).join(', '),
+  }))
 }
 
 // Alle Termine und Geburtstage eines Jahres. Der Filter greift einen Tag

@@ -10,10 +10,42 @@ export function mitBildern(art: TerminArt) {
   return art === 'veranstaltung' || art === 'urlaub'
 }
 
+// Farbe eines Termins im Kalender, aus einer festen Auswahl. Ohne Farbe gilt
+// die der Art. Rot gehört den Geburtstagen.
+export type TerminFarbe = 'grau' | 'gelb' | 'blau' | 'gruen' | 'lila'
+
+export const FARBEN: Array<{ farbe: TerminFarbe; name: string }> = [
+  { farbe: 'grau', name: 'Grau' },
+  { farbe: 'gelb', name: 'Gelb' },
+  { farbe: 'blau', name: 'Blau' },
+  { farbe: 'gruen', name: 'Grün' },
+  { farbe: 'lila', name: 'Lila' },
+]
+
+// Farbe einer Art, wenn der Termin keine eigene hat. Wie im alten Kalender:
+// Stammtische grau, alles andere ist "Hahna Äktschn" in Gelb.
+export const ART_FARBE: Record<TerminArt, TerminFarbe> = {
+  stammtisch: 'grau',
+  veranstaltung: 'gelb',
+  urlaub: 'gelb',
+}
+
+// Farbwerte für Papier und Bildschirm, kräftig wie in Excel.
+export const FARBWERT: Record<TerminFarbe | 'rot', string> = {
+  grau: '#c4c4c4',
+  gelb: '#fff200',
+  blau: '#5b9bd5',
+  gruen: '#92d050',
+  lila: '#b4a7d6',
+  rot: '#e5372c',
+}
+
 export type Termin = {
   id: string
   titel: string
   art: TerminArt
+  // Leer, wenn keine eigene Farbe hinterlegt ist.
+  farbe?: TerminFarbe | ''
   beginn: string
   ende: string
   ganztaegig: boolean
@@ -228,7 +260,7 @@ export function bilderErlaubt(t: Termin, jetzt = new Date()) {
 }
 
 export const FELDER =
-  'id,titel,art,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll'
+  'id,titel,art,farbe,beginn,ende,ganztaegig,ort,infotext,abgesagt,protokoll'
 
 // Lädt grob ab vorgestern, den genauen Schnitt macht kommendeTermine.
 export async function ladeKommendeTermine(jetzt = new Date()) {

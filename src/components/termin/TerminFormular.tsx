@@ -1,12 +1,27 @@
 import { useState } from 'react'
 
-import type { Termin, TerminArt, TerminFormular as Zeiten } from '@/lib/termine'
+import type {
+  Termin,
+  TerminArt,
+  TerminFarbe,
+  TerminFormular as Zeiten,
+} from '@/lib/termine'
 import { Button } from '@/components/Button'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
-import { ART_NAME, formularAusTermin, terminDaten } from '@/lib/termine'
+import {
+  ART_FARBE,
+  ART_NAME,
+  FARBEN,
+  FARBWERT,
+  formularAusTermin,
+  terminDaten,
+} from '@/lib/termine'
 
-export type TerminVorlage = Pick<Termin, 'titel' | 'art' | 'ort' | 'infotext'> &
+export type TerminVorlage = Pick<
+  Termin,
+  'titel' | 'art' | 'farbe' | 'ort' | 'infotext'
+> &
   Partial<Zeiten>
 
 // Anlegen, Kopieren und Bearbeiten eines Termins. Auch rückwirkend, damit
@@ -26,6 +41,7 @@ export function TerminFormular({
     ? { ...termin, ...formularAusTermin(termin) }
     : (vorlage ?? null)
   const [art, setArt] = useState<TerminArt>(start?.art ?? 'stammtisch')
+  const [farbe, setFarbe] = useState<TerminFarbe | ''>(start?.farbe ?? '')
   const [ganztaegig, setGanztaegig] = useState(start?.ganztaegig ?? false)
   const [fehler, setFehler] = useState<string | null>(null)
   // Ein Urlaub hat immer ein Ende, PocketBase prüft das auch.
@@ -39,6 +55,7 @@ export function TerminFormular({
     const daten = {
       titel: text('titel'),
       art,
+      farbe,
       ganztaegig,
       ort: text('ort'),
       infotext: text('infotext'),
@@ -93,6 +110,52 @@ export function TerminFormular({
             </label>
           ))}
         </div>
+      </fieldset>
+      <fieldset>
+        <legend className="mb-1.5 block text-sm font-semibold">
+          Farbe im Kalender
+        </legend>
+        <div className="flex flex-wrap gap-2">
+          {[
+            {
+              wert: '' as const,
+              name: 'Standard',
+              hex: FARBWERT[ART_FARBE[art]],
+            },
+            ...FARBEN.map((f) => ({
+              wert: f.farbe,
+              name: f.name,
+              hex: FARBWERT[f.farbe],
+            })),
+          ].map((f) => (
+            <label
+              key={f.wert || 'standard'}
+              className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-3 text-[15px] ${
+                farbe === f.wert
+                  ? 'border-brass text-bone'
+                  : 'border-line/70 text-ash hover:text-bone'
+              }`}
+            >
+              <input
+                type="radio"
+                name="farbe"
+                value={f.wert}
+                className="sr-only"
+                checked={farbe === f.wert}
+                onChange={() => setFarbe(f.wert)}
+              />
+              <span
+                className="size-4 rounded-full border border-black/40"
+                style={{ background: f.hex }}
+              />
+              {f.name}
+            </label>
+          ))}
+        </div>
+        <p className="text-ash mt-1.5 text-[14px]">
+          So steht der Termin im Jahreskalender. Standard: Stammtische grau,
+          alles andere gelb.
+        </p>
       </fieldset>
       <Feld label="Titel">
         <input

@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 
 import type { BlattEintrag, BlattMonat, BlattTag } from '@/lib/jahreskalender'
 import { fehlertext } from '@/lib/geburtstag'
-import { ladeJahr } from '@/lib/jahreskalender'
+import { ladeJahr, legende } from '@/lib/jahreskalender'
+import { FARBWERT } from '@/lib/termine'
 
 // Der Jahreskalender zum Ausdrucken für den Kühlschrank, im Look der alten
-// Excel-Liste: zwölf Monate nebeneinander auf einem A4-Blatt quer. Nur Admins
+// Excel-Liste: zwölf Monate nebeneinander auf einem Blatt quer. Nur Admins
 // drucken ihn, wenn die wichtigen Termine fürs Jahr eingetragen sind. Liegt
 // außerhalb der App-Shell, damit nur das Blatt aufs Papier kommt.
 export const Route = createFileRoute('/jahreskalender')({
@@ -98,7 +99,7 @@ function Jahreskalender() {
           </button>
         </div>
         <p className="text-ash w-full text-[13px]">
-          A4 quer. Damit die Farben mitkommen, im Druckdialog
+          Quer drucken, A4 oder A3. Damit die Farben mitkommen, im Druckdialog
           „Hintergrundgrafiken“ einschalten. Abgesagte Termine stehen nicht
           drauf.
         </p>
@@ -122,9 +123,9 @@ function Blatt({ jahr, blatt }: { jahr: number; blatt: Array<BlattMonat> }) {
   return (
     <div className="jahresblatt">
       <header>
-        <img src="/club-assets/brand/mail-logo.png" alt="" />
+        <Logo />
         <h1>Hahna-Kalender {jahr}</h1>
-        <img src="/club-assets/brand/mail-logo.png" alt="" />
+        <Logo />
       </header>
       <table>
         <colgroup>
@@ -146,7 +147,8 @@ function Blatt({ jahr, blatt }: { jahr: number; blatt: Array<BlattMonat> }) {
             <tr key={i}>
               {blatt.map((m) => {
                 const t = m.tage.at(i)
-                if (!t) return <td key={m.name} colSpan={3} className="leer" />
+                // Kürzere Monate laufen mit leerem Gitter bis zur 31 weiter.
+                if (!t) return <LeereZellen key={m.name} />
                 return (
                   <TagZellen
                     key={m.name}
@@ -162,11 +164,38 @@ function Blatt({ jahr, blatt }: { jahr: number; blatt: Array<BlattMonat> }) {
         </tbody>
       </table>
       <footer>
-        <span className="stammtisch">Stammtisch</span>
-        <span className="veranstaltung">Hahna Aktschn</span>
-        <span className="geburtstag">Geburtstag</span>
+        {legende(blatt).map((l) => (
+          <span key={l.farbe} style={{ background: FARBWERT[l.farbe] }}>
+            {l.text}
+          </span>
+        ))}
       </footer>
     </div>
+  )
+}
+
+// Das rote Hahna-Brothers-Logo, gemacht für weißes Papier. Fehlt die Datei
+// im Asset-Volume, springt das dunkle Emblem ein.
+function Logo() {
+  return (
+    <img
+      src="/club-assets/brand/logo-druck.jpg"
+      alt=""
+      onError={(e) => {
+        e.currentTarget.onerror = null
+        e.currentTarget.src = '/club-assets/brand/mail-logo.png'
+      }}
+    />
+  )
+}
+
+function LeereZellen() {
+  return (
+    <>
+      <td />
+      <td />
+      <td />
+    </>
   )
 }
 
@@ -197,8 +226,7 @@ function TagZellen({
       <td className={`wt ${farbe ?? ''}`}>{wochentag}</td>
       <td className={`was ${farbe ?? ''}`}>
         {eintraege.map((e, i) => (
-          // Urlaube laufen wie im alten Kalender als "Hahna Aktschn" mit.
-          <div key={i} className={e.art === 'urlaub' ? 'veranstaltung' : e.art}>
+          <div key={i} style={{ background: FARBWERT[e.farbe] }}>
             <span>{e.fortsetzung ? '\u00a0' : e.text}</span>
           </div>
         ))}

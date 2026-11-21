@@ -190,17 +190,18 @@
 }
 
 /* Jahreskalender zum Ausdrucken: bewusst im Look der alten Excel-Liste,
-   Arial, dünne schwarze Linien, kräftige Farben. A4 quer, ein Blatt. */
+   Arial, dünne schwarze Linien, kräftige Farben. Alle Maße laufen über
+   --mm: am Bildschirm ein Millimeter, im Druck ein 283stel der Papierbreite.
+   So füllt das Blatt A4 wie A3 quer. */
 .jahresblatt {
+  --mm: 1mm;
   --blatt-samstag: #fcd5ac;
   --blatt-frei: #f6a33f;
-  --blatt-stammtisch: #c4c4c4;
-  --blatt-veranstaltung: #fff200;
-  --blatt-geburtstag: #e5372c;
-  width: 283mm;
-  min-width: 283mm;
+  --blatt-wochenende: #fde6d2;
+  width: calc(283 * var(--mm));
+  min-width: calc(283 * var(--mm));
   margin: 0 auto;
-  padding: 3mm;
+  padding: calc(3 * var(--mm));
   background: #fff;
   color: #000;
   font-family: Arial, Helvetica, sans-serif;
@@ -211,40 +212,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 13mm;
+  height: calc(14 * var(--mm));
 }
 .jahresblatt header img {
-  height: 12.5mm;
-  border-radius: 50%;
+  height: calc(13.5 * var(--mm));
 }
 .jahresblatt h1 {
-  font-size: 28pt;
+  font-size: calc(10 * var(--mm));
   font-weight: 700;
-  letter-spacing: -0.5pt;
+  letter-spacing: calc(-0.2 * var(--mm));
 }
 .jahresblatt table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  font-size: 6.2pt;
+  font-size: calc(2.2 * var(--mm));
   line-height: 1;
 }
 .jahresblatt col.nr {
-  width: 4.2mm;
+  width: calc(4.2 * var(--mm));
 }
 .jahresblatt col.wt {
-  width: 4.6mm;
+  width: calc(4.6 * var(--mm));
 }
 .jahresblatt th {
-  border: 0.6pt solid #000;
-  font-size: 9pt;
+  border: calc(0.2 * var(--mm)) solid #000;
+  font-size: calc(3.2 * var(--mm));
   font-weight: 700;
   text-align: left;
-  padding: 0.5mm 1mm;
+  padding: calc(0.5 * var(--mm)) var(--mm);
 }
 .jahresblatt td {
-  border: 0.4pt solid #000;
-  height: 4.8mm;
+  border: calc(0.14 * var(--mm)) solid #000;
+  height: calc(5.1 * var(--mm));
   padding: 0;
   vertical-align: middle;
 }
@@ -261,12 +261,7 @@
 }
 .jahresblatt td.was.samstag,
 .jahresblatt td.was.frei {
-  background: #fde6d2;
-}
-.jahresblatt td.leer {
-  background: #fff;
-  border-left: none;
-  border-right: none;
+  background: var(--blatt-wochenende);
 }
 /* Lange Titel brechen auf zwei Zeilen um, mehr passt nicht in die Zelle.
    Mehrere Einträge am Tag teilen sich die Höhe. */
@@ -274,13 +269,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.4mm;
-  padding: 0 0.5mm;
+  min-height: calc(2.35 * var(--mm));
+  padding: 0 calc(0.5 * var(--mm));
   text-align: center;
   font-weight: 700;
 }
 .jahresblatt td.was > div:only-child {
-  height: 4.8mm;
+  height: calc(5.1 * var(--mm));
 }
 .jahresblatt td.was > div > span {
   display: -webkit-box;
@@ -289,31 +284,23 @@
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.jahresblatt .stammtisch {
-  background: var(--blatt-stammtisch);
-}
-.jahresblatt .veranstaltung {
-  background: var(--blatt-veranstaltung);
-}
-.jahresblatt .geburtstag {
-  background: var(--blatt-geburtstag);
-  color: #3b0603;
-}
 .jahresblatt footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
-  margin-top: 2mm;
-  font-size: 9pt;
+  gap: calc(2 * var(--mm));
+  margin-top: calc(2 * var(--mm));
+  font-size: calc(3.2 * var(--mm));
   font-weight: 700;
 }
 .jahresblatt footer span {
-  border: 0.6pt solid #000;
-  padding: 0.8mm 12mm;
+  border: calc(0.2 * var(--mm)) solid #000;
+  padding: calc(0.8 * var(--mm)) calc(10 * var(--mm));
 }
 
 @media print {
   @page {
-    size: A4 landscape;
+    size: landscape;
     margin: 6mm 7mm;
   }
   html,
@@ -333,6 +320,7 @@
     overflow: visible;
   }
   .jahresblatt {
+    --mm: calc(100vw / 283);
     padding: 0;
     margin: 0;
   }

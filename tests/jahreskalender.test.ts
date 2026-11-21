@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import type { Termin } from '@/lib/termine'
-import { jahresblatt } from '@/lib/jahreskalender'
+import { jahresblatt, legende } from '@/lib/jahreskalender'
 
 function termin(felder: Partial<Termin>): Termin {
   return {
@@ -90,16 +90,26 @@ describe('Jahresblatt zum Ausdrucken', () => {
       [{ name: 'Harry', datum: '2026-02-17', alter: 50 }],
     )
     expect(tag(blatt, 3, 5).eintraege).toEqual([
-      { text: 'KHS', art: 'stammtisch', fortsetzung: false },
+      { text: 'KHS', art: 'stammtisch', farbe: 'grau', fortsetzung: false },
     ])
     expect(tag(blatt, 3, 6).eintraege).toEqual([
-      { text: 'Spät', art: 'stammtisch', fortsetzung: false },
+      { text: 'Spät', art: 'stammtisch', farbe: 'grau', fortsetzung: false },
     ])
     expect(tag(blatt, 7, 18).eintraege).toEqual([
-      { text: 'Rocknacht', art: 'veranstaltung', fortsetzung: false },
+      {
+        text: 'Rocknacht',
+        art: 'veranstaltung',
+        farbe: 'gelb',
+        fortsetzung: false,
+      },
     ])
     expect(tag(blatt, 2, 17).eintraege).toEqual([
-      { text: 'Harry Geb.', art: 'geburtstag', fortsetzung: false },
+      {
+        text: 'Harry Geb.',
+        art: 'geburtstag',
+        farbe: 'rot',
+        fortsetzung: false,
+      },
     ])
     expect(tag(blatt, 3, 12).eintraege).toEqual([])
     const alle = blatt.flatMap((m) => m.tage.flatMap((t) => t.eintraege))
@@ -137,13 +147,13 @@ describe('Jahresblatt zum Ausdrucken', () => {
     const ski = (t: number) => tag(blatt, 2, t).eintraege
     expect(ski(19)).toEqual([])
     expect(ski(20)).toEqual([
-      { text: 'Ski fahrn', art: 'urlaub', fortsetzung: false },
+      { text: 'Ski fahrn', art: 'urlaub', farbe: 'gelb', fortsetzung: false },
     ])
     expect(ski(21)).toEqual([
-      { text: 'Ski fahrn', art: 'urlaub', fortsetzung: true },
+      { text: 'Ski fahrn', art: 'urlaub', farbe: 'gelb', fortsetzung: true },
     ])
     expect(ski(22)).toEqual([
-      { text: 'Ski fahrn', art: 'urlaub', fortsetzung: true },
+      { text: 'Ski fahrn', art: 'urlaub', farbe: 'gelb', fortsetzung: true },
     ])
     expect(ski(23)).toEqual([])
     expect(tag(blatt, 5, 1).eintraege[0].fortsetzung).toBe(false)
@@ -151,9 +161,73 @@ describe('Jahresblatt zum Ausdrucken', () => {
     expect(tag(blatt, 1, 1).eintraege[0]).toEqual({
       text: 'Silvester',
       art: 'urlaub',
+      farbe: 'gelb',
       fortsetzung: false,
     })
     expect(tag(blatt, 1, 2).eintraege[0].fortsetzung).toBe(true)
     expect(tag(blatt, 1, 3).eintraege).toEqual([])
+  })
+  test('färbt Termine in ihrer hinterlegten Farbe, sonst nach Art', () => {
+    const blatt = jahresblatt(
+      2026,
+      [
+        termin({
+          titel: 'GHS',
+          farbe: 'blau',
+          beginn: '2026-03-20 18:30:00.000Z',
+        }),
+        termin({ titel: 'KHS', beginn: '2026-03-05 18:30:00.000Z' }),
+        termin({
+          titel: 'Rocknacht',
+          art: 'veranstaltung',
+          farbe: 'gruen',
+          beginn: '2026-07-18 16:00:00.000Z',
+        }),
+      ],
+      [],
+    )
+    expect(tag(blatt, 3, 20).eintraege[0].farbe).toBe('blau')
+    expect(tag(blatt, 3, 5).eintraege[0].farbe).toBe('grau')
+    expect(tag(blatt, 7, 18).eintraege[0].farbe).toBe('gruen')
+  })
+})
+
+describe('Legende des Jahresblatts', () => {
+  test('nennt die Farben der Arten und dazu die Titel mit eigener Farbe', () => {
+    const blatt = jahresblatt(
+      2026,
+      [
+        termin({
+          titel: 'GHS',
+          farbe: 'blau',
+          beginn: '2026-03-20 18:30:00.000Z',
+        }),
+        termin({
+          titel: 'GHS',
+          farbe: 'blau',
+          beginn: '2026-07-31 18:30:00.000Z',
+        }),
+        termin({
+          titel: 'KHS',
+          farbe: 'grau',
+          beginn: '2026-03-05 18:30:00.000Z',
+        }),
+        termin({
+          titel: 'Dublin Tour',
+          art: 'urlaub',
+          farbe: 'grau',
+          beginn: '2026-05-14 12:00:00.000Z',
+          ende: '2026-05-17 12:00:00.000Z',
+          ganztaegig: true,
+        }),
+      ],
+      [],
+    )
+    expect(legende(blatt)).toEqual([
+      { farbe: 'grau', text: 'Stammtisch, Dublin Tour' },
+      { farbe: 'gelb', text: 'Hahna Äktschn' },
+      { farbe: 'blau', text: 'GHS' },
+      { farbe: 'rot', text: 'Geburtstag' },
+    ])
   })
 })
