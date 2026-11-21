@@ -21,6 +21,8 @@ import { PrototypeSwitcher } from '@/components/PrototypeSwitcher'
 import * as A from '@/components/termin/protokoll-prototyp/VariantA'
 import * as B from '@/components/termin/protokoll-prototyp/VariantB'
 import * as C from '@/components/termin/protokoll-prototyp/VariantC'
+import * as D from '@/components/termin/protokoll-prototyp/VariantD'
+import * as E from '@/components/termin/protokoll-prototyp/VariantE'
 import { TerminFormular } from '@/components/termin/TerminFormular'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -43,11 +45,13 @@ export const Route = createFileRoute('/_app/kalender_/$terminId')({
   component: TerminSeite,
 })
 
-// PROTOTYP, wegwerfen: drei Varianten fürs Mitschreiben am Stammtisch.
+// PROTOTYP, wegwerfen: fünf Varianten fürs Mitschreiben am Stammtisch.
 const PROTOKOLL_VARIANTEN = [
   { key: 'A', name: A.name, Komponente: A.VariantA },
   { key: 'B', name: B.name, Komponente: B.VariantB },
   { key: 'C', name: C.name, Komponente: C.VariantC },
+  { key: 'D', name: D.name, Komponente: D.VariantD },
+  { key: 'E', name: E.name, Komponente: E.VariantE },
 ]
 
 // PocketBase verweigert das Löschen, solange Bilder auf den Termin zeigen, und
