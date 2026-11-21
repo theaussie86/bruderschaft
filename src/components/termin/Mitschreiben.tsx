@@ -8,6 +8,7 @@ import {
   DOKUMENT,
   PROTOKOLL_SCHEMA,
 } from '@/components/termin/protokoll-schema'
+import { Werkzeugleiste } from '@/components/termin/Werkzeugleiste'
 import { fehlertext } from '@/lib/geburtstag'
 import { protokollTextSpeichern } from '@/lib/protokoll'
 
@@ -66,6 +67,13 @@ export function Mitschreiben({
       aria-modal="true"
       aria-label="Protokoll mitschreiben"
       className="bg-coal fixed inset-0 z-50 flex flex-col"
+      onKeyDown={(e) => {
+        // Strg+S bzw. Cmd+S speichert wie der Knopf.
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+          e.preventDefault()
+          if (!laeuft) void speichern()
+        }
+      }}
     >
       <header className="border-line/60 flex items-center justify-between gap-3 border-b px-5 py-4">
         <div className="min-w-0">
@@ -100,6 +108,8 @@ export function Mitschreiben({
           {fehler}
         </p>
       )}
+
+      <Werkzeugleiste editor={editor} />
 
       <div className="flex-1 overflow-y-auto px-5 py-6">
         <div className="mx-auto h-full max-w-3xl">
