@@ -15,14 +15,12 @@ export const ANSCHRIFT_FELDER = [
 ] as const
 
 export function anschriftAus(record: Record<string, unknown>): Anschrift {
-  const text = (feld: keyof Anschrift) =>
-    typeof record[feld] === 'string' ? record[feld] : ''
-  return {
-    voller_name: text('voller_name'),
-    strasse: text('strasse'),
-    plz: text('plz'),
-    ort: text('ort'),
-  }
+  return Object.fromEntries(
+    ANSCHRIFT_FELDER.map((f) => [
+      f,
+      typeof record[f] === 'string' ? record[f] : '',
+    ]),
+  ) as Anschrift
 }
 
 // Eine Zeile für Listen: "Johann Huber, Hauptstraße 12, 87724 Ottobeuren",

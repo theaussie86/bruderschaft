@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import type { Anschrift } from '@/lib/anschrift'
+import { ANSCHRIFT_FELDER } from '@/lib/anschrift'
 import { Button } from '@/components/Button'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -31,12 +32,10 @@ export function AnschriftFormular({
     try {
       await createBrowserPocketBase()
         .collection('mitglieder')
-        .update(mitgliedId, {
-          voller_name: text('voller_name'),
-          strasse: text('strasse'),
-          plz: text('plz'),
-          ort: text('ort'),
-        })
+        .update(
+          mitgliedId,
+          Object.fromEntries(ANSCHRIFT_FELDER.map((f) => [f, text(f)])),
+        )
       await onGespeichert()
     } catch (err) {
       setFehler(

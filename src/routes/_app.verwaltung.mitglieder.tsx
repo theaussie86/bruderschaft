@@ -13,10 +13,10 @@ import { anschriftAus, anschriftZeile } from '@/lib/anschrift'
 import { fehlertext, geburtstagAnzeigen, geburtstagAus } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 
-// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag sowie vollen
-// Namen und Anschrift korrigieren,
-// Admin-Recht, Sperre, Mail, Löschen und DSGVO-Löschung. Die Rechte prüft
-// PocketBase (ADR 0002), die Seite blendet sich nur für Nicht-Admins aus.
+// Verwaltung > Mitglieder: einladen, erneut einladen, Geburtstag und
+// Anschrift korrigieren, Admin-Recht, Sperre, Mail, Löschen und
+// DSGVO-Löschung. Die Rechte prüft PocketBase (ADR 0002), die Seite blendet
+// sich nur für Nicht-Admins aus.
 export const Route = createFileRoute('/_app/verwaltung/mitglieder')({
   beforeLoad: ({ context }) => {
     if (!context.mitglied.admin) throw redirect({ to: '/kalender' })
@@ -265,6 +265,8 @@ function Mitglieder() {
                       mitglied={m}
                       onGeaendert={async (text) => {
                         setVerwaltetVon(null)
+                        setAnschriftVon(null)
+                        setGeburtstagVon(null)
                         setMeldung({ text, fehler: false })
                         await laden()
                       }}

@@ -1,9 +1,10 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Voller Name und Anschrift am Mitglied (siehe GLOSSARY.md), damit der
-// Schriftführer keine eigene Liste mehr pflegt. Alle Felder sind freiwillig.
-// Jedes Mitglied ändert seine eigenen, Admins alle: Die updateRule lässt
-// Felder außerhalb der Admin-Liste ohnehin für das Mitglied selbst zu (ADR 0002).
+// Anschrift am Mitglied: voller Name, Straße, PLZ, Ort (siehe GLOSSARY.md),
+// damit der Schriftführer keine eigene Liste mehr pflegt. Alle Felder sind
+// freiwillig. Jedes Mitglied ändert seine eigenen, Admins alle: Die
+// updateRule lässt Felder außerhalb der Admin-Liste ohnehin für das Mitglied
+// selbst zu (ADR 0002).
 const FELDER = [
   { name: 'voller_name', max: 150 },
   { name: 'strasse', max: 150 },
