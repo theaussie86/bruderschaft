@@ -29,8 +29,7 @@ function Datenschutz() {
             Die App ist nur für Mitglieder der Bruderschaft. Zugänge vergibt
             sie, eine Registrierung gibt es nicht. Sie dient der gemeinsamen
             Bestellung von Brotherhood-Kleidung, den Terminen der Bruderschaft,
-            Bildern von Veranstaltungen und Urlauben und den Protokollen der
-            Stammtische.
+            Bildern zu diesen Terminen und den Protokollen der Stammtische.
           </p>
         </Abschnitt>
         <Abschnitt titel="Welche Daten gespeichert werden">

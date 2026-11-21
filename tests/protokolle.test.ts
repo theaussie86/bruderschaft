@@ -130,18 +130,54 @@ describe('Protokolle lesen', () => {
   })
 })
 
-describe('Protokolle im Archiv', () => {
-  test('ein Stammtisch ohne Protokoll ist nicht im Archiv', async () => {
+// Ein winziges, gültiges PNG (1x1 Pixel) als Bild zu einem Termin.
+const PNG = Uint8Array.from(
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  ),
+)
+
+async function mitBild(terminId: string) {
+  const mitglied = await neuesMitglied()
+  const form = new FormData()
+  form.set('termin', terminId)
+  form.set('mitglied', mitglied.id)
+  form.set('datei', new File([PNG], 'foto.png', { type: 'image/png' }))
+  const pb = await superuser()
+  await pb.collection('bilder').create(form)
+}
+
+async function imArchiv(ids: Array<string>) {
+  const nurDiese = ids.map((id) => `id = '${id}'`).join(' || ')
+  const filter = `${ARCHIV_FILTER} && (${nurDiese})`
+  const res = await app(
+    `${TERMINE}?filter=${encodeURIComponent(filter)}&fields=id&perPage=50`,
+    { cookie: await anmelden(await neuesMitglied()) },
+  )
+  const items = (await res.json()).items as Array<{ id: string }>
+  return items.map((t) => t.id).sort()
+}
+
+describe('Stammtische im Archiv', () => {
+  test('ein Stammtisch ist mit Protokoll oder Bildern im Archiv, ohne beides nicht', async () => {
     const ohne = await stammtisch()
-    const mit = await stammtisch()
-    await alsAdminHochladen(mit.id)
-    const filter = `${ARCHIV_FILTER} && (id = '${ohne.id}' || id = '${mit.id}')`
+    const mitProtokoll = await stammtisch()
+    await alsAdminHochladen(mitProtokoll.id)
+    const mitBildern = await stammtisch()
+    await mitBild(mitBildern.id)
 
-    const res = await app(
-      `${TERMINE}?filter=${encodeURIComponent(filter)}&fields=id`,
-      { cookie: await anmelden(await neuesMitglied()) },
-    )
+    const archiv = await imArchiv([ohne.id, mitProtokoll.id, mitBildern.id])
 
-    expect((await res.json()).items).toEqual([{ id: mit.id }])
+    expect(archiv).toEqual([mitProtokoll.id, mitBildern.id].sort())
+  })
+
+  test('ein abgesagter Stammtisch mit Bild ist nicht im Archiv', async () => {
+    const abgesagt = await stammtisch()
+    await mitBild(abgesagt.id)
+    const pb = await superuser()
+    await pb.collection('termine').update(abgesagt.id, { abgesagt: true })
+
+    expect(await imArchiv([abgesagt.id])).toEqual([])
   })
 })

@@ -12,8 +12,8 @@ const TON = {
 } as const satisfies Record<TerminArt, string>
 
 // Ein Termin in der Liste: Kalenderblatt, Art, Titel, Zeit und Ort. Abgesagte
-// bleiben sichtbar, durchgestrichen und markiert. Im Archiv steht bei
-// Veranstaltungen und Urlauben die Zahl der Bilder dabei, bei Stammtischen das Protokoll.
+// bleiben sichtbar, durchgestrichen und markiert. Im Archiv steht die Zahl der
+// Bilder dabei, bei Stammtischen mit Protokoll zusätzlich das Protokoll.
 export function TerminZeile({
   termin: t,
   bilder,
@@ -75,19 +75,22 @@ export function TerminZeile({
             </>
           )}
         </div>
-        {bilder !== undefined && t.art === 'stammtisch' ? (
-          <div className="text-ash mt-1.5 flex items-center gap-1.5 text-[13px]">
-            <FileText className="size-3.5" /> Protokoll
+        {bilder !== undefined && (
+          <div className="text-ash mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+            {t.art === 'stammtisch' && (t.protokoll?.length ?? 0) > 0 && (
+              <span className="flex items-center gap-1.5">
+                <FileText className="size-3.5" /> Protokoll
+              </span>
+            )}
+            {(t.art !== 'stammtisch' || bilder > 0) && (
+              <span className="flex items-center gap-1.5">
+                <Images className="size-3.5" />
+                {bilder === 0
+                  ? 'Noch keine Bilder'
+                  : `${bilder} ${bilder === 1 ? 'Bild' : 'Bilder'}`}
+              </span>
+            )}
           </div>
-        ) : (
-          bilder !== undefined && (
-            <div className="text-ash mt-1.5 flex items-center gap-1.5 text-[13px]">
-              <Images className="size-3.5" />
-              {bilder === 0
-                ? 'Noch keine Bilder'
-                : `${bilder} ${bilder === 1 ? 'Bild' : 'Bilder'}`}
-            </div>
-          )
         )}
       </div>
       <div className="text-smoke flex items-center pr-3">

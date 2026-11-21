@@ -7,7 +7,7 @@ import { bildHochladen, bildLoeschen, bildPfad, ladeBilder } from '@/lib/bilder'
 import { fehlertext } from '@/lib/geburtstag'
 import { bilderErlaubt } from '@/lib/termine'
 
-// Bilder einer Veranstaltung oder eines Urlaubs: Raster mit Upload vom Handy und Vollbild.
+// Bilder eines Termins: Raster mit Upload vom Handy und Vollbild.
 // Mitglieder löschen ihre eigenen Bilder, Admins jedes. Wer ein Bild
 // hochgeladen hat, sehen nur Admins.
 export function Bilder({

@@ -5,11 +5,6 @@ import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
 // Europe/Berlin, damit Server-Rendering und Browser dasselbe zeigen.
 export type TerminArt = 'stammtisch' | 'veranstaltung' | 'urlaub'
 
-// Zu Veranstaltungen und Urlauben gibt es Bilder, und sie gehen ins Archiv ein.
-export function mitBildern(art: TerminArt) {
-  return art === 'veranstaltung' || art === 'urlaub'
-}
-
 // Farbe eines Termins im Kalender, aus einer festen Auswahl. Ohne Farbe gilt
 // die der Art. Rot gehört den Geburtstagen.
 export type TerminFarbe = 'grau' | 'gelb' | 'blau' | 'gruen' | 'lila'
@@ -233,30 +228,31 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
 }
 
 // Das Archiv: vergangene, nicht abgesagte Veranstaltungen und Urlaube, auch
-// ohne Bilder,
-// und vergangene, nicht abgesagte Stammtische mit Protokoll. Vergangen ist ein
-// Termin nach seinem letzten Tag. Neueste zuerst.
-export function archivTermine(termine: Array<Termin>, jetzt = new Date()) {
+// ohne Bilder, und vergangene, nicht abgesagte Stammtische mit Protokoll oder
+// Bildern. Vergangen ist ein Termin nach seinem letzten Tag. Neueste zuerst.
+// bilder ist die Zahl der Bilder pro Termin.
+export function archivTermine(
+  termine: Array<Termin>,
+  bilder: Map<string, number>,
+  jetzt = new Date(),
+) {
   const heute = berlinTag(jetzt)
+  const gehoertDazu = (t: Termin) =>
+    t.art !== 'stammtisch' ||
+    (t.protokoll?.length ?? 0) > 0 ||
+    (bilder.get(t.id) ?? 0) > 0
   return termine
     .filter(
       (t) =>
-        (mitBildern(t.art) || (t.protokoll?.length ?? 0) > 0) &&
-        !t.abgesagt &&
-        berlinTag(t.ende || t.beginn) < heute,
+        gehoertDazu(t) && !t.abgesagt && berlinTag(t.ende || t.beginn) < heute,
     )
     .sort((a, b) => alsDate(b.beginn).getTime() - alsDate(a.beginn).getTime())
 }
 
-// Bilder lassen sich hochladen, sobald eine Veranstaltung oder ein Urlaub
-// begonnen hat, und
-// nur, wenn sie nicht abgesagt ist. Dieselbe Regel prüft PocketBase.
+// Bilder lassen sich zu jedem Termin hochladen, sobald er begonnen hat, und
+// nur, wenn er nicht abgesagt ist. Dieselbe Regel prüft PocketBase.
 export function bilderErlaubt(t: Termin, jetzt = new Date()) {
-  return (
-    mitBildern(t.art) &&
-    !t.abgesagt &&
-    alsDate(t.beginn).getTime() <= jetzt.getTime()
-  )
+  return !t.abgesagt && alsDate(t.beginn).getTime() <= jetzt.getTime()
 }
 
 export const FELDER =
@@ -280,10 +276,16 @@ export async function ladeTermin(id: string): Promise<Termin> {
 }
 
 // Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.
+// Ein Stammtisch braucht ein Protokoll oder mindestens ein Bild (Rückbeziehung
+// der Bilder auf den Termin).
 export const ARCHIV_FILTER =
-  "(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && protokoll:length > 0)) && abgesagt = false"
+  "(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && (protokoll:length > 0 || bilder_via_termin.id ?!= ''))) && abgesagt = false"
 
-export async function ladeArchiv(jetzt = new Date()) {
+// bilder ist die Zahl der Bilder pro Termin, die die Archiv-Ansicht ohnehin lädt.
+export async function ladeArchiv(
+  bilder: Map<string, number>,
+  jetzt = new Date(),
+) {
   const pb = createBrowserPocketBase()
   const bis = fuerPocketBase(jetzt.getTime())
   const termine = await pb.collection('termine').getFullList<Termin>({
@@ -291,7 +293,7 @@ export async function ladeArchiv(jetzt = new Date()) {
     fields: FELDER,
     filter: pb.filter(`${ARCHIV_FILTER} && beginn <= {:bis}`, { bis }),
   })
-  return archivTermine(termine, jetzt)
+  return archivTermine(termine, bilder, jetzt)
 }
 
 // Ein Geburtstag im Kalender, wie ihn die Hook-Route liefert: nur Name, Datum
