@@ -161,6 +161,7 @@ describe('Termine: Ansicht Kommend', () => {
 })
 
 describe('Termine: Archiv', () => {
+  const KEINE_BILDER = new Map<string, number>()
   const jetzt = new Date('2026-12-11T10:00:00Z')
 
   test('vergangene, nicht abgesagte Veranstaltungen, neueste zuerst', () => {
@@ -189,25 +190,26 @@ describe('Termine: Archiv', () => {
           beginn: '2026-12-11 08:00:00.000Z',
         }),
       ],
+      KEINE_BILDER,
       jetzt,
     )
 
     expect(liste.map((t) => t.id)).toEqual(['neu', 'alt'])
   })
 
-  test('vergangene Stammtische nur mit Protokoll, abgesagte nie', () => {
+  test('vergangene Stammtische mit Protokoll oder Bildern, abgesagte und künftige nie', () => {
     const liste = archivTermine(
       [
         termin({ id: 'ohne', beginn: '2026-11-05 18:30:00.000Z' }),
         termin({
-          id: 'mit',
+          id: 'protokoll',
           beginn: '2026-11-12 18:30:00.000Z',
           protokoll: ['protokoll.pdf'],
         }),
+        termin({ id: 'bilder', beginn: '2026-11-13 18:30:00.000Z' }),
         termin({
           id: 'abgesagt',
           beginn: '2026-11-19 18:30:00.000Z',
-          protokoll: ['protokoll.pdf'],
           abgesagt: true,
         }),
         termin({
@@ -215,11 +217,20 @@ describe('Termine: Archiv', () => {
           beginn: '2026-12-11 08:00:00.000Z',
           protokoll: ['protokoll.pdf'],
         }),
+        termin({
+          id: 'kuenftig',
+          beginn: '2026-12-18 18:30:00.000Z',
+          protokoll: ['protokoll.pdf'],
+        }),
       ],
+      new Map([
+        ['bilder', 2],
+        ['abgesagt', 3],
+      ]),
       jetzt,
     )
 
-    expect(liste.map((t) => t.id)).toEqual(['mit'])
+    expect(liste.map((t) => t.id)).toEqual(['bilder', 'protokoll'])
   })
 
   test('ein mehrtägiger Termin kommt erst nach seinem letzten Tag ins Archiv', () => {
@@ -230,13 +241,17 @@ describe('Termine: Archiv', () => {
       ganztaegig: true,
     })
 
-    expect(archivTermine([wochenende], jetzt)).toEqual([])
+    expect(archivTermine([wochenende], KEINE_BILDER, jetzt)).toEqual([])
     expect(
-      archivTermine([wochenende], new Date('2026-12-12T10:00:00Z')),
+      archivTermine(
+        [wochenende],
+        KEINE_BILDER,
+        new Date('2026-12-12T10:00:00Z'),
+      ),
     ).toHaveLength(1)
   })
 
-  test('Bilder gibt es zu Veranstaltungen, sobald sie begonnen haben', () => {
+  test('Bilder gibt es zu jedem Termin, sobald er begonnen hat', () => {
     const fest = termin({
       art: 'veranstaltung',
       beginn: '2026-12-11 08:00:00.000Z',
@@ -245,7 +260,13 @@ describe('Termine: Archiv', () => {
     expect(bilderErlaubt(fest, jetzt)).toBe(true)
     expect(bilderErlaubt(fest, new Date('2026-12-11T07:00:00Z'))).toBe(false)
     expect(bilderErlaubt({ ...fest, abgesagt: true }, jetzt)).toBe(false)
-    expect(bilderErlaubt({ ...fest, art: 'stammtisch' }, jetzt)).toBe(false)
+    expect(bilderErlaubt({ ...fest, art: 'stammtisch' }, jetzt)).toBe(true)
+    expect(
+      bilderErlaubt(
+        { ...fest, art: 'stammtisch' },
+        new Date('2026-12-11T07:00:00Z'),
+      ),
+    ).toBe(false)
   })
 
   test('ein Urlaub kommt nach seinem letzten Tag ins Archiv und hat Bilder', () => {
@@ -256,8 +277,10 @@ describe('Termine: Archiv', () => {
       ganztaegig: true,
     })
 
-    expect(archivTermine([urlaub], jetzt)).toHaveLength(1)
-    expect(archivTermine([{ ...urlaub, abgesagt: true }], jetzt)).toEqual([])
+    expect(archivTermine([urlaub], KEINE_BILDER, jetzt)).toHaveLength(1)
+    expect(
+      archivTermine([{ ...urlaub, abgesagt: true }], KEINE_BILDER, jetzt),
+    ).toEqual([])
     expect(bilderErlaubt(urlaub, jetzt)).toBe(true)
     expect(bilderErlaubt(urlaub, new Date('2026-11-30T10:00:00Z'))).toBe(false)
   })

@@ -19,8 +19,9 @@ import {
 
 // Tab Kalender mit dem Umschalter "Kommend / Archiv". Kommend: heutige und
 // künftige Termine nach Monat, abgesagte durchgestrichen, dazu die
-// Geburtstage der Mitglieder. Archiv: vergangene,
-// nicht abgesagte Veranstaltungen, Urlaube und Stammtische mit Protokoll, neueste zuerst. Admins legen hier Termine an.
+// Geburtstage der Mitglieder. Archiv: vergangene, nicht abgesagte
+// Veranstaltungen, Urlaube und Stammtische mit Protokoll oder Bildern, neueste
+// zuerst. Admins legen hier Termine an.
 type Ansicht = 'kommend' | 'archiv'
 
 export const Route = createFileRoute('/_app/kalender')({
@@ -59,7 +60,9 @@ function Kalender() {
     setFehler(null)
     const laden =
       ansicht === 'archiv'
-        ? Promise.all([ladeArchiv(), [], zaehleBilder()])
+        ? zaehleBilder().then((bilder) =>
+            Promise.all([ladeArchiv(bilder), [], bilder]),
+          )
         : Promise.all([
             ladeKommendeTermine(),
             ladeGeburtstage(),
@@ -119,7 +122,7 @@ function Kalender() {
       {ansicht === 'archiv' && (
         <p className="text-ash mt-3 text-[14px]">
           Vergangene Veranstaltungen und Urlaube mit ihren Bildern und
-          Stammtische mit Protokoll.
+          Stammtische mit Protokoll oder Bildern.
         </p>
       )}
       <div className="mt-2">
