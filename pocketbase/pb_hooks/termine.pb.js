@@ -38,7 +38,7 @@ onRecordValidate((e) => {
 
 // Ändert sich der Protokolltext, hält PocketBase selbst fest, wann. So kann
 // niemand einen falschen Zeitpunkt mitschicken. Ob es sichtbaren Text gibt,
-// hält hat_protokolltext für den Archiv-Filter fest; auch das bestimmt nur
+// hält hat_protokolltext für die Liste fest; auch das bestimmt nur
 // PocketBase.
 onRecordCreate((e) => {
   require(`${__hooks}/lib/protokolltext.js`).festhalten(e.record)

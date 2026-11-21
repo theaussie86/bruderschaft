@@ -1,4 +1,4 @@
-// Umschalter zwischen zwei oder mehr Ansichten, z. B. "Kommend / Archiv".
+// Umschalter zwischen zwei oder mehr Ansichten, z. B. "Kommend / Vergangen".
 export function Umschalter<T extends string>({
   wert,
   onWechsel,

@@ -139,16 +139,16 @@ Ein Termin, der nicht stattfindet, aber sichtbar bleibt, damit die Absage auch i
 _Avoid_: gelöschter Termin, ausgefallener Termin
 
 **Veranstaltung**:
-Ein Termin, der nach seinem Datum ins Archiv eingeht. Mitglieder können Bilder dazu hochladen.
+Ein Termin, zu dem Mitglieder Bilder hochladen können, sobald er begonnen hat.
 _Avoid_: Event, Party
 
 **Urlaub**:
-Ein mehrtägiger Termin, an dem Mitglieder der Bruderschaft gemeinsam wegfahren, vom großen Urlaub bis zur Wochenend-Ausfahrt. Er hat immer ein Ende. Wie bei einer Veranstaltung können Mitglieder Bilder dazu hochladen, und er geht danach ins Archiv ein. Wer mitfährt, hält die App nicht fest. Die Urlaube einzelner Mitglieder gehören nicht dazu.
+Ein mehrtägiger Termin, an dem Mitglieder der Bruderschaft gemeinsam wegfahren, vom großen Urlaub bis zur Wochenend-Ausfahrt. Er hat immer ein Ende. Wie bei einer Veranstaltung können Mitglieder Bilder dazu hochladen. Wer mitfährt, hält die App nicht fest. Die Urlaube einzelner Mitglieder gehören nicht dazu.
 _Avoid_: Reise, Trip, Ausflug, Ausfahrt (als eigene Art)
 
-**Archiv**:
-Die vergangenen, nicht abgesagten Veranstaltungen und Urlaube der Bruderschaft mit ihren Bildern, auch solche ohne Bilder, und die vergangenen Stammtische, die ein Protokoll oder Bilder haben. Stammtische ohne beides und abgesagte Termine gehören nicht dazu.
-_Avoid_: Galerie, Veranstaltungsgalerie, Chronik
+**Vergangen**:
+Die Ansicht im Kalender mit allen Terminen nach ihrem letzten Tag, jeder Art, mit und ohne Protokoll oder Bilder, abgesagte durchgestrichen. Neueste zuerst. Das Gegenstück zu Kommend.
+_Avoid_: Archiv, Galerie, Veranstaltungsgalerie, Chronik
 
 **Stammtisch**:
 Das regelmäßige Treffen der Bruderschaft. Wie bei jedem Termin können Mitglieder Bilder dazu hochladen; zusätzlich kann an einem Stammtisch ein Protokoll hängen.

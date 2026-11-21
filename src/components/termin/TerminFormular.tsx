@@ -25,7 +25,7 @@ export type TerminVorlage = Pick<
   Partial<Zeiten>
 
 // Anlegen, Kopieren und Bearbeiten eines Termins. Auch rückwirkend, damit
-// ältere Feste ins Archiv kommen. Was gültig ist, prüft PocketBase.
+// ältere Feste unter Vergangen stehen. Was gültig ist, prüft PocketBase.
 export function TerminFormular({
   termin,
   vorlage,
@@ -241,8 +241,8 @@ export function TerminFormular({
         />
       </Feld>
       <p className="text-ash text-[14px]">
-        Auch rückwirkend möglich, damit ältere Feste ins Archiv kommen. Es gibt
-        keine Serien, jeder Termin steht für sich.
+        Auch rückwirkend möglich, damit ältere Feste unter Vergangen stehen. Es
+        gibt keine Serien, jeder Termin steht für sich.
       </p>
       {fehler && (
         <p role="alert" className="text-rust-hi text-sm">

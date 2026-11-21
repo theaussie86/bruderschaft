@@ -237,32 +237,18 @@ export function kommendeTermine(termine: Array<Termin>, jetzt = new Date()) {
 
 // Ein Stammtisch hat ein Protokoll, wenn es Text oder Dateien gibt (Spec
 // #62). Ob der Text leer ist, entscheidet PocketBase beim Speichern und hält
-// es in hat_protokolltext fest. HAT_PROTOKOLL_FILTER ist dieselbe Prüfung für
-// PocketBase.
+// es in hat_protokolltext fest.
 export function hatProtokoll(t: Termin) {
   return (t.protokoll?.length ?? 0) > 0 || t.hat_protokolltext === true
 }
 
-export const HAT_PROTOKOLL_FILTER =
-  '(protokoll:length > 0 || hat_protokolltext = true)'
-
-// Das Archiv: vergangene, nicht abgesagte Veranstaltungen und Urlaube, auch
-// ohne Bilder, und vergangene, nicht abgesagte Stammtische mit Protokoll oder
-// Bildern. Vergangen ist ein Termin nach seinem letzten Tag. Neueste zuerst.
-// bilder ist die Zahl der Bilder pro Termin.
-export function archivTermine(
-  termine: Array<Termin>,
-  bilder: Map<string, number>,
-  jetzt = new Date(),
-) {
+// Vergangen sind alle Termine nach ihrem letzten Tag, jeder Art, auch ohne
+// Protokoll oder Bilder und auch abgesagte. Das Gegenstück zu kommendeTermine.
+// Neueste zuerst.
+export function vergangeneTermine(termine: Array<Termin>, jetzt = new Date()) {
   const heute = berlinTag(jetzt)
-  const gehoertDazu = (t: Termin) =>
-    t.art !== 'stammtisch' || hatProtokoll(t) || (bilder.get(t.id) ?? 0) > 0
   return termine
-    .filter(
-      (t) =>
-        gehoertDazu(t) && !t.abgesagt && berlinTag(t.ende || t.beginn) < heute,
-    )
+    .filter((t) => berlinTag(t.ende || t.beginn) < heute)
     .sort((a, b) => alsDate(b.beginn).getTime() - alsDate(a.beginn).getTime())
 }
 
@@ -295,24 +281,17 @@ export async function ladeTermin(id: string): Promise<Termin> {
   })
 }
 
-// Was PocketBase fürs Archiv liefert, den genauen Schnitt macht archivTermine.
-// Ein Stammtisch braucht ein Protokoll oder mindestens ein Bild (Rückbeziehung
-// der Bilder auf den Termin).
-export const ARCHIV_FILTER = `(art = 'veranstaltung' || art = 'urlaub' || (art = 'stammtisch' && (${HAT_PROTOKOLL_FILTER} || bilder_via_termin.id ?!= ''))) && abgesagt = false`
-
-// bilder ist die Zahl der Bilder pro Termin, die die Archiv-Ansicht ohnehin lädt.
-export async function ladeArchiv(
-  bilder: Map<string, number>,
-  jetzt = new Date(),
-) {
+// Lädt alles, was schon begonnen hat, den genauen Schnitt macht
+// vergangeneTermine.
+export async function ladeVergangeneTermine(jetzt = new Date()) {
   const pb = createBrowserPocketBase()
   const bis = fuerPocketBase(jetzt.getTime())
   const termine = await pb.collection('termine').getFullList<Termin>({
     sort: '-beginn',
     fields: FELDER,
-    filter: pb.filter(`${ARCHIV_FILTER} && beginn <= {:bis}`, { bis }),
+    filter: pb.filter('beginn <= {:bis}', { bis }),
   })
-  return archivTermine(termine, bilder, jetzt)
+  return vergangeneTermine(termine, jetzt)
 }
 
 // Ein Geburtstag im Kalender, wie ihn die Hook-Route liefert: nur Name, Datum

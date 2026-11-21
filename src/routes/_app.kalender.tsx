@@ -11,22 +11,24 @@ import { zaehleBilder } from '@/lib/bilder'
 import { fehlertext } from '@/lib/geburtstag'
 import {
   kalenderEintraege,
-  ladeArchiv,
   ladeGeburtstage,
   ladeKommendeTermine,
+  ladeVergangeneTermine,
   tagTeile,
 } from '@/lib/termine'
 
-// Tab Kalender mit dem Umschalter "Kommend / Archiv". Kommend: heutige und
+// Tab Kalender mit dem Umschalter "Kommend / Vergangen". Kommend: heutige und
 // künftige Termine nach Monat, abgesagte durchgestrichen, dazu die
-// Geburtstage der Mitglieder. Archiv: vergangene, nicht abgesagte
-// Veranstaltungen, Urlaube und Stammtische mit Protokoll oder Bildern, neueste
-// zuerst. Admins legen hier Termine an.
-type Ansicht = 'kommend' | 'archiv'
+// Geburtstage der Mitglieder. Vergangen: alle vergangenen Termine, neueste
+// zuerst, mit Bildern und Protokoll. Admins legen hier Termine an.
+type Ansicht = 'kommend' | 'vergangen'
 
 export const Route = createFileRoute('/_app/kalender')({
-  validateSearch: (s: Record<string, unknown>): { ansicht?: 'archiv' } =>
-    s.ansicht === 'archiv' ? { ansicht: 'archiv' } : {},
+  // ?ansicht=archiv ist der alte Name, alte Links landen trotzdem richtig.
+  validateSearch: (s: Record<string, unknown>): { ansicht?: 'vergangen' } =>
+    s.ansicht === 'vergangen' || s.ansicht === 'archiv'
+      ? { ansicht: 'vergangen' }
+      : {},
   component: Kalender,
 })
 
@@ -59,10 +61,8 @@ function Kalender() {
     let aktuell = true
     setFehler(null)
     const laden =
-      ansicht === 'archiv'
-        ? zaehleBilder().then((bilder) =>
-            Promise.all([ladeArchiv(bilder), [], bilder]),
-          )
+      ansicht === 'vergangen'
+        ? Promise.all([ladeVergangeneTermine(), [], zaehleBilder()])
         : Promise.all([
             ladeKommendeTermine(),
             ladeGeburtstage(),
@@ -110,21 +110,15 @@ function Kalender() {
         onWechsel={(w) =>
           void navigate({
             to: '/kalender',
-            search: w === 'archiv' ? { ansicht: 'archiv' } : {},
+            search: w === 'vergangen' ? { ansicht: 'vergangen' } : {},
             replace: true,
           })
         }
         optionen={[
           ['kommend', 'Kommend'],
-          ['archiv', 'Archiv'],
+          ['vergangen', 'Vergangen'],
         ]}
       />
-      {ansicht === 'archiv' && (
-        <p className="text-ash mt-3 text-[14px]">
-          Vergangene Veranstaltungen und Urlaube mit ihren Bildern und
-          Stammtische mit Protokoll oder Bildern.
-        </p>
-      )}
       <div className="mt-2">
         {fehler ? (
           <p role="alert" className="text-rust-hi mt-4 text-sm">
@@ -134,8 +128,8 @@ function Kalender() {
           <p className="text-ash mt-4">Lädt …</p>
         ) : geladen.eintraege.length === 0 ? (
           <div className="card text-ash mt-4 p-8 text-center">
-            {ansicht === 'archiv'
-              ? 'Im Archiv ist noch nichts.'
+            {ansicht === 'vergangen'
+              ? 'Vergangene Termine gibt es noch keine.'
               : 'Gerade stehen keine Termine an.'}
           </div>
         ) : (
@@ -159,7 +153,7 @@ function Kalender() {
                       <TerminZeile
                         termin={e.termin}
                         bilder={
-                          ansicht === 'archiv'
+                          ansicht === 'vergangen'
                             ? (geladen.bilder.get(e.termin.id) ?? 0)
                             : undefined
                         }

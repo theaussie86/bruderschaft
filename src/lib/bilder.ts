@@ -71,7 +71,7 @@ export async function ladeBilder(terminId: string): Promise<Array<Bild>> {
   })
 }
 
-// Zahl der Bilder pro Termin, für die Liste im Archiv.
+// Zahl der Bilder pro Termin, für die Liste unter Vergangen.
 export async function zaehleBilder(): Promise<Map<string, number>> {
   const pb = createBrowserPocketBase()
   const bilder = await pb
