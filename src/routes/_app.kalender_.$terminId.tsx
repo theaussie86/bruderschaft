@@ -17,6 +17,10 @@ import { Markierung } from '@/components/Markierung'
 import { PageHeader } from '@/components/PageHeader'
 import { Bilder } from '@/components/termin/Bilder'
 import { Protokoll } from '@/components/termin/Protokoll'
+import { PrototypeSwitcher } from '@/components/PrototypeSwitcher'
+import * as A from '@/components/termin/protokoll-prototyp/VariantA'
+import * as B from '@/components/termin/protokoll-prototyp/VariantB'
+import * as C from '@/components/termin/protokoll-prototyp/VariantC'
 import { TerminFormular } from '@/components/termin/TerminFormular'
 import { fehlertext } from '@/lib/geburtstag'
 import { createBrowserPocketBase } from '@/lib/pocketbase-browser'
@@ -33,8 +37,18 @@ import {
 // Verschieben, Bearbeiten, Kopieren, Absagen und Löschen; gelöscht werden nur falsch
 // angelegte Termine.
 export const Route = createFileRoute('/_app/kalender_/$terminId')({
+  // PROTOTYP: ?variant= schaltet die Protokoll-Varianten um.
+  validateSearch: (s: Record<string, unknown>): { variant?: string } =>
+    typeof s.variant === 'string' ? { variant: s.variant } : {},
   component: TerminSeite,
 })
+
+// PROTOTYP, wegwerfen: drei Varianten fürs Mitschreiben am Stammtisch.
+const PROTOKOLL_VARIANTEN = [
+  { key: 'A', name: A.name, Komponente: A.VariantA },
+  { key: 'B', name: B.name, Komponente: B.VariantB },
+  { key: 'C', name: C.name, Komponente: C.VariantC },
+]
 
 // PocketBase verweigert das Löschen, solange Bilder auf den Termin zeigen, und
 // meldet das ohne Feldfehler.
@@ -46,6 +60,10 @@ const KNOPF =
 
 function TerminSeite() {
   const { terminId } = Route.useParams()
+  const { variant = 'A' } = Route.useSearch()
+  const ProtokollVariante = import.meta.env.DEV
+    ? PROTOKOLL_VARIANTEN.find((v) => v.key === variant)?.Komponente
+    : undefined
   const { mitglied } = Route.useRouteContext()
   const navigate = useNavigate()
   const [termin, setTermin] = useState<Termin | null>(null)
@@ -248,13 +266,22 @@ function TerminSeite() {
             <Bilder termin={termin} mitglied={mitglied} />
           )}
 
-          {termin.art === 'stammtisch' && (
-            <Protokoll
-              termin={termin}
-              admin={mitglied.admin}
-              onGeaendert={setTermin}
-            />
-          )}
+          {termin.art === 'stammtisch' &&
+            (ProtokollVariante ? (
+              <>
+                <ProtokollVariante />
+                <PrototypeSwitcher
+                  variants={PROTOKOLL_VARIANTEN}
+                  current={variant}
+                />
+              </>
+            ) : (
+              <Protokoll
+                termin={termin}
+                admin={mitglied.admin}
+                onGeaendert={setTermin}
+              />
+            ))}
         </>
       )}
     </>
